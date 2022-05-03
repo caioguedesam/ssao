@@ -13,6 +13,44 @@
 #define ASSERT_ZERO(EXPR, MSG) do {} while(false)
 #endif
 
+// Default resources
+// Vertices for 1x1 quad centered on origin
+float g_quadVertices[] =
+{
+	-0.5f, -0.5f, 0.0f,
+	-0.5f, 0.5f, 0.0f,
+	 0.5f, 0.5f, 0.0f,
+	 0.5f,  -0.5f, 0.0f
+};
+// Indices for 1x1 quad
+uint32_t g_quadIndices[] =
+{
+	0, 2, 1,
+	0, 3, 2
+};
+
+class Buffer
+{
+	uint32_t handle;
+	uint32_t sizeInBytes;
+	uint32_t count;
+	void* pData;
+
+	void Set(GLenum bindTarget, uint32_t bufferSize, uint32_t bufferCount, void* bufferData)
+	{
+		sizeInBytes = bufferSize;
+		count = bufferCount;
+		pData = bufferData;
+		glBindBuffer(bindTarget, handle);
+		glBufferData(bindTarget, sizeInBytes, pData, GL_STATIC_DRAW);
+	}
+
+	void Init()
+	{
+		glGenBuffers(1, &handle);
+	}
+};
+
 void InitSDL()
 {
 	uint32_t initFlags =
@@ -33,67 +71,67 @@ void DestroySDL()
 class Window
 {
 public:
-	uint32_t m_width;
-	uint32_t m_height;
-	glm::uvec2 m_position;
+	uint32_t width;
+	uint32_t height;
+	glm::uvec2 position;
 
-	SDL_Window* m_handle;
+	SDL_Window* handle;
 
 	~Window()
 	{
-		if (m_handle)
+		if (handle)
 		{
-			SDL_DestroyWindow(m_handle);
+			SDL_DestroyWindow(handle);
 		}
 	}
 
 	void Init(uint32_t width, uint32_t height, uint32_t x, uint32_t y, const char* title)
 	{
-		m_handle = SDL_CreateWindow(
+		handle = SDL_CreateWindow(
 			title,
 			x, y,
 			width, height, 
 			SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
 		);
-		m_width = width;
-		m_height = height;
-		m_position = glm::uvec2(x, y);
+		width = width;
+		height = height;
+		position = glm::uvec2(x, y);
 	}
 
 	void OnResize(uint32_t newWidth, uint32_t newHeight)
 	{
-		m_width = newWidth;
-		m_height = newHeight;
+		width = newWidth;
+		height = newHeight;
 	}
 };
 
 class Renderer
 {
 public:
-	Window* m_window;
-	SDL_GLContext m_glContextHandle;
+	Window* pWindow;
+	SDL_GLContext pGlContextHandle;
 
 	~Renderer()
 	{
-		if (m_glContextHandle)
+		if (pGlContextHandle)
 		{
-			SDL_GL_DeleteContext(m_glContextHandle);
+			SDL_GL_DeleteContext(pGlContextHandle);
 		}
-		if (m_window) delete m_window;
+		if (pWindow) delete pWindow;
 	}
 
 	void CreateNewWindow(uint32_t width, uint32_t height, uint32_t x, uint32_t y, const char* title)
 	{
-		m_window = new Window();
-		m_window->Init(width, height, x, y, title);
+		pWindow = new Window();
+		pWindow->Init(width, height, x, y, title);
 	}
 
 	void CreateNewRenderContext()
 	{
-		ASSERT(!m_glContextHandle, "Trying to create new OpenGL context when renderer already has one.");
-		ASSERT(m_window, "Trying to create new OpenGL context without window associated to renderer.");
-		m_glContextHandle = SDL_GL_CreateContext(m_window->m_handle);
-		ASSERT(m_glContextHandle, "Failed to create new OpenGL context.");
+		ASSERT(!pGlContextHandle, "Trying to create new OpenGL context when renderer already has one.");
+		ASSERT(pWindow, "Trying to create new OpenGL context without window associated to renderer.");
+		pGlContextHandle = SDL_GL_CreateContext(pWindow->handle);
+		ASSERT(pGlContextHandle, "Failed to create new OpenGL context.");
 	}
 
 	void RetrieveAPIFunctionLocations()
@@ -121,14 +159,16 @@ public:
 		RetrieveAPIFunctionLocations();
 
 		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_CULL_FACE);
+		glFrontFace(GL_CCW);
 
 		SetViewport(windowWidth, windowHeight, windowX, windowY);
 	}
 
 	void OnResize(uint32_t newWidth, uint32_t newHeight)
 	{
-		m_window->OnResize(newWidth, newHeight);
-		SetViewport(newWidth, newHeight, m_window->m_position.x, m_window->m_position.y);
+		pWindow->OnResize(newWidth, newHeight);
+		SetViewport(newWidth, newHeight, pWindow->position.x, pWindow->position.y);
 	}
 
 	void Render()
@@ -136,21 +176,21 @@ public:
 		glClearColor(0.f, 0.f, 0.f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		SDL_GL_SwapWindow(m_window->m_handle);
+		SDL_GL_SwapWindow(pWindow->handle);
 	}
 };
 
 class App
 {
 public:
-	bool m_isRunning;
+	bool isRunning;
 
-	Renderer m_renderer;
+	Renderer renderer;
 
 	void Init()
 	{
-		m_renderer.Init(640, 480, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, "SSAO");
-		m_isRunning = true;
+		renderer.Init(640, 480, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, "SSAO");
+		isRunning = true;
 	}
 
 	void PollEvents()
@@ -165,7 +205,7 @@ public:
 				{
 				case SDLK_ESCAPE:
 				{
-					m_isRunning = false;
+					isRunning = false;
 				} break;
 				}
 			}
@@ -175,23 +215,23 @@ public:
 				{
 					uint32_t newWidth = event.window.data1;
 					uint32_t newHeight = event.window.data2;
-					m_renderer.OnResize(newWidth, newHeight);
+					renderer.OnResize(newWidth, newHeight);
 				}
 			}
 			else if (event.type == SDL_QUIT)
 			{
-				m_isRunning = false;
+				isRunning = false;
 			}
 		}
 	}
 
 	void Run()
 	{
-		while (m_isRunning)
+		while (isRunning)
 		{
 			PollEvents();
 			// TODO: update logic here
-			m_renderer.Render();
+			renderer.Render();
 		}
 	}
 };
