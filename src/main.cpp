@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <SDL.h>
+#include <vector>
 
 #if _DEBUG
 #include <cassert>
@@ -12,6 +13,8 @@
 #define ASSERT(EXPR, MSG) do {} while(false)
 #define ASSERT_ZERO(EXPR, MSG) do {} while(false)
 #endif
+
+#define UINT32_MAX (uint32_t)-1
 
 // Default resources
 // Vertices for 1x1 quad centered on origin
@@ -31,24 +34,35 @@ uint32_t g_quadIndices[] =
 
 class Buffer
 {
+public:
 	uint32_t handle;
 	uint32_t sizeInBytes;
 	uint32_t count;
 	void* pData;
 
-	void Set(GLenum bindTarget, uint32_t bufferSize, uint32_t bufferCount, void* bufferData)
+	Buffer()
+	{
+		glGenBuffers(1, &handle);
+	}
+
+	void Bind(GLenum bindTarget)
+	{
+		glBindBuffer(bindTarget, handle);
+	}
+
+	void SetData(GLenum bindTarget, uint32_t bufferSize, uint32_t bufferCount, void* bufferData)
 	{
 		sizeInBytes = bufferSize;
 		count = bufferCount;
 		pData = bufferData;
-		glBindBuffer(bindTarget, handle);
+		Bind(bindTarget);
 		glBufferData(bindTarget, sizeInBytes, pData, GL_STATIC_DRAW);
 	}
 
-	void Init()
+	/*void Init()
 	{
 		glGenBuffers(1, &handle);
-	}
+	}*/
 };
 
 void InitSDL()
@@ -111,6 +125,8 @@ public:
 	Window* pWindow;
 	SDL_GLContext pGlContextHandle;
 
+	std::vector<Renderable*> renderables;
+
 	~Renderer()
 	{
 		if (pGlContextHandle)
@@ -171,12 +187,63 @@ public:
 		SetViewport(newWidth, newHeight, pWindow->position.x, pWindow->position.y);
 	}
 
+	void SetVertexBuffer(Buffer* buffer, uint32_t elementSize, uint32_t elementStride, uint32_t firstElementOffset)
+	{
+		buffer->Bind(GL_ARRAY_BUFFER);
+		// TODO: Currently vertex attributes are hard set.
+		uint32_t offset = firstElementOffset * elementSize;
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * elementSize, (void*)offset);
+		glEnableVertexAttribArray(0);
+	}
+
+	void SetIndexBuffer(Buffer* buffer, uint32_t elementSize, uint32_t elementStride, uint32_t firstElementOffset)
+	{
+		buffer->Bind(GL_ELEMENT_ARRAY_BUFFER);
+	}
+
+	void AddRenderable(Renderable* renderable)
+	{
+		renderables.push_back(renderable);
+	}
+
 	void Render()
 	{
 		glClearColor(0.f, 0.f, 0.f, 1.f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		for (int i = 0; i < renderables.size(); i++)
+		{
+			renderables[i]->Draw();
+		}
+
 		SDL_GL_SwapWindow(pWindow->handle);
+	}
+};
+
+class Renderable
+{
+public:
+	uint32_t vaoHandle = UINT32_MAX;
+	Buffer* vertexBuffer;
+	Buffer* indexBuffer;
+
+	void SetVertexData(Buffer* vertexBuffer, Buffer* indexBuffer)
+	{
+		if (vaoHandle == UINT32_MAX)
+		{
+			glGenVertexArrays(1, &vaoHandle);
+		}
+
+		glBindVertexArray(vaoHandle);
+		vertexBuffer->Bind(GL_ARRAY_BUFFER);
+		indexBuffer->Bind(GL_ELEMENT_ARRAY_BUFFER);
+		glBindVertexArray(0);
+	}
+
+	void Draw()
+	{
+		glBindVertexArray(vaoHandle);
+		glDrawElements(GL_TRIANGLES, indexBuffer->count, GL_UNSIGNED_INT, 0);
 	}
 };
 
@@ -227,6 +294,15 @@ public:
 
 	void Run()
 	{
+		Buffer vb;
+		vb.SetData(GL_ARRAY_BUFFER, sizeof(g_quadVertices), sizeof(g_quadVertices) / sizeof(float), g_quadVertices);
+		Buffer ib;
+		ib.SetData(GL_ELEMENT_ARRAY_BUFFER, sizeof(g_quadIndices), sizeof(g_quadIndices) / sizeof(uint32_t), g_quadIndices);
+
+		Renderable obj;
+		obj.SetVertexData(&vb, &ib);
+		renderer.AddRenderable(&obj);
+
 		while (isRunning)
 		{
 			PollEvents();
