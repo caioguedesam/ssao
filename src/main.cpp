@@ -53,11 +53,17 @@ public:
 			title,
 			x, y,
 			width, height, 
-			SDL_WINDOW_OPENGL
+			SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE
 		);
 		m_width = width;
 		m_height = height;
 		m_position = glm::uvec2(x, y);
+	}
+
+	void OnResize(uint32_t newWidth, uint32_t newHeight)
+	{
+		m_width = newWidth;
+		m_height = newHeight;
 	}
 };
 
@@ -96,6 +102,11 @@ public:
 		ASSERT(result, "Failed to retrieve OpenGL API function locations using GLAD.");
 	}
 
+	void SetViewport(uint32_t width, uint32_t height, uint32_t x, uint32_t y)
+	{
+		glViewport(x, y, width, height);
+	}
+
 	void Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t windowX, uint32_t windowY, const char* windowTitle)
 	{
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -110,6 +121,14 @@ public:
 		RetrieveAPIFunctionLocations();
 
 		glEnable(GL_DEPTH_TEST);
+
+		SetViewport(windowWidth, windowHeight, windowX, windowY);
+	}
+
+	void OnResize(uint32_t newWidth, uint32_t newHeight)
+	{
+		m_window->OnResize(newWidth, newHeight);
+		SetViewport(newWidth, newHeight, m_window->m_position.x, m_window->m_position.y);
 	}
 
 	void Render()
@@ -148,6 +167,15 @@ public:
 				{
 					m_isRunning = false;
 				} break;
+				}
+			}
+			else if (event.type == SDL_WINDOWEVENT)
+			{
+				if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+				{
+					uint32_t newWidth = event.window.data1;
+					uint32_t newHeight = event.window.data2;
+					m_renderer.OnResize(newWidth, newHeight);
 				}
 			}
 			else if (event.type == SDL_QUIT)
