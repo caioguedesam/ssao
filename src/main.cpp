@@ -25,6 +25,11 @@ void InitSDL()
 	ASSERT_ZERO(result, "Failed to load SDL2 OpenGL library.");
 }
 
+void DestroySDL()
+{
+	SDL_Quit();
+}
+
 class Window
 {
 public:
@@ -99,12 +104,60 @@ public:
 	}
 };
 
+class App
+{
+public:
+	bool m_isRunning;
+
+	Renderer m_renderer;
+
+	void Init()
+	{
+		m_renderer.Init(640, 480, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, "SSAO");
+		m_isRunning = true;
+	}
+
+	void PollEvents()
+	{
+		SDL_Event event;
+		while (SDL_PollEvent(&event))
+		{
+			if (event.type == SDL_KEYDOWN)
+			{
+				SDL_Keysym key = event.key.keysym;
+				switch (key.sym)
+				{
+				case SDLK_ESCAPE:
+				{
+					m_isRunning = false;
+				} break;
+				}
+			}
+			else if (event.type == SDL_QUIT)
+			{
+				m_isRunning = false;
+			}
+		}
+	}
+
+	void Run()
+	{
+		while (m_isRunning)
+		{
+			PollEvents();
+			// TODO: update logic here
+		}
+	}
+};
+
 int main(int argc, char* argv[])
 {
 	InitSDL();
-	Renderer renderer;
-	renderer.Init(640, 480, 0, 0, "SSAO");
+	App app;
+	app.Init();
 
-	printf("Hello world!");
+	app.Run();
+
+	DestroySDL();
 	return 0;
 }
