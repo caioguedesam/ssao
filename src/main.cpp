@@ -98,9 +98,26 @@ public:
 
 	void Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t windowX, uint32_t windowY, const char* windowTitle)
 	{
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+
 		CreateNewWindow(windowWidth, windowHeight, windowX, windowY, windowTitle);
 		CreateNewRenderContext();
 		RetrieveAPIFunctionLocations();
+
+		glEnable(GL_DEPTH_TEST);
+	}
+
+	void Render()
+	{
+		glClearColor(0.f, 0.f, 0.f, 1.f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		SDL_GL_SwapWindow(m_window->m_handle);
 	}
 };
 
@@ -146,6 +163,7 @@ public:
 		{
 			PollEvents();
 			// TODO: update logic here
+			m_renderer.Render();
 		}
 	}
 };
