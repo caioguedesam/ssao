@@ -15,6 +15,18 @@
 #define ASSERT_ZERO(EXPR, MSG) do {} while(false)
 #endif
 
+#define APP_DEFAULT_WIDTH 640
+#define APP_DEFAULT_HEIGHT 480
+
+void GetDisplayDimensions(uint32_t &w, uint32_t &h)
+{
+	ASSERT(SDL_WasInit(SDL_INIT_VIDEO), "Trying to get display dimensions without initializing SDL.");
+	SDL_DisplayMode DM;
+	SDL_GetDesktopDisplayMode(0, &DM);
+	w = DM.w;
+	h = DM.h;
+}
+
 // Default resources
 // Vertices for 1x1 quad centered on origin
 float g_quadVertices[] =
@@ -35,11 +47,11 @@ const char* g_vertexShaderSource = "#version 330 core\n"
 "layout (location = 0) in vec3 aPos;\n"
 "void main()\n"
 "{\n"
-"   gl_Position = vec4(0.0f, 0.0f, 0.0f, 1.0);\n"
+"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
 "}\0";
 // Default fragment shader source code
 const char* g_fragmentShaderSource = "#version 330 core\n"
-"out vec4 color;\n"
+"layout (location = 0) out vec4 color;\n"
 "void main()\n"
 "{\n"
 "   color = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n"
@@ -309,13 +321,13 @@ public:
 		glFrontFace(GL_CCW);
 		ASSERT(glGetError() == GL_NO_ERROR, "");
 
-		SetViewport(windowWidth, windowHeight, windowX, windowY);
+		SetViewport(windowWidth, windowHeight, 0, 0);
 	}
 
 	void OnResize(uint32_t newWidth, uint32_t newHeight)
 	{
 		pWindow->OnResize(newWidth, newHeight);
-		SetViewport(newWidth, newHeight, pWindow->position.x, pWindow->position.y);
+		SetViewport(newWidth, newHeight, 0, 0);
 	}
 
 	void SetVertexBuffer(Buffer* buffer, uint32_t elementSize, uint32_t elementStride, uint32_t firstElementOffset)
@@ -362,7 +374,12 @@ public:
 
 	void Init()
 	{
-		renderer.Init(640, 480, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, "SSAO");
+		uint32_t appWidth = APP_DEFAULT_WIDTH;
+		uint32_t appHeight = APP_DEFAULT_HEIGHT;
+		uint32_t screenWidth, screenHeight;
+		GetDisplayDimensions(screenWidth, screenHeight);
+
+		renderer.Init(appWidth, appHeight, (screenWidth - appWidth) / 2, (screenHeight - appHeight) / 2, "SSAO");
 		isRunning = true;
 	}
 
