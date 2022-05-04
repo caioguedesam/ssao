@@ -6,6 +6,8 @@
 #include <SDL.h>
 #include <vector>
 #include <iostream>
+#include <map>
+#include <glm/gtc/type_ptr.hpp>
 
 #if _DEBUG
 #include <cassert>
@@ -117,6 +119,12 @@ public:
 	}
 };
 
+class Material
+{
+public:
+	glm::mat4 uMVP;
+};
+
 class Shader
 {
 public:
@@ -181,6 +189,24 @@ public:
 			std::cout << "ERROR::SHADER::LINK_FAILED\n" << infoLog << std::endl;
 		}
 	}
+
+	void Bind()
+	{
+		glUseProgram(programHandle);
+		ASSERT(glGetError() == GL_NO_ERROR, "Couldn't bind shader program.");
+	}
+
+	void SetUniform(const char* uName, const glm::mat4& uValue)
+	{
+		GLint location = glGetUniformLocation(programHandle, uName);	// TODO: Cache this
+		ASSERT(glGetError() == GL_NO_ERROR, "Couldn't get uniform location.");
+		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(uValue));
+	}
+
+	void SetMaterial(Material* mat)
+	{
+		SetUniform("uMVP", mat->uMVP);
+	}
 };
 
 void InitSDL()
@@ -244,6 +270,7 @@ public:
 	Buffer* vertexBuffer;
 	Buffer* indexBuffer;
 	Shader* shader;
+	Material* material;
 
 	void SetVertexData(Buffer* vb, Buffer* ib)
 	{
@@ -275,14 +302,21 @@ public:
 		shader = sh;
 	}
 
+	void SetMaterial(Material* mat)
+	{
+		material = mat;
+	}
+
 	void Draw()
 	{
-		glUseProgram(shader->programHandle);
-		ASSERT(glGetError() == GL_NO_ERROR, "");
+		shader->Bind();
+		shader->SetMaterial(material);
+
 		glBindVertexArray(vaoHandle);
-		ASSERT(glGetError() == GL_NO_ERROR, "");
+		ASSERT(glGetError() == GL_NO_ERROR, "Couldn't bind vertex array.");
+
 		glDrawElements(GL_TRIANGLES, indexBuffer->count, GL_UNSIGNED_INT, 0);
-		ASSERT(glGetError() == GL_NO_ERROR, "");
+		ASSERT(glGetError() == GL_NO_ERROR, "Failed drawing renderable.");
 	}
 };
 
@@ -454,6 +488,9 @@ public:
 		Renderable obj;
 		obj.SetVertexData(&vb, &ib);
 		Shader objShader;
+		Material objMat;
+		objMat.uMVP = glm::mat4(1.f);
+		objMat.uMVP = glm::translate(objMat.uMVP, glm::vec3(1.f, 1.f, 0.f));
 		
 		char vertSrc[256];
 		char fragSrc[256];
@@ -462,6 +499,7 @@ public:
 
 		objShader.InitAndCompile(vertSrc, fragSrc);
 		obj.SetShader(&objShader);
+		obj.SetMaterial(&objMat);
 
 		renderer.AddRenderable(&obj);
 
