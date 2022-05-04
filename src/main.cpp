@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -17,6 +18,8 @@
 
 #define APP_DEFAULT_WIDTH 640
 #define APP_DEFAULT_HEIGHT 480
+
+#define RESOURCES_PATH "./resources/"
 
 void GetDisplayDimensions(uint32_t &w, uint32_t &h)
 {
@@ -42,20 +45,46 @@ uint32_t g_quadIndices[] =
 	0, 2, 1,
 	0, 3, 2
 };
-// Default vertex shader source code
-const char* g_vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"}\0";
-// Default fragment shader source code
-const char* g_fragmentShaderSource = "#version 330 core\n"
-"layout (location = 0) out vec4 color;\n"
-"void main()\n"
-"{\n"
-"   color = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n"
-"}\0";
+
+class FileReader
+{
+public:
+	enum class Result
+	{
+		OK = 0,
+		FAIL_OPEN,
+		FAIL_READ
+	};
+
+	static Result ReadFile(const char* path, char* buffer)
+	{
+		FILE* pFile;
+		long fSize = 0;
+		// Open file
+		pFile = fopen(path, "r");
+		if (!pFile)
+		{
+			return Result::FAIL_OPEN;
+		}
+
+		// Query file size
+		fseek(pFile, 0, SEEK_END);
+		fSize = ftell(pFile);
+		rewind(pFile);
+
+		// Read file to buffer
+		auto result = fread(buffer, 1, fSize, pFile);
+		if (result != fSize && !feof(pFile))
+		{
+			return Result::FAIL_READ;
+		}
+
+		// Close file
+		fclose(pFile);
+		buffer[result] = '\0';
+		return Result::OK;
+	}
+};
 
 class Buffer
 {
@@ -425,7 +454,13 @@ public:
 		Renderable obj;
 		obj.SetVertexData(&vb, &ib);
 		Shader objShader;
-		objShader.InitAndCompile(g_vertexShaderSource, g_fragmentShaderSource);
+		
+		char vertSrc[256];
+		char fragSrc[256];
+		FileReader::ReadFile(RESOURCES_PATH"shaders/default_vert.glsl", vertSrc);
+		FileReader::ReadFile(RESOURCES_PATH"shaders/default_frag.glsl", fragSrc);
+
+		objShader.InitAndCompile(vertSrc, fragSrc);
 		obj.SetShader(&objShader);
 
 		renderer.AddRenderable(&obj);
