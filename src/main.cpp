@@ -88,6 +88,34 @@ public:
 	}
 };
 
+class Time
+{
+public:
+	// Times in seconds
+	static double time;
+	static double deltaTime;
+
+	static double GetTicksInSeconds()
+	{
+		return static_cast<double>(SDL_GetTicks64()) / 1000.;
+	}
+
+	static void Init()
+	{
+		time = GetTicksInSeconds();
+		deltaTime = 0.;
+	}
+
+	static void UpdateTime()
+	{
+		double currentTime = GetTicksInSeconds();
+		deltaTime = currentTime - time;
+		time = currentTime;
+	}
+};
+double Time::time;
+double Time::deltaTime;
+
 class Buffer
 {
 public:
@@ -443,10 +471,12 @@ public:
 		GetDisplayDimensions(screenWidth, screenHeight);
 
 		renderer.Init(appWidth, appHeight, (screenWidth - appWidth) / 2, (screenHeight - appHeight) / 2, "SSAO");
+		Time::Init();
+
 		isRunning = true;
 	}
 
-	void PollEvents()
+	void PollEvents(double dt)
 	{
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
@@ -505,7 +535,8 @@ public:
 
 		while (isRunning)
 		{
-			PollEvents();
+			Time::UpdateTime();
+			PollEvents(Time::deltaTime);
 			// TODO: update logic here
 			renderer.Render();
 		}
