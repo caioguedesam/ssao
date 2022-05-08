@@ -8,6 +8,7 @@
 #include <iostream>
 #include <map>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 #include <chrono>
 
 #if _DEBUG
@@ -299,12 +300,15 @@ class Camera
 public:
 	glm::vec3 position = glm::vec3(0.f);
 	glm::vec3 front = glm::vec3(0.f);
+	glm::vec3 right = glm::vec3(0.f);
 
 	float speed = 10.f;
+	float angle = 0.f;
+	float rotationSpeed = glm::radians(40.f);
 	float fov = 0.f;
 	float aspectRatio = 0.f;
 
-	glm::ivec2 moveAmounts = glm::vec2(0.f);
+	glm::ivec3 moveAmounts = glm::vec3(0);
 
 	void SetPosition(float x, float y, float z)
 	{
@@ -316,10 +320,18 @@ public:
 		position += (speed * dt) * dir;
 	}
 
+	void Rotate(float angles, float dt)
+	{
+		angle += angles * dt;
+		// TODO: support rotation in both directions
+		front = glm::rotate(front, -angles * dt, right);
+	}
+
 	void SetFront(float x, float y, float z)
 	{
 		glm::vec3 result = glm::vec3(x, y, z);
 		front = glm::normalize(result);
+		right = glm::normalize(glm::cross(front, glm::vec3(0.f, 1.f, 0.f)));
 	}
 
 	void SetPerspective(float newFov, float newAspect)
@@ -337,7 +349,11 @@ public:
 
 	glm::mat4 GetViewMatrix()
 	{
-		return glm::lookAt(position, position + front, glm::vec3(0.f, 1.f, 0.f));
+		// Look At matrix: multiply rotation with translation to -eye
+		glm::mat4 view = glm::mat4(1.f);
+		view = glm::translate(view, -position);
+		view = glm::rotate(glm::mat4(1.f), angle, right) * view;
+		return view;
 	}
 
 	glm::mat4 GetProjectionMatrix()
@@ -347,15 +363,19 @@ public:
 
 	void Update(float dt)
 	{
-		if (moveAmounts.x == 0 && moveAmounts.y == 0)
+		if (moveAmounts.x == 0 && moveAmounts.z == 0 && moveAmounts.y == 0)
 		{
 			return;
 		}
-		auto right = glm::normalize(glm::cross(front, glm::vec3(0.f, 1.f, 0.f)));
-		auto moveFront = (float)moveAmounts.y * front;
+
+		auto moveFront = (float)moveAmounts.z * front;
 		auto moveSide = (float)moveAmounts.x * right;
-		glm::vec3 moveDir = glm::normalize(moveFront + moveSide);
-		Move(moveDir, dt);
+		auto moveDir = glm::normalize(moveFront + moveSide);
+		if (!glm::any(glm::isnan(moveDir)))
+		{
+			Move(moveDir, dt);
+		}
+		Rotate(moveAmounts.y * rotationSpeed, dt);
 	}
 };
 
@@ -586,11 +606,11 @@ public:
 				} break;
 				case SDLK_w:
 				{
-					renderer.camera.moveAmounts.y = 1;
+					renderer.camera.moveAmounts.z = 1;
 				} break;
 				case SDLK_s:
 				{
-					renderer.camera.moveAmounts.y = -1;
+					renderer.camera.moveAmounts.z = -1;
 				} break;
 				case SDLK_a:
 				{
@@ -599,6 +619,14 @@ public:
 				case SDLK_d:
 				{
 					renderer.camera.moveAmounts.x = 1;
+				} break;
+				case SDLK_UP:
+				{
+					renderer.camera.moveAmounts.y = 1;
+				} break;
+				case SDLK_DOWN:
+				{
+					renderer.camera.moveAmounts.y = -1;
 				} break;
 				}
 			}
@@ -610,12 +638,17 @@ public:
 				case SDLK_w:
 				case SDLK_s:
 				{
-					renderer.camera.moveAmounts.y = 0;
+					renderer.camera.moveAmounts.z = 0;
 				} break;
 				case SDLK_a:
 				case SDLK_d:
 				{
 					renderer.camera.moveAmounts.x = 0;
+				} break;
+				case SDLK_UP:
+				case SDLK_DOWN:
+				{
+					renderer.camera.moveAmounts.y = 0;
 				} break;
 				}
 			}
