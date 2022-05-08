@@ -151,12 +151,6 @@ public:
 	}
 };
 
-//class Material
-//{
-//public:
-//	glm::mat4 uMVP;
-//};
-
 class Shader
 {
 public:
@@ -234,11 +228,6 @@ public:
 		ASSERT(glGetError() == GL_NO_ERROR, "Couldn't get uniform location.");
 		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(uValue));
 	}
-
-	//void SetMaterial(Material* mat)
-	//{
-	//	SetUniform("uMVP", mat->uMVP);
-	//}
 };
 
 void InitSDL()
@@ -303,16 +292,25 @@ public:
 	glm::vec3 right = glm::vec3(0.f);
 
 	float speed = 10.f;
-	float angle = 0.f;
+	float anglePitch = 0.f;
+	float angleYaw = glm::radians(-90.f);
 	float rotationSpeed = glm::radians(40.f);
 	float fov = 0.f;
 	float aspectRatio = 0.f;
 
-	glm::ivec3 moveAmounts = glm::vec3(0);
+	glm::ivec2 moveAmounts = glm::vec2(0);
+	glm::ivec2 rotateAmounts = glm::vec2(0);
 
 	void SetPosition(float x, float y, float z)
 	{
 		position = glm::vec3(x, y, z);
+	}
+
+	void SetFront(glm::vec3 f)
+	{
+		glm::vec3 result = f;
+		front = glm::normalize(result);
+		right = glm::normalize(glm::cross(front, glm::vec3(0.f, 1.f, 0.f)));
 	}
 
 	void Move(glm::vec3& dir, float dt)
@@ -320,18 +318,18 @@ public:
 		position += (speed * dt) * dir;
 	}
 
-	void Rotate(float angles, float dt)
+	void Rotate(float anglesPitch, float anglesYaw, float dt)
 	{
-		angle += angles * dt;
-		// TODO: support rotation in both directions
-		front = glm::rotate(front, -angles * dt, right);
-	}
+		anglePitch += anglesPitch * dt;
+		angleYaw += anglesYaw * dt;
 
-	void SetFront(float x, float y, float z)
-	{
-		glm::vec3 result = glm::vec3(x, y, z);
-		front = glm::normalize(result);
-		right = glm::normalize(glm::cross(front, glm::vec3(0.f, 1.f, 0.f)));
+		glm::vec3 rotationVector;
+		rotationVector.x = cos(angleYaw) * cos(anglePitch);
+		rotationVector.y = sin(anglePitch);
+		rotationVector.z = sin(angleYaw) * cos(anglePitch);
+		rotationVector = glm::normalize(rotationVector);
+
+		SetFront(rotationVector);
 	}
 
 	void SetPerspective(float newFov, float newAspect)
@@ -343,17 +341,13 @@ public:
 	void Init(float startX, float startY, float startZ, float startFov, float startAspect)
 	{
 		SetPosition(startX, startY, startZ);
-		SetFront(0, 0, -1);
+		SetFront(glm::vec3(0, 0, -1));
 		SetPerspective(startFov, startAspect);
 	}
 
 	glm::mat4 GetViewMatrix()
 	{
-		// Look At matrix: multiply rotation with translation to -eye
-		glm::mat4 view = glm::mat4(1.f);
-		view = glm::translate(view, -position);
-		view = glm::rotate(glm::mat4(1.f), angle, right) * view;
-		return view;
+		return glm::lookAt(position, position + front, glm::vec3(0.f, 1.f, 0.f));
 	}
 
 	glm::mat4 GetProjectionMatrix()
@@ -363,19 +357,20 @@ public:
 
 	void Update(float dt)
 	{
-		if (moveAmounts.x == 0 && moveAmounts.z == 0 && moveAmounts.y == 0)
+		if (moveAmounts.x == 0 && moveAmounts.y == 0 
+			&& rotateAmounts.x == 0 && rotateAmounts.y == 0)
 		{
 			return;
 		}
 
-		auto moveFront = (float)moveAmounts.z * front;
+		auto moveFront = (float)moveAmounts.y * front;
 		auto moveSide = (float)moveAmounts.x * right;
 		auto moveDir = glm::normalize(moveFront + moveSide);
 		if (!glm::any(glm::isnan(moveDir)))
 		{
 			Move(moveDir, dt);
 		}
-		Rotate(moveAmounts.y * rotationSpeed, dt);
+		Rotate(rotateAmounts.x * rotationSpeed, rotateAmounts.y * rotationSpeed, dt);
 	}
 };
 
@@ -393,7 +388,6 @@ public:
 	Buffer* vertexBuffer;
 	Buffer* indexBuffer;
 	Shader* shader;
-	//Material* material;
 	glm::mat4 uModel;
 
 	void SetVertexData(Buffer* vb, Buffer* ib)
@@ -426,18 +420,12 @@ public:
 		shader = sh;
 	}
 
-	//void SetMaterial(Material* mat)
-	//{
-	//	material = mat;
-	//}
-
 	void Draw(const RenderParams& params)
 	{
 		shader->Bind();
 		shader->SetUniform("uModel", params.model);
 		shader->SetUniform("uVP", params.proj * params.view);
 		shader->SetUniform("uMVP", params.proj * params.view * params.model);
-		//shader->SetMaterial(material);
 
 		glBindVertexArray(vaoHandle);
 		ASSERT(glGetError() == GL_NO_ERROR, "Couldn't bind vertex array.");
@@ -606,11 +594,11 @@ public:
 				} break;
 				case SDLK_w:
 				{
-					renderer.camera.moveAmounts.z = 1;
+					renderer.camera.moveAmounts.y = 1;
 				} break;
 				case SDLK_s:
 				{
-					renderer.camera.moveAmounts.z = -1;
+					renderer.camera.moveAmounts.y = -1;
 				} break;
 				case SDLK_a:
 				{
@@ -622,11 +610,19 @@ public:
 				} break;
 				case SDLK_UP:
 				{
-					renderer.camera.moveAmounts.y = 1;
+					renderer.camera.rotateAmounts.x = 1;
 				} break;
 				case SDLK_DOWN:
 				{
-					renderer.camera.moveAmounts.y = -1;
+					renderer.camera.rotateAmounts.x = -1;
+				} break;
+				case SDLK_LEFT:
+				{
+					renderer.camera.rotateAmounts.y = -1;
+				} break;
+				case SDLK_RIGHT:
+				{
+					renderer.camera.rotateAmounts.y = 1;
 				} break;
 				}
 			}
@@ -638,7 +634,7 @@ public:
 				case SDLK_w:
 				case SDLK_s:
 				{
-					renderer.camera.moveAmounts.z = 0;
+					renderer.camera.moveAmounts.y = 0;
 				} break;
 				case SDLK_a:
 				case SDLK_d:
@@ -648,7 +644,12 @@ public:
 				case SDLK_UP:
 				case SDLK_DOWN:
 				{
-					renderer.camera.moveAmounts.y = 0;
+					renderer.camera.rotateAmounts.x = 0;
+				} break;
+				case SDLK_LEFT:
+				case SDLK_RIGHT:
+				{
+					renderer.camera.rotateAmounts.y = 0;
 				} break;
 				}
 			}
@@ -679,9 +680,6 @@ public:
 		obj.uModel = glm::mat4(1.f);
 		obj.SetVertexData(&vb, &ib);
 		Shader objShader;
-		//Material objMat;
-		/*objMat.uMVP = glm::mat4(1.f);
-		objMat.uMVP = glm::translate(objMat.uMVP, glm::vec3(1.f, 1.f, 0.f));*/
 		
 		char vertSrc[256];
 		char fragSrc[256];
@@ -690,7 +688,6 @@ public:
 
 		objShader.InitAndCompile(vertSrc, fragSrc);
 		obj.SetShader(&objShader);
-		//obj.SetMaterial(&objMat);
 
 		renderer.AddRenderable(&obj);
 
