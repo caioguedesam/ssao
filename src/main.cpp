@@ -8,6 +8,7 @@
 #include <iostream>
 #include <map>
 #include <glm/gtc/type_ptr.hpp>
+#include <chrono>
 
 #if _DEBUG
 #include <cassert>
@@ -36,10 +37,10 @@ void GetDisplayDimensions(uint32_t &w, uint32_t &h)
 // Vertices for 1x1 quad centered on origin
 float g_quadVertices[] =
 {
-		0.5f,  0.5f, 0.0f,  // top right
-		 0.5f, -0.5f, 0.0f,  // bottom right
-		-0.5f, -0.5f, 0.0f,  // bottom left
-		-0.5f,  0.5f, 0.0f   // top left
+		0.5f,  0.5f, 0.f,  // top right
+		 0.5f, -0.5f, 0.f,  // bottom right
+		-0.5f, -0.5f, 0.f,  // bottom left
+		-0.5f,  0.5f, 0.f   // top left
 };
 // Indices for 1x1 quad
 uint32_t g_quadIndices[] =
@@ -91,28 +92,30 @@ public:
 class Time
 {
 public:
+	static std::chrono::high_resolution_clock::time_point lastTimePoint;
+
 	// Times in seconds
 	static double time;
 	static double deltaTime;
 
-	static double GetTicksInSeconds()
-	{
-		return static_cast<double>(SDL_GetTicks64()) / 1000.;
-	}
-
 	static void Init()
 	{
-		time = GetTicksInSeconds();
+		lastTimePoint = std::chrono::high_resolution_clock::now();
+		time = 0.;
 		deltaTime = 0.;
 	}
 
 	static void UpdateTime()
 	{
-		double currentTime = GetTicksInSeconds();
-		deltaTime = currentTime - time;
-		time = currentTime;
+		auto currentTimePoint = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> timePointDelta = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTimePoint - lastTimePoint);
+
+		deltaTime = timePointDelta.count();
+		time += deltaTime;
+		lastTimePoint = currentTimePoint;
 	}
 };
+std::chrono::time_point<std::chrono::high_resolution_clock> Time::lastTimePoint;
 double Time::time;
 double Time::deltaTime;
 
@@ -147,11 +150,11 @@ public:
 	}
 };
 
-class Material
-{
-public:
-	glm::mat4 uMVP;
-};
+//class Material
+//{
+//public:
+//	glm::mat4 uMVP;
+//};
 
 class Shader
 {
@@ -231,10 +234,10 @@ public:
 		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(uValue));
 	}
 
-	void SetMaterial(Material* mat)
-	{
-		SetUniform("uMVP", mat->uMVP);
-	}
+	//void SetMaterial(Material* mat)
+	//{
+	//	SetUniform("uMVP", mat->uMVP);
+	//}
 };
 
 void InitSDL()
@@ -291,6 +294,78 @@ public:
 	}
 };
 
+class Camera
+{
+public:
+	glm::vec3 position = glm::vec3(0.f);
+	glm::vec3 front = glm::vec3(0.f);
+
+	float speed = 10.f;
+	float fov = 0.f;
+	float aspectRatio = 0.f;
+
+	glm::ivec2 moveAmounts = glm::vec2(0.f);
+
+	void SetPosition(float x, float y, float z)
+	{
+		position = glm::vec3(x, y, z);
+	}
+
+	void Move(glm::vec3& dir, float dt)
+	{
+		position += (speed * dt) * dir;
+	}
+
+	void SetFront(float x, float y, float z)
+	{
+		glm::vec3 result = glm::vec3(x, y, z);
+		front = glm::normalize(result);
+	}
+
+	void SetPerspective(float newFov, float newAspect)
+	{
+		fov = newFov;
+		aspectRatio = newAspect;
+	}
+
+	void Init(float startX, float startY, float startZ, float startFov, float startAspect)
+	{
+		SetPosition(startX, startY, startZ);
+		SetFront(0, 0, -1);
+		SetPerspective(startFov, startAspect);
+	}
+
+	glm::mat4 GetViewMatrix()
+	{
+		return glm::lookAt(position, position + front, glm::vec3(0.f, 1.f, 0.f));
+	}
+
+	glm::mat4 GetProjectionMatrix()
+	{
+		return glm::perspective(fov, aspectRatio, 0.1f, 1000.f);
+	}
+
+	void Update(float dt)
+	{
+		if (moveAmounts.x == 0 && moveAmounts.y == 0)
+		{
+			return;
+		}
+		auto right = glm::normalize(glm::cross(front, glm::vec3(0.f, 1.f, 0.f)));
+		auto moveFront = (float)moveAmounts.y * front;
+		auto moveSide = (float)moveAmounts.x * right;
+		glm::vec3 moveDir = glm::normalize(moveFront + moveSide);
+		Move(moveDir, dt);
+	}
+};
+
+struct RenderParams
+{
+	glm::mat4 model;
+	glm::mat4 view;
+	glm::mat4 proj;
+};
+
 class Renderable
 {
 public:
@@ -298,7 +373,8 @@ public:
 	Buffer* vertexBuffer;
 	Buffer* indexBuffer;
 	Shader* shader;
-	Material* material;
+	//Material* material;
+	glm::mat4 uModel;
 
 	void SetVertexData(Buffer* vb, Buffer* ib)
 	{
@@ -330,15 +406,18 @@ public:
 		shader = sh;
 	}
 
-	void SetMaterial(Material* mat)
-	{
-		material = mat;
-	}
+	//void SetMaterial(Material* mat)
+	//{
+	//	material = mat;
+	//}
 
-	void Draw()
+	void Draw(const RenderParams& params)
 	{
 		shader->Bind();
-		shader->SetMaterial(material);
+		shader->SetUniform("uModel", params.model);
+		shader->SetUniform("uVP", params.proj * params.view);
+		shader->SetUniform("uMVP", params.proj * params.view * params.model);
+		//shader->SetMaterial(material);
 
 		glBindVertexArray(vaoHandle);
 		ASSERT(glGetError() == GL_NO_ERROR, "Couldn't bind vertex array.");
@@ -353,6 +432,7 @@ class Renderer
 public:
 	Window* pWindow;
 	SDL_GLContext pGlContextHandle;
+	Camera camera;
 
 	std::vector<Renderable*> renderables;
 
@@ -392,7 +472,13 @@ public:
 		ASSERT(glGetError() == GL_NO_ERROR, "");
 	}
 
-	void Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t windowX, uint32_t windowY, const char* windowTitle)
+	void SetCamera(float x, float y, float z, float fov, float aspect)
+	{
+		camera.Init(x, y, z, fov, aspect);
+	}
+
+	void Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t windowX, uint32_t windowY, const char* windowTitle,
+		float cameraX, float cameraY, float cameraZ, float cameraFOV, float cameraAspect)
 	{
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
@@ -413,6 +499,7 @@ public:
 		ASSERT(glGetError() == GL_NO_ERROR, "");
 
 		SetViewport(windowWidth, windowHeight, 0, 0);
+		SetCamera(cameraX, cameraY, cameraZ, cameraFOV, cameraAspect);
 	}
 
 	void OnResize(uint32_t newWidth, uint32_t newHeight)
@@ -449,7 +536,13 @@ public:
 
 		for (int i = 0; i < renderables.size(); i++)
 		{
-			renderables[i]->Draw();
+			Renderable* renderable = renderables[i];
+			RenderParams params;
+			params.model = renderable->uModel;
+			params.view = camera.GetViewMatrix();
+			params.proj = camera.GetProjectionMatrix();
+
+			renderable->Draw(params);
 		}
 
 		SDL_GL_SwapWindow(pWindow->handle);
@@ -470,7 +563,8 @@ public:
 		uint32_t screenWidth, screenHeight;
 		GetDisplayDimensions(screenWidth, screenHeight);
 
-		renderer.Init(appWidth, appHeight, (screenWidth - appWidth) / 2, (screenHeight - appHeight) / 2, "SSAO");
+		renderer.Init(appWidth, appHeight, (screenWidth - appWidth) / 2, (screenHeight - appHeight) / 2, "SSAO",
+			0, 0, 3.f, 45.f, static_cast<float>(appWidth) / static_cast<float>(appHeight));
 		Time::Init();
 
 		isRunning = true;
@@ -489,6 +583,39 @@ public:
 				case SDLK_ESCAPE:
 				{
 					isRunning = false;
+				} break;
+				case SDLK_w:
+				{
+					renderer.camera.moveAmounts.y = 1;
+				} break;
+				case SDLK_s:
+				{
+					renderer.camera.moveAmounts.y = -1;
+				} break;
+				case SDLK_a:
+				{
+					renderer.camera.moveAmounts.x = -1;
+				} break;
+				case SDLK_d:
+				{
+					renderer.camera.moveAmounts.x = 1;
+				} break;
+				}
+			}
+			else if (event.type == SDL_KEYUP)
+			{
+				SDL_Keysym key = event.key.keysym;
+				switch (key.sym)
+				{
+				case SDLK_w:
+				case SDLK_s:
+				{
+					renderer.camera.moveAmounts.y = 0;
+				} break;
+				case SDLK_a:
+				case SDLK_d:
+				{
+					renderer.camera.moveAmounts.x = 0;
 				} break;
 				}
 			}
@@ -516,11 +643,12 @@ public:
 		ib.Init(GL_ELEMENT_ARRAY_BUFFER, sizeof(g_quadIndices), sizeof(g_quadIndices) / sizeof(uint32_t), g_quadIndices);
 
 		Renderable obj;
+		obj.uModel = glm::mat4(1.f);
 		obj.SetVertexData(&vb, &ib);
 		Shader objShader;
-		Material objMat;
-		objMat.uMVP = glm::mat4(1.f);
-		objMat.uMVP = glm::translate(objMat.uMVP, glm::vec3(1.f, 1.f, 0.f));
+		//Material objMat;
+		/*objMat.uMVP = glm::mat4(1.f);
+		objMat.uMVP = glm::translate(objMat.uMVP, glm::vec3(1.f, 1.f, 0.f));*/
 		
 		char vertSrc[256];
 		char fragSrc[256];
@@ -529,7 +657,7 @@ public:
 
 		objShader.InitAndCompile(vertSrc, fragSrc);
 		obj.SetShader(&objShader);
-		obj.SetMaterial(&objMat);
+		//obj.SetMaterial(&objMat);
 
 		renderer.AddRenderable(&obj);
 
@@ -537,6 +665,7 @@ public:
 		{
 			Time::UpdateTime();
 			PollEvents(Time::deltaTime);
+			renderer.camera.Update(Time::deltaTime);
 			// TODO: update logic here
 			renderer.Render();
 		}
