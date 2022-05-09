@@ -36,6 +36,18 @@ void Mesh::LoadMesh(const char* path)
 				vertices.push_back(vy);
 				vertices.push_back(vz);
 
+				if (idx.texcoord_index >= 0) {
+					tinyobj::real_t tx = attrib.texcoords[2 * size_t(idx.texcoord_index) + 0];
+					tinyobj::real_t ty = attrib.texcoords[2 * size_t(idx.texcoord_index) + 1];
+
+					vertices.push_back(tx);
+					vertices.push_back(ty);
+				}
+				else
+				{
+					ASSERT(0, "No UV data in obj model");
+				}
+
 				indices.push_back(currentIndex++);
 			}
 			indexOffset += 3;

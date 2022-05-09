@@ -14,7 +14,7 @@ public:
 	float speed = 10.f;
 	float anglePitch = 0.f;
 	float angleYaw = glm::radians(-90.f);
-	float rotationSpeed = glm::radians(200.f);
+	float rotationSpeed = glm::radians(20.f);
 	float fov = 0.f;
 	float aspectRatio = 0.f;
 
