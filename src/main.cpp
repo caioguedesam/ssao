@@ -14,6 +14,10 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
+#include "time/time.h"
+#include "file/file_reader.h"
+#include "input/input.h"
+
 #if _DEBUG
 #include <cassert>
 #define ASSERT(EXPR, MSG) do {assert(EXPR && MSG);} while(false)
@@ -38,135 +42,6 @@ void GetDisplayDimensions(uint32_t &w, uint32_t &h)
 	w = DM.w;
 	h = DM.h;
 }
-
-// Default resources
-// Vertices for 1x1 quad centered on origin
-float g_quadVertices[] =
-{
-		0.5f,  0.5f, 0.f,  // top right
-		 0.5f, -0.5f, 0.f,  // bottom right
-		-0.5f, -0.5f, 0.f,  // bottom left
-		-0.5f,  0.5f, 0.f   // top left
-};
-// Indices for 1x1 quad
-uint32_t g_quadIndices[] =
-{
-	0, 2, 1,
-	0, 3, 2
-};
-
-uint32_t g_screenWidth = 0, g_screenHeight = 0;
-
-class FileReader
-{
-public:
-	enum class Result
-	{
-		OK = 0,
-		FAIL_OPEN,
-		FAIL_READ
-	};
-
-	static Result ReadFile(const char* path, char* buffer)
-	{
-		FILE* pFile;
-		long fSize = 0;
-		// Open file
-		pFile = fopen(path, "r");
-		if (!pFile)
-		{
-			return Result::FAIL_OPEN;
-		}
-
-		// Query file size
-		fseek(pFile, 0, SEEK_END);
-		fSize = ftell(pFile);
-		rewind(pFile);
-
-		// Read file to buffer
-		auto result = fread(buffer, 1, fSize, pFile);
-		if (result != fSize && !feof(pFile))
-		{
-			return Result::FAIL_READ;
-		}
-
-		// Close file
-		fclose(pFile);
-		buffer[result] = '\0';
-		return Result::OK;
-	}
-};
-
-class Time
-{
-public:
-	static std::chrono::high_resolution_clock::time_point lastTimePoint;
-
-	// Times in seconds
-	static double time;
-	static double deltaTime;
-
-	static void Init()
-	{
-		lastTimePoint = std::chrono::high_resolution_clock::now();
-		time = 0.;
-		deltaTime = 0.;
-	}
-
-	static void UpdateTime()
-	{
-		auto currentTimePoint = std::chrono::high_resolution_clock::now();
-		std::chrono::duration<double> timePointDelta = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTimePoint - lastTimePoint);
-
-		deltaTime = timePointDelta.count();
-		time += deltaTime;
-		lastTimePoint = currentTimePoint;
-	}
-};
-std::chrono::time_point<std::chrono::high_resolution_clock> Time::lastTimePoint;
-double Time::time;
-double Time::deltaTime;
-
-struct MouseData
-{
-	glm::ivec2 position = glm::ivec2(0);
-	glm::ivec2 offset = glm::vec2(0);
-};
-
-class Input
-{
-public:
-	static MouseData mouseData;
-	static bool gotMouseData;
-
-	static void Init()
-	{
-		SDL_SetRelativeMouseMode(SDL_TRUE);
-		mouseData.position = glm::ivec2(g_screenWidth / 2, g_screenHeight / 2);
-	}
-
-	static void UpdateMouseData(SDL_Event& e)
-	{
-		mouseData.offset.x = e.motion.xrel;
-		mouseData.offset.y = e.motion.yrel;
-		mouseData.position.x += mouseData.offset.x;
-		mouseData.position.y += mouseData.offset.y;
-		gotMouseData = true;
-	}
-
-	static void Update()
-	{
-		if (!gotMouseData)
-		{
-			mouseData.offset.x = 0;
-			mouseData.offset.y = 0;
-		}
-
-		gotMouseData = false;
-	}
-};
-MouseData Input::mouseData;
-bool Input::gotMouseData;
 
 class Buffer
 {

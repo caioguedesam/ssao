@@ -146,11 +146,21 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dependencies\glad\src\glad.c" />
+    <ClCompile Include="src\file\file_reader.cpp" />
+    <ClCompile Include="src\globals.cpp" />
+    <ClCompile Include="src\input\input.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\time\time.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\default_frag.glsl" />
     <None Include="resources\shaders\default_vert.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\file\file_reader.h" />
+    <ClInclude Include="include\globals.h" />
+    <ClInclude Include="include\input\input.h" />
+    <ClInclude Include="include\time\time.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
