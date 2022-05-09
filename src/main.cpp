@@ -55,6 +55,8 @@ uint32_t g_quadIndices[] =
 	0, 3, 2
 };
 
+uint32_t g_screenWidth = 0, g_screenHeight = 0;
+
 class FileReader
 {
 public:
@@ -124,6 +126,47 @@ public:
 std::chrono::time_point<std::chrono::high_resolution_clock> Time::lastTimePoint;
 double Time::time;
 double Time::deltaTime;
+
+struct MouseData
+{
+	glm::ivec2 position = glm::ivec2(0);
+	glm::ivec2 offset = glm::vec2(0);
+};
+
+class Input
+{
+public:
+	static MouseData mouseData;
+	static bool gotMouseData;
+
+	static void Init()
+	{
+		SDL_SetRelativeMouseMode(SDL_TRUE);
+		mouseData.position = glm::ivec2(g_screenWidth / 2, g_screenHeight / 2);
+	}
+
+	static void UpdateMouseData(SDL_Event& e)
+	{
+		mouseData.offset.x = e.motion.xrel;
+		mouseData.offset.y = e.motion.yrel;
+		mouseData.position.x += mouseData.offset.x;
+		mouseData.position.y += mouseData.offset.y;
+		gotMouseData = true;
+	}
+
+	static void Update()
+	{
+		if (!gotMouseData)
+		{
+			mouseData.offset.x = 0;
+			mouseData.offset.y = 0;
+		}
+
+		gotMouseData = false;
+	}
+};
+MouseData Input::mouseData;
+bool Input::gotMouseData;
 
 class Buffer
 {
@@ -288,7 +331,8 @@ void InitSDL()
 {
 	uint32_t initFlags =
 		SDL_INIT_VIDEO
-		| SDL_INIT_TIMER;
+		| SDL_INIT_TIMER
+		| SDL_INIT_JOYSTICK;
 
 	int result = SDL_Init(initFlags);
 	ASSERT_ZERO(result, "Failed to initialize SDL2.");
@@ -622,12 +666,12 @@ public:
 	{
 		uint32_t appWidth = APP_DEFAULT_WIDTH;
 		uint32_t appHeight = APP_DEFAULT_HEIGHT;
-		uint32_t screenWidth, screenHeight;
-		GetDisplayDimensions(screenWidth, screenHeight);
+		GetDisplayDimensions(g_screenWidth, g_screenHeight);
 
-		renderer.Init(appWidth, appHeight, (screenWidth - appWidth) / 2, (screenHeight - appHeight) / 2, "SSAO",
+		renderer.Init(appWidth, appHeight, (g_screenWidth - appWidth) / 2, (g_screenHeight - appHeight) / 2, "SSAO",
 			0, 0, 3.f, 45.f, static_cast<float>(appWidth) / static_cast<float>(appHeight));
 		Time::Init();
+		Input::Init();
 
 		isRunning = true;
 	}
@@ -707,6 +751,10 @@ public:
 				} break;
 				}
 			}
+			else if (event.type == SDL_MOUSEMOTION)
+			{
+				Input::UpdateMouseData(event);
+			}
 			else if (event.type == SDL_WINDOWEVENT)
 			{
 				if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
@@ -754,7 +802,10 @@ public:
 		{
 			Time::UpdateTime();
 			PollEvents(Time::deltaTime);
+
+			Input::Update();
 			renderer.camera.Update(Time::deltaTime);
+			
 			// TODO: update logic here
 			renderer.Render();
 		}
