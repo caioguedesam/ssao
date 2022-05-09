@@ -19,6 +19,7 @@ void Window::Init(uint32_t width, uint32_t height, uint32_t x, uint32_t y, const
 	width = width;
 	height = height;
 	position = glm::uvec2(x, y);
+	SDL_WarpMouseInWindow(handle, 0, 0);
 }
 
 void Window::OnResize(uint32_t newWidth, uint32_t newHeight)
