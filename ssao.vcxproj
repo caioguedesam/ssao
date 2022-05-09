@@ -146,10 +146,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dependencies\glad\src\glad.c" />
+    <ClCompile Include="src\app.cpp" />
+    <ClCompile Include="src\display\window.cpp" />
     <ClCompile Include="src\file\file_reader.cpp" />
     <ClCompile Include="src\globals.cpp" />
     <ClCompile Include="src\input\input.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\model\mesh.cpp" />
+    <ClCompile Include="src\render\buffer.cpp" />
+    <ClCompile Include="src\render\camera.cpp" />
+    <ClCompile Include="src\render\renderable.cpp" />
+    <ClCompile Include="src\render\renderer.cpp" />
+    <ClCompile Include="src\render\shader.cpp" />
     <ClCompile Include="src\time\time.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -157,9 +165,18 @@
     <None Include="resources\shaders\default_vert.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\app.h" />
+    <ClInclude Include="include\debug\assert.h" />
+    <ClInclude Include="include\display\window.h" />
     <ClInclude Include="include\file\file_reader.h" />
     <ClInclude Include="include\globals.h" />
     <ClInclude Include="include\input\input.h" />
+    <ClInclude Include="include\model\mesh.h" />
+    <ClInclude Include="include\render\buffer.h" />
+    <ClInclude Include="include\render\camera.h" />
+    <ClInclude Include="include\render\renderable.h" />
+    <ClInclude Include="include\render\renderer.h" />
+    <ClInclude Include="include\render\shader.h" />
     <ClInclude Include="include\time\time.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
