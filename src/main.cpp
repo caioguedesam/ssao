@@ -11,6 +11,9 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include <chrono>
 
+#define TINYOBJLOADER_IMPLEMENTATION
+#include "tiny_obj_loader.h"
+
 #if _DEBUG
 #include <cassert>
 #define ASSERT(EXPR, MSG) do {assert(EXPR && MSG);} while(false)
@@ -24,6 +27,8 @@
 #define APP_DEFAULT_HEIGHT 480
 
 #define RESOURCES_PATH "./resources/"
+#define SHADERS_PATH RESOURCES_PATH"shaders/"
+#define MODELS_PATH RESOURCES_PATH"models/"
 
 void GetDisplayDimensions(uint32_t &w, uint32_t &h)
 {
@@ -229,6 +234,55 @@ public:
 		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(uValue));
 	}
 };
+
+class Mesh
+{
+public:
+	static tinyobj::ObjReader meshReader;
+
+	std::vector<float> vertices;
+	// TODO: normals, uvs
+	std::vector<uint32_t> indices;
+
+	void LoadMesh(const char* path)
+	{
+		tinyobj::ObjReaderConfig readConfig;
+		readConfig.triangulate = true;
+
+		meshReader.ParseFromFile(path, readConfig);
+		ASSERT(meshReader.Error().empty(), "Error reading mesh from given path.");
+		
+		auto& shapes = meshReader.GetShapes();
+		auto& attrib = meshReader.GetAttrib();
+
+		uint32_t currentIndex = 0;
+		for (size_t s = 0; s < shapes.size(); s++)
+		{
+			size_t indexOffset = 0;
+			// For every face (faces are always assumed to be tris)
+			for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++)
+			{
+				// For every vertex in face
+				for (size_t v = 0; v < 3; v++)
+				{
+					tinyobj::index_t idx = shapes[s].mesh.indices[indexOffset + v];
+
+					tinyobj::real_t vx = attrib.vertices[3 * size_t(idx.vertex_index) + 0];
+					tinyobj::real_t vy = attrib.vertices[3 * size_t(idx.vertex_index) + 1];
+					tinyobj::real_t vz = attrib.vertices[3 * size_t(idx.vertex_index) + 2];
+					
+					vertices.push_back(vx);
+					vertices.push_back(vy);
+					vertices.push_back(vz);
+
+					indices.push_back(currentIndex++);
+				}
+				indexOffset += 3;
+			}
+		}
+	}
+};
+tinyobj::ObjReader Mesh::meshReader;
 
 void InitSDL()
 {
@@ -671,10 +725,15 @@ public:
 
 	void Run()
 	{
+		Mesh backpackMesh;
+		backpackMesh.LoadMesh(MODELS_PATH"backpack.obj");
+
 		Buffer vb;
-		vb.Init(GL_ARRAY_BUFFER, sizeof(g_quadVertices), sizeof(g_quadVertices) / sizeof(float), g_quadVertices);
+		//vb.Init(GL_ARRAY_BUFFER, sizeof(g_quadVertices), sizeof(g_quadVertices) / sizeof(float), g_quadVertices);
+		vb.Init(GL_ARRAY_BUFFER, sizeof(float) * backpackMesh.vertices.size(), backpackMesh.vertices.size(), backpackMesh.vertices.data());
 		Buffer ib;
-		ib.Init(GL_ELEMENT_ARRAY_BUFFER, sizeof(g_quadIndices), sizeof(g_quadIndices) / sizeof(uint32_t), g_quadIndices);
+		//ib.Init(GL_ELEMENT_ARRAY_BUFFER, sizeof(g_quadIndices), sizeof(g_quadIndices) / sizeof(uint32_t), g_quadIndices);
+		ib.Init(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * backpackMesh.indices.size(), backpackMesh.indices.size(), backpackMesh.indices.data());
 
 		Renderable obj;
 		obj.uModel = glm::mat4(1.f);
@@ -683,8 +742,8 @@ public:
 		
 		char vertSrc[256];
 		char fragSrc[256];
-		FileReader::ReadFile(RESOURCES_PATH"shaders/default_vert.glsl", vertSrc);
-		FileReader::ReadFile(RESOURCES_PATH"shaders/default_frag.glsl", fragSrc);
+		FileReader::ReadFile(SHADERS_PATH"default_vert.glsl", vertSrc);
+		FileReader::ReadFile(SHADERS_PATH"default_frag.glsl", fragSrc);
 
 		objShader.InitAndCompile(vertSrc, fragSrc);
 		obj.SetShader(&objShader);
