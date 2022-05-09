@@ -392,7 +392,7 @@ public:
 	float speed = 10.f;
 	float anglePitch = 0.f;
 	float angleYaw = glm::radians(-90.f);
-	float rotationSpeed = glm::radians(40.f);
+	float rotationSpeed = glm::radians(200.f);
 	float fov = 0.f;
 	float aspectRatio = 0.f;
 
@@ -455,20 +455,22 @@ public:
 
 	void Update(float dt)
 	{
-		if (moveAmounts.x == 0 && moveAmounts.y == 0 
-			&& rotateAmounts.x == 0 && rotateAmounts.y == 0)
+		if (moveAmounts.x != 0 || moveAmounts.y != 0)
 		{
-			return;
+			auto moveFront = (float)moveAmounts.y * front;
+			auto moveSide = (float)moveAmounts.x * right;
+			auto moveDir = glm::normalize(moveFront + moveSide);
+			if (!glm::any(glm::isnan(moveDir)))
+			{
+				Move(moveDir, dt);
+			}
 		}
 
-		auto moveFront = (float)moveAmounts.y * front;
-		auto moveSide = (float)moveAmounts.x * right;
-		auto moveDir = glm::normalize(moveFront + moveSide);
-		if (!glm::any(glm::isnan(moveDir)))
+		MouseData mouseData = Input::mouseData;
+		if (mouseData.offset.x != 0 || mouseData.offset.y != 0)
 		{
-			Move(moveDir, dt);
+			Rotate(-mouseData.offset.y * rotationSpeed, mouseData.offset.x * rotationSpeed, dt);
 		}
-		Rotate(rotateAmounts.x * rotationSpeed, rotateAmounts.y * rotationSpeed, dt);
 	}
 };
 
