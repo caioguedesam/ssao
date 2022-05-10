@@ -19,11 +19,5 @@ void Texture::Init(GLenum bindTarget, uint32_t w, uint32_t h, uint32_t nC, void*
 
 	Bind(bindTarget);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, pData);
-
-	/*sizeInBytes = bufferSize;
-	count = bufferCount;
-	pData = bufferData;
-	Bind(bindTarget);
-	glBufferData(bindTarget, sizeInBytes, pData, GL_STATIC_DRAW);
-	ASSERT(glGetError() == GL_NO_ERROR, "");*/
+	// TODO: Start from here, set other stuff for texture initialization
 }

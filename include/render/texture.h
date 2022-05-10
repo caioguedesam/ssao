@@ -8,7 +8,6 @@ class Texture
 {
 public:
 	uint32_t handle;
-	uint32_t sizeInBytes;
 	uint32_t width;
 	uint32_t height;
 	uint32_t channels;

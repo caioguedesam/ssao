@@ -3,7 +3,7 @@
 #include <SDL.h>
 
 #include "time/time.h"
-#include "model/mesh.h"
+#include "resource/resource_loader.h"
 #include "file/file_reader.h"
 
 void GetDisplayDimensions(uint32_t& w, uint32_t& h)
@@ -126,15 +126,13 @@ void App::PollEvents(double dt)
 
 void App::Run()
 {
-	Mesh backpackMesh;
-	backpackMesh.LoadMesh(MODELS_PATH"backpack.obj");
+	Model backpackModel;
+	ResourceLoader::LoadModel(backpackModel, MODELS_PATH"backpack.obj");
 
 	Buffer vb;
-	//vb.Init(GL_ARRAY_BUFFER, sizeof(g_quadVertices), sizeof(g_quadVertices) / sizeof(float), g_quadVertices);
-	vb.Init(GL_ARRAY_BUFFER, sizeof(float) * backpackMesh.vertices.size(), backpackMesh.vertices.size(), backpackMesh.vertices.data());
+	vb.Init(GL_ARRAY_BUFFER, sizeof(float) * backpackModel.vertices.size(), backpackModel.vertices.size(), backpackModel.vertices.data());
 	Buffer ib;
-	//ib.Init(GL_ELEMENT_ARRAY_BUFFER, sizeof(g_quadIndices), sizeof(g_quadIndices) / sizeof(uint32_t), g_quadIndices);
-	ib.Init(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * backpackMesh.indices.size(), backpackMesh.indices.size(), backpackMesh.indices.data());
+	ib.Init(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * backpackModel.indices.size(), backpackModel.indices.size(), backpackModel.indices.data());
 
 	Renderable obj;
 	obj.uModel = glm::mat4(1.f);

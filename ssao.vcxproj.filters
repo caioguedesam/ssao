@@ -54,13 +54,16 @@
     <ClCompile Include="src\render\shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\model\mesh.cpp">
+    <ClCompile Include="src\model\model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\app.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\render\texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\resource\resource_loader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -106,13 +109,16 @@
     <ClInclude Include="include\render\shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\model\mesh.h">
+    <ClInclude Include="include\model\model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\app.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\render\texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\resource\resource_loader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
