@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <glad/glad.h>
 
+// TODO: Free resource
 class Buffer
 {
 public:
