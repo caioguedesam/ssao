@@ -158,6 +158,7 @@
     <ClCompile Include="src\render\renderable.cpp" />
     <ClCompile Include="src\render\renderer.cpp" />
     <ClCompile Include="src\render\shader.cpp" />
+    <ClCompile Include="src\render\texture.cpp" />
     <ClCompile Include="src\time\time.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -177,6 +178,7 @@
     <ClInclude Include="include\render\renderable.h" />
     <ClInclude Include="include\render\renderer.h" />
     <ClInclude Include="include\render\shader.h" />
+    <ClInclude Include="include\render\texture.h" />
     <ClInclude Include="include\time\time.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
