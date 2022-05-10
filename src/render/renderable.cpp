@@ -21,7 +21,6 @@ void Renderable::SetVertexData(Buffer* vb, Buffer* ib)
 	glEnableVertexAttribArray(0);
 	ASSERT(glGetError() == GL_NO_ERROR, "");
 
-	// TODO: Start from here, textures
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * vertexBuffer->sizeInBytes / vertexBuffer->count, (void*)(3 * sizeof(float)));
 	ASSERT(glGetError() == GL_NO_ERROR, "");
 	glEnableVertexAttribArray(1);
