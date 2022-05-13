@@ -128,6 +128,8 @@ void App::Run()
 {
 	Model backpackModel;
 	ResourceLoader::LoadModel(backpackModel, MODELS_PATH"backpack.obj");
+	Texture backpackDiffuseMap;
+	ResourceLoader::LoadTexture(backpackDiffuseMap, TEXTURES_PATH"backpack_diffuse.jpg");
 
 	Buffer vb;
 	vb.Init(GL_ARRAY_BUFFER, sizeof(float) * backpackModel.vertices.size(), backpackModel.vertices.size(), backpackModel.vertices.data());
@@ -139,13 +141,18 @@ void App::Run()
 	obj.SetVertexData(&vb, &ib);
 	Shader objShader;
 
-	char vertSrc[256];
-	char fragSrc[256];
+	char vertSrc[1024];
+	char fragSrc[1024];
 	FileReader::ReadFile(SHADERS_PATH"default_vert.glsl", vertSrc);
 	FileReader::ReadFile(SHADERS_PATH"default_frag.glsl", fragSrc);
 
 	objShader.InitAndCompile(vertSrc, fragSrc);
-	obj.SetShader(&objShader);
+
+	Material objMat;
+	objMat.Init(&objShader);
+	objMat.AddTextureToSlot(&backpackDiffuseMap, 0);
+
+	obj.SetMaterial(&objMat);
 
 	renderer.AddRenderable(&obj);
 

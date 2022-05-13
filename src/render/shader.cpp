@@ -27,6 +27,7 @@ void Shader::InitAndCompile(const char* vSrc, const char* fSrc)
 		glGetShaderInfoLog(vertexHandle, 512, NULL, infoLog);
 		glGetShaderiv(vertexHandle, GL_COMPILE_STATUS, &success);
 		ASSERT(success, "Error compiling vertex shader.");
+		//printf("%s\n", infoLog);
 	}
 	if (!fragmentSrc || strcmp(fragmentSrc, fSrc) != 0)
 	{

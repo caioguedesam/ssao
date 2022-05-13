@@ -15,7 +15,7 @@ public:
 
 	Texture();
 
-	void Bind(GLenum bindTarget);
+	void Bind(uint32_t texUnit);
 
-	void Init(GLenum bindTarget, uint32_t w, uint32_t h, uint32_t nC, void* bufferData);
+	void Init(uint32_t w, uint32_t h, uint32_t nC, void* bufferData);
 };

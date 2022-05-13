@@ -119,7 +119,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)dependencies\glad\include;$(SolutionDir)dependencies\sdl2\include;$(SolutionDir)include;$(SolutionDir)dependencies\glm;$(SolutionDir)dependencies\tinyobjloader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dependencies\glad\include;$(SolutionDir)dependencies\sdl2\include;$(SolutionDir)include;$(SolutionDir)dependencies\glm;$(SolutionDir)dependencies\tinyobjloader;$(SolutionDir)dependencies\stb_image;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -155,6 +155,7 @@
     <ClCompile Include="src\model\model.cpp" />
     <ClCompile Include="src\render\buffer.cpp" />
     <ClCompile Include="src\render\camera.cpp" />
+    <ClCompile Include="src\render\material.cpp" />
     <ClCompile Include="src\render\renderable.cpp" />
     <ClCompile Include="src\render\renderer.cpp" />
     <ClCompile Include="src\render\shader.cpp" />
@@ -176,6 +177,7 @@
     <ClInclude Include="include\model\model.h" />
     <ClInclude Include="include\render\buffer.h" />
     <ClInclude Include="include\render\camera.h" />
+    <ClInclude Include="include\render\material.h" />
     <ClInclude Include="include\render\renderable.h" />
     <ClInclude Include="include\render\renderer.h" />
     <ClInclude Include="include\render\shader.h" />

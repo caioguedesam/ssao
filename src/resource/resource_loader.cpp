@@ -1,4 +1,5 @@
 #define TINYOBJLOADER_IMPLEMENTATION	// Only define this here.
+#define STB_IMAGE_IMPLEMENTATION		// Only define this here.
 
 #include "resource/resource_loader.h"
 
@@ -38,6 +39,21 @@ void ResourceLoader::LoadModel(Model& targetModel, const char* path)
 				targetModel.vertices.push_back(vy);
 				targetModel.vertices.push_back(vz);
 
+				if (idx.normal_index >= 0)
+				{
+					tinyobj::real_t nx = attrib.vertices[3 * size_t(idx.normal_index) + 0];
+					tinyobj::real_t ny = attrib.vertices[3 * size_t(idx.normal_index) + 1];
+					tinyobj::real_t nz = attrib.vertices[3 * size_t(idx.normal_index) + 2];
+
+					targetModel.vertices.push_back(nx);
+					targetModel.vertices.push_back(ny);
+					targetModel.vertices.push_back(nz);
+				}
+				else
+				{
+					ASSERT(0, "No normals data in obj model");
+				}
+
 				if (idx.texcoord_index >= 0) {
 					tinyobj::real_t tx = attrib.texcoords[2 * size_t(idx.texcoord_index) + 0];
 					tinyobj::real_t ty = attrib.texcoords[2 * size_t(idx.texcoord_index) + 1];
@@ -61,5 +77,6 @@ void ResourceLoader::LoadTexture(Texture& targetTexture, const char* path)
 {
 	int w, h, nC;
 	unsigned char* imgData = stbi_load(path, &w, &h, &nC, 0);
-	targetTexture.Init(GL_TEXTURE_2D, w, h, nC, imgData);
+	targetTexture.Init(w, h, nC, imgData);
+	//stbi_image_free(imgData);
 }
