@@ -64,6 +64,8 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 
 	SetViewport(windowWidth, windowHeight, 0, 0);
 	SetCamera(cameraX, cameraY, cameraZ, cameraFOV, cameraAspect);
+
+	rt.Init(windowWidth, windowHeight);
 }
 
 void Renderer::OnResize(uint32_t newWidth, uint32_t newHeight)

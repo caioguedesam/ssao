@@ -3,8 +3,8 @@
 
 Texture::Texture()
 {
-	glGenTextures(1, &handle);
-	ASSERT(glGetError() == GL_NO_ERROR, "");
+	/*glGenTextures(1, &handle);
+	ASSERT(glGetError() == GL_NO_ERROR, "");*/
 }
 
 void Texture::Bind(uint32_t texUnit)
@@ -16,9 +16,18 @@ void Texture::Bind(uint32_t texUnit)
 	ASSERT(glGetError() == GL_NO_ERROR, "");
 }
 
-void Texture::Init(uint32_t w, uint32_t h, uint32_t nC, void* bufferData)
+void Texture::Init(uint32_t w, uint32_t h, uint32_t nC, void* bufferData, CreationFlags flags)
 {
-	ASSERT(bufferData, "Null texture data");
+	if (!handle)
+	{
+		glGenTextures(1, &handle);
+		ASSERT(glGetError() == GL_NO_ERROR, "");
+	}
+
+	if (!((uint32_t)flags & (uint32_t)CreationFlags::RENDER_TARGET))
+	{
+		ASSERT(bufferData, "Null texture data");
+	}
 	width = w;
 	height = h;
 	channels = nC;

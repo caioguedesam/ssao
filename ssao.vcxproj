@@ -158,6 +158,7 @@
     <ClCompile Include="src\render\material.cpp" />
     <ClCompile Include="src\render\renderable.cpp" />
     <ClCompile Include="src\render\renderer.cpp" />
+    <ClCompile Include="src\render\render_target.cpp" />
     <ClCompile Include="src\render\shader.cpp" />
     <ClCompile Include="src\render\texture.cpp" />
     <ClCompile Include="src\resource\resource_loader.cpp" />
@@ -180,6 +181,7 @@
     <ClInclude Include="include\render\material.h" />
     <ClInclude Include="include\render\renderable.h" />
     <ClInclude Include="include\render\renderer.h" />
+    <ClInclude Include="include\render\render_target.h" />
     <ClInclude Include="include\render\shader.h" />
     <ClInclude Include="include\render\texture.h" />
     <ClInclude Include="include\resource\resource_loader.h" />

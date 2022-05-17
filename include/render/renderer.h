@@ -6,6 +6,7 @@
 #include "display/window.h"
 #include "render/camera.h"
 #include "render/renderable.h"
+#include "render/render_target.h"
 
 class Renderer
 {
@@ -14,6 +15,7 @@ public:
 	SDL_GLContext pGlContextHandle;
 	Camera camera;
 
+	RenderTarget rt;
 	std::vector<Renderable*> renderables;
 
 	~Renderer();
