@@ -78,5 +78,5 @@ void ResourceLoader::LoadTexture(Texture& targetTexture, const char* path)
 	int w, h, nC;
 	unsigned char* imgData = stbi_load(path, &w, &h, &nC, 0);
 	targetTexture.Init(w, h, nC, imgData);
-	//stbi_image_free(imgData);
+	stbi_image_free(imgData);
 }

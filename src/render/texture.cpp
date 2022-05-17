@@ -18,9 +18,11 @@ void Texture::Bind(uint32_t texUnit)
 
 void Texture::Init(uint32_t w, uint32_t h, uint32_t nC, void* bufferData)
 {
+	ASSERT(bufferData, "Null texture data");
 	width = w;
 	height = h;
 	channels = nC;
+	pData = bufferData;
 
 	Bind(0);
 	// TODO: Support multiple texture channels and formats
