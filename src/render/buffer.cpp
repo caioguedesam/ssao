@@ -3,8 +3,7 @@
 
 Buffer::Buffer()
 {
-	glGenBuffers(1, &handle);
-	ASSERT(glGetError() == GL_NO_ERROR, "");
+	
 }
 
 void Buffer::Bind(GLenum bindTarget)
@@ -15,6 +14,12 @@ void Buffer::Bind(GLenum bindTarget)
 
 void Buffer::Init(GLenum bindTarget, uint32_t bufferSize, uint32_t bufferCount, void* bufferData)
 {
+	if (!handle)
+	{
+		glGenBuffers(1, &handle);
+		ASSERT(glGetError() == GL_NO_ERROR, "");
+	}
+
 	sizeInBytes = bufferSize;
 	count = bufferCount;
 	pData = bufferData;

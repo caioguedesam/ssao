@@ -18,6 +18,16 @@ public:
 	RenderTarget rt;
 	std::vector<Renderable*> renderables;
 
+	// Default render resources
+	// Default quad
+	Buffer defaultQuadVertexBuffer;
+	Buffer defaultQuadIndexBuffer;
+
+	// Screen quad
+	Renderable screenQuad;
+	Material screenQuadMaterial;
+	Shader screenQuadShader;
+
 	~Renderer();
 
 	void CreateNewWindow(uint32_t width, uint32_t height, uint32_t x, uint32_t y, const char* title);
@@ -32,6 +42,8 @@ public:
 
 	void Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t windowX, uint32_t windowY, const char* windowTitle,
 		float cameraX, float cameraY, float cameraZ, float cameraFOV, float cameraAspect);
+
+	void Destroy();
 
 	void OnResize(uint32_t newWidth, uint32_t newHeight);
 

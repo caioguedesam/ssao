@@ -1,4 +1,20 @@
 #include "render/renderer.h"
+#include "file/file_reader.h"
+
+std::vector<float> defaultQuadVertices =
+{
+	// position			// normal	// uvs
+	-1.f, -1.f, 0.f,	0.f, 0.f,	0.f, 0.f,
+	-1.f, 1.f, 0.f,		0.f, 0.f,	0.f, 1.f,
+	1.f, 1.f, 0.f,		0.f, 0.f,	1.f, 1.f,
+	1.f, -1.f, 0.f,		0.f, 0.f,	1.f, 0.f,
+};
+
+std::vector<uint32_t> defaultQuadIndices =
+{
+	0, 2, 1,
+	0, 3, 2,
+};
 
 Renderer::~Renderer()
 {
@@ -66,6 +82,29 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	SetCamera(cameraX, cameraY, cameraZ, cameraFOV, cameraAspect);
 
 	rt.Init(windowWidth, windowHeight);
+
+	// Initializing default resources
+	defaultQuadVertexBuffer.Init(GL_ARRAY_BUFFER, sizeof(float) * defaultQuadVertices.size(), defaultQuadVertices.size(), defaultQuadVertices.data());
+	defaultQuadIndexBuffer.Init(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * defaultQuadIndices.size(), defaultQuadIndices.size(), defaultQuadIndices.data());
+
+	char vertSrc[1024];
+	char fragSrc[1024];
+	FileReader::ReadFile(SHADERS_PATH"second_pass_vert.glsl", vertSrc);
+	FileReader::ReadFile(SHADERS_PATH"second_pass_frag.glsl", fragSrc);
+	screenQuadShader.InitAndCompile(vertSrc, fragSrc);
+
+	screenQuadMaterial.Init(&screenQuadShader);
+	screenQuadMaterial.AddTextureToSlot(&rt.texture, 0);
+
+	screenQuad.SetVertexData(&defaultQuadVertexBuffer, &defaultQuadIndexBuffer);
+	screenQuad.SetMaterial(&screenQuadMaterial);
+}
+
+void Renderer::Destroy()
+{
+	//if (screenQuadShader) delete screenQuadShader;
+	//if (screenQuadMaterial) delete screenQuadMaterial;
+	//if (screenQuad) delete screenQuad;
 }
 
 void Renderer::OnResize(uint32_t newWidth, uint32_t newHeight)
@@ -95,6 +134,10 @@ void Renderer::AddRenderable(Renderable* renderable)
 
 void Renderer::Render()
 {
+	// First pass
+	rt.Bind();
+	glEnable(GL_DEPTH_TEST);
+	ASSERT(glGetError() == GL_NO_ERROR, "");
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 	ASSERT(glGetError() == GL_NO_ERROR, "");
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -110,6 +153,19 @@ void Renderer::Render()
 
 		renderable->Draw(params);
 	}
+
+	// TODO: Second pass (with render target)
+	// First bind rt on first pass (OK)
+	// then bind default on second pass (OK)
+	// create default quad renderable w/ default vert/frag (TODO)
+	// then draw quad (OK)
+	rt.Unbind();
+	glDisable(GL_DEPTH_TEST);
+	ASSERT(glGetError() == GL_NO_ERROR, "");
+	glClearColor(1.f, 1.f, 1.f, 1.f);
+	ASSERT(glGetError() == GL_NO_ERROR, "");
+	RenderParams params;
+	screenQuad.Draw(params);
 
 	SDL_GL_SwapWindow(pWindow->handle);
 }

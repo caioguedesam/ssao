@@ -35,7 +35,17 @@ void Texture::Init(uint32_t w, uint32_t h, uint32_t nC, void* bufferData, Creati
 
 	Bind(0);
 	// TODO: Support multiple texture channels and formats
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, pData);
+	GLenum format = GL_RGB;
+	switch (nC)
+	{
+	case 3:
+		format = GL_RGB;
+		break;
+	case 4:
+		format = GL_RGBA;
+		break;
+	}
+	glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, pData);
 	ASSERT(glGetError() == GL_NO_ERROR, "Failed to generate texture image");
 	glGenerateMipmap(GL_TEXTURE_2D);
 	ASSERT(glGetError() == GL_NO_ERROR, "Failed to generate mips for texture");

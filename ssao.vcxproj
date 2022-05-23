@@ -167,6 +167,8 @@
   <ItemGroup>
     <None Include="resources\shaders\default_frag.glsl" />
     <None Include="resources\shaders\default_vert.glsl" />
+    <None Include="resources\shaders\second_pass_frag.glsl" />
+    <None Include="resources\shaders\second_pass_vert.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\app.h" />
