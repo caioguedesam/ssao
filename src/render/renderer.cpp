@@ -3,11 +3,11 @@
 
 std::vector<float> defaultQuadVertices =
 {
-	// position			// normal	// uvs
-	-1.f, -1.f, 0.f,	0.f, 0.f,	0.f, 0.f,
-	-1.f, 1.f, 0.f,		0.f, 0.f,	0.f, 1.f,
-	1.f, 1.f, 0.f,		0.f, 0.f,	1.f, 1.f,
-	1.f, -1.f, 0.f,		0.f, 0.f,	1.f, 0.f,
+	// position			// normal			// uvs
+	-1.f, -1.f, 0.f,	0.f, 0.f, 0.f,		0.f, 0.f,
+	-1.f, 1.f, 0.f,		0.f, 0.f, 0.f,		0.f, 1.f,
+	1.f, 1.f, 0.f,		0.f, 0.f, 0.f,		1.f, 1.f,
+	1.f, -1.f, 0.f,		0.f, 0.f, 0.f,		1.f, 0.f,
 };
 
 std::vector<uint32_t> defaultQuadIndices =
