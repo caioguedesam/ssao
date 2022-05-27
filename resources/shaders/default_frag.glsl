@@ -1,14 +1,18 @@
 #version 330 core
+in vec3 vPos;
+in vec3 vNorm;
 in vec4 vColor;
 in vec2 vTexCoord;
 
-out vec4 outColor;
+layout (location = 0) out vec4 outDiffuse;
+layout (location = 1) out vec3 outPos;
+layout (location = 2) out vec3 outNorm;
 
 uniform sampler2D tex0;
 
 void main()
 {
-	//outColor = 1 - vColor;
-	//outColor = vec4(vTexCoord.x, vTexCoord.y,0,1);
-	outColor = texture(tex0, vTexCoord);
+	outDiffuse = texture(tex0, vTexCoord);
+	outPos = vPos;
+	outNorm = normalize(vNorm);
 }

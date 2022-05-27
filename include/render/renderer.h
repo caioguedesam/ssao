@@ -19,6 +19,11 @@ public:
 	std::vector<Renderable*> renderables;
 
 	// Default render resources
+	// Render target textures
+	Texture rtPositionTexture;
+	Texture rtNormalTexture;
+	Texture rtDiffuseTexture;
+	
 	// Default quad
 	Buffer defaultQuadVertexBuffer;
 	Buffer defaultQuadIndexBuffer;

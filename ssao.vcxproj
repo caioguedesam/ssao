@@ -147,6 +147,7 @@
   <ItemGroup>
     <ClCompile Include="dependencies\glad\src\glad.c" />
     <ClCompile Include="src\app.cpp" />
+    <ClCompile Include="src\debugging\gl.cpp" />
     <ClCompile Include="src\display\window.cpp" />
     <ClCompile Include="src\file\file_reader.cpp" />
     <ClCompile Include="src\globals.cpp" />
@@ -172,6 +173,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\app.h" />
+    <ClInclude Include="include\debugging\gl.h" />
     <ClInclude Include="include\debug\assert.h" />
     <ClInclude Include="include\display\window.h" />
     <ClInclude Include="include\file\file_reader.h" />

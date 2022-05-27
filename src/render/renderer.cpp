@@ -1,5 +1,6 @@
 #include "render/renderer.h"
 #include "file/file_reader.h"
+#include "debugging/gl.h"
 
 std::vector<float> defaultQuadVertices =
 {
@@ -48,8 +49,7 @@ void Renderer::RetrieveAPIFunctionLocations()
 
 void Renderer::SetViewport(uint32_t width, uint32_t height, uint32_t x, uint32_t y)
 {
-	glViewport(x, y, width, height);
-	ASSERT(glGetError() == GL_NO_ERROR, "");
+	GL(glViewport(x, y, width, height));
 }
 
 void Renderer::SetCamera(float x, float y, float z, float fov, float aspect)
@@ -71,21 +71,24 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	CreateNewRenderContext();
 	RetrieveAPIFunctionLocations();
 
-	glEnable(GL_DEPTH_TEST);
-	ASSERT(glGetError() == GL_NO_ERROR, "");
-	glEnable(GL_CULL_FACE);
-	ASSERT(glGetError() == GL_NO_ERROR, "");
-	glFrontFace(GL_CCW);
-	ASSERT(glGetError() == GL_NO_ERROR, "");
+	GL(glEnable(GL_DEPTH_TEST));
+	GL(glEnable(GL_CULL_FACE));
+	GL(glFrontFace(GL_CCW));
 
 	SetViewport(windowWidth, windowHeight, 0, 0);
 	SetCamera(cameraX, cameraY, cameraZ, cameraFOV, cameraAspect);
 
-	rt.Init(windowWidth, windowHeight);
-
 	// Initializing default resources
 	defaultQuadVertexBuffer.Init(GL_ARRAY_BUFFER, sizeof(float) * defaultQuadVertices.size(), defaultQuadVertices.size(), defaultQuadVertices.data());
 	defaultQuadIndexBuffer.Init(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * defaultQuadIndices.size(), defaultQuadIndices.size(), defaultQuadIndices.data());
+
+	// Initializing render target
+	rtDiffuseTexture.Init(windowWidth, windowHeight, 4, nullptr, Texture::CreationFlags::RENDER_TARGET);
+	rtPositionTexture.Init(windowWidth, windowHeight, 3, nullptr, Texture::CreationFlags::RENDER_TARGET);
+	rtNormalTexture.Init(windowWidth, windowHeight, 3, nullptr, Texture::CreationFlags::RENDER_TARGET);
+	rt.Init(windowWidth, windowHeight, &rtDiffuseTexture);
+	rt.AddTextureToSlot(&rtPositionTexture, 1);
+	rt.AddTextureToSlot(&rtNormalTexture, 2);
 
 	char vertSrc[1024];
 	char fragSrc[1024];
@@ -94,7 +97,9 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	screenQuadShader.InitAndCompile(vertSrc, fragSrc);
 
 	screenQuadMaterial.Init(&screenQuadShader);
-	screenQuadMaterial.AddTextureToSlot(&rt.texture, 0);
+	screenQuadMaterial.AddTextureToSlot(&rtDiffuseTexture, 0);
+	screenQuadMaterial.AddTextureToSlot(&rtPositionTexture, 1);
+	screenQuadMaterial.AddTextureToSlot(&rtNormalTexture, 2);
 
 	screenQuad.SetVertexData(&defaultQuadVertexBuffer, &defaultQuadIndexBuffer);
 	screenQuad.SetMaterial(&screenQuadMaterial);
@@ -118,8 +123,8 @@ void Renderer::SetVertexBuffer(Buffer* buffer, uint32_t elementSize, uint32_t el
 	buffer->Bind(GL_ARRAY_BUFFER);
 	// TODO: Currently vertex attributes are hard set.
 	uint32_t offset = firstElementOffset * elementSize;
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * elementSize, (void*)offset);
-	glEnableVertexAttribArray(0);
+	GL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * elementSize, (void*)offset));
+	GL(glEnableVertexAttribArray(0));
 }
 
 void Renderer::SetIndexBuffer(Buffer* buffer, uint32_t elementSize, uint32_t elementStride, uint32_t firstElementOffset)
@@ -136,12 +141,9 @@ void Renderer::Render()
 {
 	// First pass
 	rt.Bind();
-	glEnable(GL_DEPTH_TEST);
-	ASSERT(glGetError() == GL_NO_ERROR, "");
-	glClearColor(0.f, 0.f, 0.f, 1.f);
-	ASSERT(glGetError() == GL_NO_ERROR, "");
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	ASSERT(glGetError() == GL_NO_ERROR, "");
+	GL(glEnable(GL_DEPTH_TEST));
+	GL(glClearColor(0.f, 0.f, 0.f, 1.f));
+	GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
 	for (int i = 0; i < renderables.size(); i++)
 	{
@@ -154,16 +156,10 @@ void Renderer::Render()
 		renderable->Draw(params);
 	}
 
-	// TODO: Second pass (with render target)
-	// First bind rt on first pass (OK)
-	// then bind default on second pass (OK)
-	// create default quad renderable w/ default vert/frag (TODO)
-	// then draw quad (OK)
+	// Second pass
 	rt.Unbind();
-	glDisable(GL_DEPTH_TEST);
-	ASSERT(glGetError() == GL_NO_ERROR, "");
-	glClearColor(1.f, 1.f, 1.f, 1.f);
-	ASSERT(glGetError() == GL_NO_ERROR, "");
+	GL(glDisable(GL_DEPTH_TEST));
+	GL(glClearColor(1.f, 1.f, 1.f, 1.f));
 	RenderParams params;
 	screenQuad.Draw(params);
 

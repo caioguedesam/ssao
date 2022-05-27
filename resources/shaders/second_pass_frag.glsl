@@ -3,9 +3,11 @@ in vec2 vTexCoord;
 
 out vec4 outColor;
 
-uniform sampler2D screenTexture;
+uniform sampler2D texDiffuse;
+uniform sampler2D texPosition;
+uniform sampler2D texNormal;
 
 void main()
 {
-	outColor = texture(screenTexture, vTexCoord);
+	outColor = texture(texNormal, vTexCoord);
 }
