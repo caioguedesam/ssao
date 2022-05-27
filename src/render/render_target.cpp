@@ -24,7 +24,22 @@ void RenderTarget::AddTextureToSlot(Texture* tex, uint32_t slot)
 {
 	Bind();
 	textures[slot] = tex;
+	tex->Bind(slot);
 	GL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + slot, GL_TEXTURE_2D, tex->handle, 0));
+	UpdateDrawTargets();
+}
+
+void RenderTarget::UpdateDrawTargets()
+{
+	std::vector<GLenum> drawTargets;
+	for (int i = 0; i < MAX_TEXTURE_SLOTS; i++)
+	{
+		if (textures[i] != nullptr)
+		{
+			drawTargets.push_back(GL_COLOR_ATTACHMENT0 + i);
+		}
+	}
+	GL(glDrawBuffers(drawTargets.size(), &drawTargets[0]));
 }
 
 void RenderTarget::Init(uint32_t w, uint32_t h, Texture* firstTex)
@@ -38,8 +53,6 @@ void RenderTarget::Init(uint32_t w, uint32_t h, Texture* firstTex)
 	Bind();
 
 	// Create color texture and attach
-	//texture.Init(w, h, 4, nullptr, Texture::CreationFlags::RENDER_TARGET);
-	//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, firstTex->handle, 0);
 	AddTextureToSlot(firstTex, 0);
 
 	// Create depth buffer and attach

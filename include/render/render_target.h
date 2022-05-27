@@ -22,4 +22,5 @@ public:
 
 	void Init(uint32_t w, uint32_t h, Texture* firstTex);
 	void AddTextureToSlot(Texture* tex, uint32_t slot);
+	void UpdateDrawTargets();
 };
