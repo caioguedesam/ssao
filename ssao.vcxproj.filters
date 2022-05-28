@@ -118,9 +118,6 @@
     <ClInclude Include="include\render\buffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\debug\assert.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\render\shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -143,6 +140,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\debugging\gl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\debugging\assert.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
