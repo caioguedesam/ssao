@@ -17,4 +17,5 @@ public:
 	void InitAndCompile(const char* vSrc, const char* fSrc);
 	void Bind();
 	void SetUniform(const char* uName, const glm::mat4& uValue);
+	void SetUniform(const char* uName, const int& uValue);
 };

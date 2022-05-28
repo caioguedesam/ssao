@@ -64,3 +64,10 @@ void Shader::SetUniform(const char* uName, const glm::mat4& uValue)
 	GL(location = glGetUniformLocation(programHandle, uName));	// TODO: Cache this
 	GL(glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(uValue)));
 }
+
+void Shader::SetUniform(const char* uName, const int& uValue)
+{
+	GLint location;
+	GL(location = glGetUniformLocation(programHandle, uName));	// TODO: Cache this
+	GL(glUniform1i(location, uValue));
+}

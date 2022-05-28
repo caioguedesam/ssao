@@ -38,6 +38,10 @@ void Renderable::Draw(const RenderParams& params)
 	material->shader->SetUniform("uModel", params.model);
 	material->shader->SetUniform("uVP", params.proj * params.view);
 	material->shader->SetUniform("uMVP", params.proj * params.view * params.model);
+	// TODO: Change this to a better uniform association system later
+	material->shader->SetUniform("tex0", 0);
+	material->shader->SetUniform("tex1", 1);
+	material->shader->SetUniform("tex2", 2);
 
 	GL(glBindVertexArray(vaoHandle));
 

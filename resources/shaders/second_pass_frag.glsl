@@ -3,11 +3,11 @@ in vec2 vTexCoord;
 
 out vec4 outColor;
 
-uniform sampler2D texDiffuse;
-uniform sampler2D texPosition;
-uniform sampler2D texNormal;
+uniform sampler2D tex0;
+uniform sampler2D tex1;
+uniform sampler2D tex2;
 
 void main()
 {
-	outColor = texture(texNormal, vTexCoord);
+	outColor = texture(tex2, vTexCoord);
 }
