@@ -181,6 +181,7 @@
     <ClInclude Include="include\file\file_reader.h" />
     <ClInclude Include="include\globals.h" />
     <ClInclude Include="include\input\input.h" />
+    <ClInclude Include="include\math\math.h" />
     <ClInclude Include="include\model\model.h" />
     <ClInclude Include="include\random\random.h" />
     <ClInclude Include="include\render\buffer.h" />

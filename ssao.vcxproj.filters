@@ -154,5 +154,8 @@
     <ClInclude Include="include\random\random.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\math\math.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

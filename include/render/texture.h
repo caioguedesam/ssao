@@ -16,10 +16,23 @@ public:
 		RGBA_16FLOAT,
 	};
 
-	enum class CreationFlags
+	//enum class CreationFlags	// TODO: Maybe change this to regular enum (or even delete this)
+	//{
+	//	NONE = 0,
+	//	RENDER_TARGET,
+	//};
+
+	enum Params
 	{
-		NONE = 0,
-		RENDER_TARGET,
+		NONE						= 0,
+		MIN_FILTER_NEAREST			= 1 << 0,
+		MIN_FILTER_LINEAR			= 1 << 1,
+		MAG_FILTER_NEAREST			= 1 << 2,
+		MAG_FILTER_LINEAR			= 1 << 3,
+		WRAP_REPEAT					= 1 << 4,
+		WRAP_MIRRORED_REPEAT		= 1 << 5,
+		WRAP_CLAMP_EDGE				= 1 << 6,
+		WRAP_CLAMP_BORDER			= 1 << 7
 	};
 
 	uint32_t handle;
@@ -32,8 +45,12 @@ public:
 
 	void Bind(uint32_t texUnit);
 
-	void Init(uint32_t w, uint32_t h, Format texFormat, void* bufferData, CreationFlags flags = CreationFlags::NONE);
+	void Init(uint32_t w, uint32_t h, Format texFormat, void* bufferData, Params params = Params::NONE/*, CreationFlags flags = CreationFlags::NONE*/);
 
-	static GLenum TextureToGLInternalFormat(Format texFormat);
-	static void TextureToGLFormatAndType(Format texFormat, GLenum& outFormat, GLenum& outType);
+	static GLenum GLInternalFormat(Format texFormat);
+	static void GLFormatAndType(Format texFormat, GLenum& outFormat, GLenum& outType);
+	static GLenum GLMinFilter(Params params);
+	static GLenum GLMagFilter(Params params);
+	static GLenum GLWrapU(Params params);
+	static GLenum GLWrapV(Params params);
 };

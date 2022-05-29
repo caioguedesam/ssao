@@ -85,9 +85,9 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	defaultQuadIndexBuffer.Init(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * defaultQuadIndices.size(), defaultQuadIndices.size(), defaultQuadIndices.data());
 
 	// Initializing render target
-	rtDiffuseTexture.Init(windowWidth, windowHeight, Texture::Format::RGBA_UNORM, nullptr, Texture::CreationFlags::RENDER_TARGET);
-	rtPositionTexture.Init(windowWidth, windowHeight, Texture::Format::RGBA_16FLOAT, nullptr, Texture::CreationFlags::RENDER_TARGET);
-	rtNormalTexture.Init(windowWidth, windowHeight, Texture::Format::RGBA_16FLOAT, nullptr, Texture::CreationFlags::RENDER_TARGET);
+	rtDiffuseTexture.Init(windowWidth, windowHeight, Texture::Format::RGBA_UNORM, nullptr/*, Texture::CreationFlags::RENDER_TARGET*/);
+	rtPositionTexture.Init(windowWidth, windowHeight, Texture::Format::RGBA_16FLOAT, nullptr, Texture::Params::WRAP_CLAMP_EDGE/*, Texture::CreationFlags::RENDER_TARGET*/);
+	rtNormalTexture.Init(windowWidth, windowHeight, Texture::Format::RGBA_16FLOAT, nullptr/*, Texture::CreationFlags::RENDER_TARGET*/);
 	rt.Init(windowWidth, windowHeight, &rtDiffuseTexture);
 	rt.AddTextureToSlot(&rtPositionTexture, 1);
 	rt.AddTextureToSlot(&rtNormalTexture, 2);
@@ -120,7 +120,7 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 		);
 		ssaoNoise.push_back(noise);
 	}
-	ssaoNoiseTexture.Init(windowWidth, windowHeight, Texture::Format::RGBA_16FLOAT, &ssaoNoise[0]);
+	ssaoNoiseTexture.Init(4, 4, Texture::Format::RGBA_16FLOAT, &ssaoNoise[0]);
 
 	char vertSrc[1024];
 	char fragSrc[1024];

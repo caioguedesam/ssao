@@ -13,17 +13,17 @@ void Texture::Bind(uint32_t texUnit)
 	GL(glBindTexture(GL_TEXTURE_2D, handle));
 }
 
-void Texture::Init(uint32_t w, uint32_t h, Format texFormat, void* bufferData, CreationFlags flags)
+void Texture::Init(uint32_t w, uint32_t h, Format texFormat, void* bufferData, Params params/*, CreationFlags flags*/)
 {
 	if (!handle)
 	{
 		GL(glGenTextures(1, &handle));
 	}
 
-	if (!((uint32_t)flags & (uint32_t)CreationFlags::RENDER_TARGET))
+	/*if (!((uint32_t)flags & (uint32_t)CreationFlags::RENDER_TARGET))
 	{
 		ASSERT(bufferData, "Null texture data");
-	}
+	}*/
 	width = w;
 	height = h;
 	format = texFormat;
@@ -31,21 +31,24 @@ void Texture::Init(uint32_t w, uint32_t h, Format texFormat, void* bufferData, C
 
 	Bind(0);
 	// TODO: Support multiple texture channels and formats
-	GLenum glInternalFormat = TextureToGLInternalFormat(format);
+	GLenum glInternalFormat = GLInternalFormat(format);
 	GLenum glFormat, glType;
-	TextureToGLFormatAndType(format, glFormat, glType);
+	GLFormatAndType(format, glFormat, glType);
 
 	GL(glTexImage2D(GL_TEXTURE_2D, 0, glInternalFormat, width, height, 0, glFormat, glType, pData));
-	GL(glGenerateMipmap(GL_TEXTURE_2D));
+	GL(glGenerateMipmap(GL_TEXTURE_2D));	// TODO_#MIPS: Support proper mip map generation
 
-	// TODO: These texture parameters are hardcoded.
-	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
-	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
-	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
-	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+	GLenum minFilter = GLMinFilter(params);
+	GLenum magFilter = GLMagFilter(params);
+	GLenum wrapU = GLWrapU(params);
+	GLenum wrapV = GLWrapV(params);
+	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapU));
+	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapV));
+	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter));
+	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter));
 }
 
-GLenum Texture::TextureToGLInternalFormat(Format texFormat)
+GLenum Texture::GLInternalFormat(Format texFormat)
 {
 	switch (texFormat)
 	{
@@ -63,7 +66,7 @@ GLenum Texture::TextureToGLInternalFormat(Format texFormat)
 	}
 }
 
-void Texture::TextureToGLFormatAndType(Format texFormat, GLenum& outFormat, GLenum& outType)
+void Texture::GLFormatAndType(Format texFormat, GLenum& outFormat, GLenum& outType)
 {
 	switch (texFormat)
 	{
@@ -88,4 +91,37 @@ void Texture::TextureToGLFormatAndType(Format texFormat, GLenum& outFormat, GLen
 		outFormat = outType = GL_NONE;
 		break;
 	}
+}
+
+GLenum Texture::GLMinFilter(Params params)
+{
+	// TODO_#MIPS: Support mip map filtering options
+	if (params & Params::MIN_FILTER_NEAREST) return GL_NEAREST_MIPMAP_LINEAR;
+	if (params & Params::MIN_FILTER_LINEAR) return GL_LINEAR_MIPMAP_LINEAR;
+	else return GL_NEAREST_MIPMAP_LINEAR;	// default
+}
+
+GLenum Texture::GLMagFilter(Params params)
+{
+	if (params & Params::MAG_FILTER_NEAREST) return GL_NEAREST;
+	if (params & Params::MAG_FILTER_LINEAR) return GL_LINEAR;
+	else return GL_NEAREST;	// default
+}
+
+GLenum Texture::GLWrapU(Params params)
+{
+	if (params & Params::WRAP_REPEAT) return GL_REPEAT;
+	if (params & Params::WRAP_MIRRORED_REPEAT) return GL_MIRRORED_REPEAT;
+	if (params & Params::WRAP_CLAMP_EDGE) return GL_CLAMP_TO_EDGE;
+	if (params & Params::WRAP_CLAMP_BORDER) return GL_CLAMP_TO_BORDER;
+	else return GL_REPEAT;	// default
+}
+
+GLenum Texture::GLWrapV(Params params)
+{
+	if (params & Params::WRAP_REPEAT) return GL_REPEAT;
+	if (params & Params::WRAP_MIRRORED_REPEAT) return GL_MIRRORED_REPEAT;
+	if (params & Params::WRAP_CLAMP_EDGE) return GL_CLAMP_TO_EDGE;
+	if (params & Params::WRAP_CLAMP_BORDER) return GL_CLAMP_TO_BORDER;
+	else return GL_REPEAT;	// default
 }

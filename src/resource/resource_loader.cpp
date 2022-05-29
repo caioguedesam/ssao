@@ -92,6 +92,6 @@ void ResourceLoader::LoadTexture(Texture& targetTexture, const char* path)
 		imgFormat = Texture::Format::RGBA_UNORM;
 		break;
 	}
-	targetTexture.Init(w, h, imgFormat, imgData, Texture::CreationFlags::NONE);
+	targetTexture.Init(w, h, imgFormat, imgData);
 	stbi_image_free(imgData);
 }
