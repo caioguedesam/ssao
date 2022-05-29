@@ -1,6 +1,8 @@
 #include "render/renderer.h"
 #include "file/file_reader.h"
 #include "debugging/gl.h"
+#include "random/random.h"
+#include "math/math.h"
 
 std::vector<float> defaultQuadVertices =
 {
@@ -89,6 +91,36 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	rt.Init(windowWidth, windowHeight, &rtDiffuseTexture);
 	rt.AddTextureToSlot(&rtPositionTexture, 1);
 	rt.AddTextureToSlot(&rtNormalTexture, 2);
+
+	// Initializing post-processing resources
+	for (int i = 0; i < 64; i++)	// 64 points for kernel
+	{
+		glm::vec3 sample(
+			Random::UniformDistribution(-1.f, 1.f),
+			Random::UniformDistribution(-1.f, 1.f),
+			Random::UniformDistribution(0.f, 1.f)
+		);
+		sample = glm::normalize(sample);
+		sample *= Random::UniformDistribution();
+		// Push sample towards center
+		float scale = (float)i / 64.f;
+		scale = Math::Lerp(0.1f, 1.f, scale * scale);
+		sample *= scale;
+
+		ssaoKernel.push_back(sample);
+	}
+
+	std::vector<glm::vec3> ssaoNoise;
+	for (int i = 0; i < 16; i++)
+	{
+		glm::vec3 noise(
+			Random::UniformDistribution(-1.f, 1.f),
+			Random::UniformDistribution(-1.f, 1.f),
+			0.f
+		);
+		ssaoNoise.push_back(noise);
+	}
+	ssaoNoiseTexture.Init(windowWidth, windowHeight, Texture::Format::RGBA_16FLOAT, &ssaoNoise[0]);
 
 	char vertSrc[1024];
 	char fragSrc[1024];

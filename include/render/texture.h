@@ -32,7 +32,7 @@ public:
 
 	void Bind(uint32_t texUnit);
 
-	void Init(uint32_t w, uint32_t h, Format texFormat, void* bufferData, CreationFlags flags);
+	void Init(uint32_t w, uint32_t h, Format texFormat, void* bufferData, CreationFlags flags = CreationFlags::NONE);
 
 	static GLenum TextureToGLInternalFormat(Format texFormat);
 	static void TextureToGLFormatAndType(Format texFormat, GLenum& outFormat, GLenum& outType);

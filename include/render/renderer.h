@@ -23,6 +23,10 @@ public:
 	Texture rtPositionTexture;
 	Texture rtNormalTexture;
 	Texture rtDiffuseTexture;
+
+	// Post-processing (SSAO)
+	std::vector<glm::vec3> ssaoKernel;	// Random points distributed between a unit hemisphere (biased towards center)
+	Texture ssaoNoiseTexture;			// Random rotation texture to introduce randomness when using SSAO kernel
 	
 	// Default quad
 	Buffer defaultQuadVertexBuffer;
