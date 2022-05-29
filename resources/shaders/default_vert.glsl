@@ -9,14 +9,18 @@ out vec4 vColor;
 out vec2 vTexCoord;
 
 uniform mat4 uModel;
+uniform mat4 uMV;
 uniform mat4 uVP;
 uniform mat4 uMVP;
 
 void main()
 {
 	gl_Position = uMVP * vec4(aPos.x, aPos.y, aPos.z, 1.0);
-	vPos = gl_Position.xyz;
+	//vPos = gl_Position.xyz;
+	vPos = (uModel * vec4(aPos.xyz, 1.0)).xyz;	// Position in world space
+	
 	vNorm = aNorm;
+	
 	vColor = vec4(aPos.xyz, 1.0);
 	vTexCoord = aUV;
 }

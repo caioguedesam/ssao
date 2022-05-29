@@ -36,6 +36,7 @@ void Renderable::Draw(const RenderParams& params)
 {
 	material->Bind();
 	material->shader->SetUniform("uModel", params.model);
+	material->shader->SetUniform("uMV", params.view * params.model);
 	material->shader->SetUniform("uVP", params.proj * params.view);
 	material->shader->SetUniform("uMVP", params.proj * params.view * params.model);
 	// TODO: Change this to a better uniform association system later

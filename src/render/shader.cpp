@@ -27,7 +27,7 @@ void Shader::InitAndCompile(const char* vSrc, const char* fSrc)
 		char infoLog[512];
 		GL(glGetShaderInfoLog(vertexHandle, 512, NULL, infoLog));
 		GL(glGetShaderiv(vertexHandle, GL_COMPILE_STATUS, &success));
-		ASSERT(success, "Error compiling vertex shader.");
+		ASSERT_FORMAT(success, "Error compiling vertex shader: %s.", infoLog);
 	}
 	if (!fragmentSrc || strcmp(fragmentSrc, fSrc) != 0)
 	{
@@ -42,7 +42,7 @@ void Shader::InitAndCompile(const char* vSrc, const char* fSrc)
 		char infoLog[512];
 		GL(glGetShaderInfoLog(fragmentHandle, 512, NULL, infoLog));
 		GL(glGetShaderiv(fragmentHandle, GL_COMPILE_STATUS, &success));
-		ASSERT(success, "Error compiling fragment shader.");
+		ASSERT_FORMAT(success, "Error compiling fragment shader: %s.", infoLog);
 	}
 	GL(glAttachShader(programHandle, vertexHandle));
 	GL(glAttachShader(programHandle, fragmentHandle));

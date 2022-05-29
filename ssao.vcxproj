@@ -175,6 +175,7 @@
     <ClInclude Include="include\app.h" />
     <ClInclude Include="include\debugging\assert.h" />
     <ClInclude Include="include\debugging\gl.h" />
+    <ClInclude Include="include\debugging\log.h" />
     <ClInclude Include="include\display\window.h" />
     <ClInclude Include="include\file\file_reader.h" />
     <ClInclude Include="include\globals.h" />

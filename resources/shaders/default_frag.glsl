@@ -15,5 +15,8 @@ void main()
 {
 	outDiffuse = texture(tex0, vTexCoord);
 	outPos = vPos;
-	outNorm = normalize(texture(tex1, vTexCoord).xyz);
+	// TODO: Figure out normal mapping and tangent space
+	//outNorm = texture(tex1, vTexCoord).xyz;
+	//outNorm = normalize(outNorm * 2.0 - 1.0);
+	outNorm = vNorm;
 }

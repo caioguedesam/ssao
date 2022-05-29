@@ -76,7 +76,22 @@ void ResourceLoader::LoadModel(Model& targetModel, const char* path)
 void ResourceLoader::LoadTexture(Texture& targetTexture, const char* path)
 {
 	int w, h, nC;
+	// TODO: Currently this only loads textures with 8-bit components per pixel. Add support later for other formats
+	// such as 16-bit floats.
 	unsigned char* imgData = stbi_load(path, &w, &h, &nC, 0);
-	targetTexture.Init(w, h, nC, imgData, Texture::CreationFlags::NONE);
+	Texture::Format imgFormat;
+	switch (nC)
+	{
+	case 3:
+		imgFormat = Texture::Format::RGB_UNORM;
+		break;
+	case 4:
+		imgFormat = Texture::Format::RGBA_UNORM;
+		break;
+	default:
+		imgFormat = Texture::Format::RGBA_UNORM;
+		break;
+	}
+	targetTexture.Init(w, h, imgFormat, imgData, Texture::CreationFlags::NONE);
 	stbi_image_free(imgData);
 }

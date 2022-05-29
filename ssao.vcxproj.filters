@@ -145,5 +145,8 @@
     <ClInclude Include="include\debugging\assert.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\debugging\log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

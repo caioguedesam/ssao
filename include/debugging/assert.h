@@ -6,8 +6,9 @@
 #define ASSERT_ZERO(EXPR, MSG) do {assert(!EXPR && MSG);} while(false)
 
 #define ASSERT_FORMAT(EXPR, MSG, ...) do {\
-		if(EXPR) {\
+		if(!EXPR) {\
 			printf(MSG, __VA_ARGS__);\
+			printf("\n");\
 			assert(0);\
 		}\
 	} while(false)

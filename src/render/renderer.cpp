@@ -83,9 +83,9 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	defaultQuadIndexBuffer.Init(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * defaultQuadIndices.size(), defaultQuadIndices.size(), defaultQuadIndices.data());
 
 	// Initializing render target
-	rtDiffuseTexture.Init(windowWidth, windowHeight, 4, nullptr, Texture::CreationFlags::RENDER_TARGET);
-	rtPositionTexture.Init(windowWidth, windowHeight, 3, nullptr, Texture::CreationFlags::RENDER_TARGET);
-	rtNormalTexture.Init(windowWidth, windowHeight, 3, nullptr, Texture::CreationFlags::RENDER_TARGET);
+	rtDiffuseTexture.Init(windowWidth, windowHeight, Texture::Format::RGBA_UNORM, nullptr, Texture::CreationFlags::RENDER_TARGET);
+	rtPositionTexture.Init(windowWidth, windowHeight, Texture::Format::RGBA_16FLOAT, nullptr, Texture::CreationFlags::RENDER_TARGET);
+	rtNormalTexture.Init(windowWidth, windowHeight, Texture::Format::RGBA_16FLOAT, nullptr, Texture::CreationFlags::RENDER_TARGET);
 	rt.Init(windowWidth, windowHeight, &rtDiffuseTexture);
 	rt.AddTextureToSlot(&rtPositionTexture, 1);
 	rt.AddTextureToSlot(&rtNormalTexture, 2);
