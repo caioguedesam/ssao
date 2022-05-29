@@ -120,6 +120,7 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 		);
 		ssaoNoise.push_back(noise);
 	}
+	// TODO_#SSAO: Upload this texture and kernel to rest of pipeline
 	ssaoNoiseTexture.Init(4, 4, Texture::Format::RGBA_16FLOAT, &ssaoNoise[0]);
 
 	char vertSrc[1024];
