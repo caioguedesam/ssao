@@ -41,9 +41,9 @@ void ResourceLoader::LoadModel(Model& targetModel, const char* path)
 
 				if (idx.normal_index >= 0)
 				{
-					tinyobj::real_t nx = attrib.vertices[3 * size_t(idx.normal_index) + 0];
-					tinyobj::real_t ny = attrib.vertices[3 * size_t(idx.normal_index) + 1];
-					tinyobj::real_t nz = attrib.vertices[3 * size_t(idx.normal_index) + 2];
+					tinyobj::real_t nx = attrib.normals[3 * size_t(idx.normal_index) + 0];
+					tinyobj::real_t ny = attrib.normals[3 * size_t(idx.normal_index) + 1];
+					tinyobj::real_t nz = attrib.normals[3 * size_t(idx.normal_index) + 2];
 
 					targetModel.vertices.push_back(nx);
 					targetModel.vertices.push_back(ny);
