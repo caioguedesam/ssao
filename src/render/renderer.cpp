@@ -84,15 +84,15 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	defaultQuadVertexBuffer.Init(GL_ARRAY_BUFFER, sizeof(float) * defaultQuadVertices.size(), defaultQuadVertices.size(), defaultQuadVertices.data());
 	defaultQuadIndexBuffer.Init(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * defaultQuadIndices.size(), defaultQuadIndices.size(), defaultQuadIndices.data());
 
-	// Initializing render target
-	rtDiffuseTexture.Init(windowWidth, windowHeight, Texture::Format::RGBA_UNORM, nullptr/*, Texture::CreationFlags::RENDER_TARGET*/);
-	rtPositionTexture.Init(windowWidth, windowHeight, Texture::Format::RGBA_16FLOAT, nullptr, Texture::Params::WRAP_CLAMP_EDGE/*, Texture::CreationFlags::RENDER_TARGET*/);
-	rtNormalTexture.Init(windowWidth, windowHeight, Texture::Format::RGBA_16FLOAT, nullptr/*, Texture::CreationFlags::RENDER_TARGET*/);
-	rt.Init(windowWidth, windowHeight, &rtDiffuseTexture);
-	rt.AddTextureToSlot(&rtPositionTexture, 1);
-	rt.AddTextureToSlot(&rtNormalTexture, 2);
+	// Initializing geometry render target
+	gDiffuseTexture.Init(windowWidth, windowHeight, Texture::Format::RGBA_UNORM, nullptr/*, Texture::CreationFlags::RENDER_TARGET*/);
+	gPositionTexture.Init(windowWidth, windowHeight, Texture::Format::RGBA_16FLOAT, nullptr, Texture::Params::WRAP_CLAMP_EDGE/*, Texture::CreationFlags::RENDER_TARGET*/);
+	gNormalTexture.Init(windowWidth, windowHeight, Texture::Format::RGBA_16FLOAT, nullptr/*, Texture::CreationFlags::RENDER_TARGET*/);
+	RT_Geometry.Init(windowWidth, windowHeight, &gDiffuseTexture);
+	RT_Geometry.AddTextureToSlot(&gPositionTexture, 1);
+	RT_Geometry.AddTextureToSlot(&gNormalTexture, 2);
 
-	// Initializing post-processing resources
+	// Initializing post-processing resources and render target
 	for (int i = 0; i < 64; i++)	// 64 points for kernel
 	{
 		glm::vec3 sample(
@@ -122,6 +122,8 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	}
 	// TODO_#SSAO: Upload this texture and kernel to rest of pipeline
 	ssaoNoiseTexture.Init(4, 4, Texture::Format::RGBA_16FLOAT, &ssaoNoise[0]);
+	RT_SSAO.Init(windowWidth, windowHeight, &gPositionTexture);
+	// TODO_#SSAO: add other textures, continue from here
 
 	char vertSrc[1024];
 	char fragSrc[1024];

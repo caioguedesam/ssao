@@ -15,16 +15,18 @@ public:
 	SDL_GLContext pGlContextHandle;
 	Camera camera;
 
-	RenderTarget rt;
+	//RenderTarget rt;
+	RenderTarget RT_Geometry;		// Bind: position, normal, diffuse textures
 	std::vector<Renderable*> renderables;
 
 	// Default render resources
 	// Render target textures
-	Texture rtPositionTexture;
-	Texture rtNormalTexture;
-	Texture rtDiffuseTexture;
+	Texture gPositionTexture;
+	Texture gNormalTexture;
+	Texture gDiffuseTexture;
 
 	// Post-processing (SSAO)
+	RenderTarget RT_SSAO;			// Bind: ssao texture
 	std::vector<glm::vec3> ssaoKernel;	// Random points distributed between a unit hemisphere (biased towards center)
 	Texture ssaoNoiseTexture;			// Random rotation texture to introduce randomness when using SSAO kernel
 	
