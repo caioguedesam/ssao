@@ -43,6 +43,7 @@ void Renderable::Draw(const RenderParams& params)
 	material->shader->SetUniform("tex0", 0);
 	material->shader->SetUniform("tex1", 1);
 	material->shader->SetUniform("tex2", 2);
+	material->shader->SetUniform("tex3", 3);
 
 	GL(glBindVertexArray(vaoHandle));
 

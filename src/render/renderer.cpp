@@ -123,7 +123,8 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	// TODO_#SSAO: Upload this texture and kernel to rest of pipeline
 	ssaoNoiseTexture.Init(4, 4, Texture::Format::RGBA_16FLOAT, &ssaoNoise[0]);
 	RT_SSAO.Init(windowWidth, windowHeight, &gPositionTexture);
-	// TODO_#SSAO: add other textures, continue from here
+	RT_SSAO.AddTextureToSlot(&gNormalTexture, 1);
+	RT_SSAO.AddTextureToSlot(&ssaoNoiseTexture, 2);
 
 	char vertSrc[1024];
 	char fragSrc[1024];
@@ -132,9 +133,16 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	screenQuadShader.InitAndCompile(vertSrc, fragSrc);
 
 	screenQuadMaterial.Init(&screenQuadShader);
-	screenQuadMaterial.AddTextureToSlot(&rtDiffuseTexture, 0);
-	screenQuadMaterial.AddTextureToSlot(&rtPositionTexture, 1);
-	screenQuadMaterial.AddTextureToSlot(&rtNormalTexture, 2);
+	screenQuadMaterial.AddTextureToSlot(&gDiffuseTexture, 0);
+	screenQuadMaterial.AddTextureToSlot(&gPositionTexture, 1);
+	screenQuadMaterial.AddTextureToSlot(&gNormalTexture, 2);
+	screenQuadMaterial.AddTextureToSlot(&ssaoNoiseTexture, 3);
+	char ssaoKernelName[16] = "samples[0]";
+	for (int i = 0; i < 64; i++)
+	{
+		ssaoKernelName[8] = i + '0';
+		screenQuadMaterial.shader->SetUniform(ssaoKernelName, ssaoKernel[i]);
+	}
 
 	screenQuad.SetVertexData(&defaultQuadVertexBuffer, &defaultQuadIndexBuffer);
 	screenQuad.SetMaterial(&screenQuadMaterial);

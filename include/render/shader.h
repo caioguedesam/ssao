@@ -18,4 +18,5 @@ public:
 	void Bind();
 	void SetUniform(const char* uName, const glm::mat4& uValue);
 	void SetUniform(const char* uName, const int& uValue);
+	void SetUniform(const char* uName, const glm::vec3& uValue);
 };

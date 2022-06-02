@@ -71,3 +71,10 @@ void Shader::SetUniform(const char* uName, const int& uValue)
 	GL(location = glGetUniformLocation(programHandle, uName));	// TODO: Cache this
 	GL(glUniform1i(location, uValue));
 }
+
+void Shader::SetUniform(const char* uName, const glm::vec3& uValue)
+{
+	GLint location;
+	GL(location = glGetUniformLocation(programHandle, uName));	// TODO: Cache this
+	GL(glUniform3fv(location, 1, glm::value_ptr(uValue)));
+}
