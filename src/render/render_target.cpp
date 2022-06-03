@@ -20,7 +20,7 @@ void RenderTarget::Unbind()
 	GL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 }
 
-void RenderTarget::AddTextureToSlot(Texture* tex, uint32_t slot)
+void RenderTarget::SetOutputTexture(Texture* tex, uint32_t slot)
 {
 	Bind();
 	textures[slot] = tex;
@@ -53,7 +53,7 @@ void RenderTarget::Init(uint32_t w, uint32_t h, Texture* firstTex)
 	Bind();
 
 	// Create color texture and attach
-	AddTextureToSlot(firstTex, 0);
+	SetOutputTexture(firstTex, 0);
 
 	// Create depth buffer and attach
 	GL(glGenRenderbuffers(1, &depthBuffer));

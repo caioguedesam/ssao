@@ -143,10 +143,10 @@ void App::Run()
 	obj.SetVertexData(&vb, &ib);
 	Shader objShader;
 
-	char vertSrc[2048];
-	char fragSrc[2048];
-	FileReader::ReadFile(SHADERS_PATH"default_vert.glsl", vertSrc);
-	FileReader::ReadFile(SHADERS_PATH"default_frag.glsl", fragSrc);
+	char vertSrc[4096];
+	char fragSrc[4096];
+	FileReader::ReadFile(SHADERS_PATH"default_vs.glsl", vertSrc);
+	FileReader::ReadFile(SHADERS_PATH"default_ps.glsl", fragSrc);
 
 	objShader.InitAndCompile(vertSrc, fragSrc);
 

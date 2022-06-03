@@ -15,29 +15,33 @@ public:
 	SDL_GLContext pGlContextHandle;
 	Camera camera;
 
-	//RenderTarget rt;
-	RenderTarget RT_Geometry;		// Bind: position, normal, diffuse textures
 	std::vector<Renderable*> renderables;
 
 	// Default render resources
-	// Render target textures
+	Buffer defaultQuadVertexBuffer;
+	Buffer defaultQuadIndexBuffer;
+	Renderable screenQuad;
+
+	// G-Buffer Pass
+	RenderTarget RT_Geometry;		// Bind: position, normal, diffuse textures
+
 	Texture gPositionTexture;
 	Texture gNormalTexture;
 	Texture gDiffuseTexture;
 
-	// Post-processing (SSAO)
-	RenderTarget RT_SSAO;			// Bind: ssao texture
+	// Post-processing pass (SSAO)
+	RenderTarget RT_SSAO;				// Bind: ssao texture
+
 	std::vector<glm::vec3> ssaoKernel;	// Random points distributed between a unit hemisphere (biased towards center)
 	Texture ssaoNoiseTexture;			// Random rotation texture to introduce randomness when using SSAO kernel
-	
-	// Default quad
-	Buffer defaultQuadVertexBuffer;
-	Buffer defaultQuadIndexBuffer;
 
-	// Screen quad
-	Renderable screenQuad;
-	Material screenQuadMaterial;
-	Shader screenQuadShader;
+	Texture ssaoResultTexture;
+	Material ssaoMaterial;
+	Shader ssaoShader;
+
+	// Final pass (uses default screen quad)
+	Material finalPassMaterial;
+	Shader finalPassShader;
 
 	~Renderer();
 
@@ -50,6 +54,8 @@ public:
 	void SetViewport(uint32_t width, uint32_t height, uint32_t x, uint32_t y);
 
 	void SetCamera(float x, float y, float z, float fov, float aspect);
+
+	void InitPostProcessResources(uint32_t windowWidth, uint32_t windowHeight);
 
 	void Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t windowX, uint32_t windowY, const char* windowTitle,
 		float cameraX, float cameraY, float cameraZ, float cameraFOV, float cameraAspect);

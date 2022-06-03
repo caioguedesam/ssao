@@ -52,6 +52,8 @@ GLenum Texture::GLInternalFormat(Format texFormat)
 {
 	switch (texFormat)
 	{
+	case Texture::Format::R_16UNORM:
+		return GL_R16;
 	case Texture::Format::R_16FLOAT:
 		return GL_R16F;
 	case Texture::Format::RGB_UNORM:
@@ -70,6 +72,10 @@ void Texture::GLFormatAndType(Format texFormat, GLenum& outFormat, GLenum& outTy
 {
 	switch (texFormat)
 	{
+	case Texture::Format::R_16UNORM:
+		outFormat = GL_RED;
+		outType = GL_UNSIGNED_BYTE;
+		break;
 	case Texture::Format::R_16FLOAT:
 		outFormat = GL_RED;
 		outType = GL_FLOAT;

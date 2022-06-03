@@ -10,6 +10,7 @@ public:
 	enum class Format
 	{
 		INVALID = 0,
+		R_16UNORM,
 		R_16FLOAT,
 		RGB_UNORM,
 		RGBA_UNORM,
