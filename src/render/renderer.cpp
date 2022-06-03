@@ -142,6 +142,7 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	ssaoMaterial.AddTextureToSlot(&gPositionTexture, 0);
 	ssaoMaterial.AddTextureToSlot(&gNormalTexture, 1);
 	ssaoMaterial.AddTextureToSlot(&ssaoNoiseTexture, 2);
+	ssaoMaterial.shader->Bind();
 	char ssaoKernelName[16] = "samples[0]";
 	for (int i = 0; i < 64; i++)
 	{
