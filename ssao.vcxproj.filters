@@ -92,6 +92,21 @@
     <None Include="resources\shaders\second_pass_vert.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
+    <None Include="resources\shaders\default_vs.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\default_ps.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\screen_quad_vs.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\ssao_ps.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\final_pass_ps.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\time\time.h">
