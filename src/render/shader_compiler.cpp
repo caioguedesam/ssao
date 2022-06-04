@@ -76,6 +76,14 @@ void ShaderCompiler::CompileAndLinkShader(Shader* outShader, const char* VS_path
 	outShader->VS_path = VS_path;
 	outShader->PS_path = PS_path;
 
+	struct _stat statBuffer;
+	uint64_t VS_timestamp = 0, PS_timestamp = 0;
+	int ret = _stat(outShader->VS_path, &statBuffer);
+	VS_timestamp = statBuffer.st_mtime;
+	ret = _stat(outShader->PS_path, &statBuffer);
+	PS_timestamp = statBuffer.st_mtime;
+	outShader->timestamp = max(VS_timestamp, PS_timestamp);
+
 	shaderSet.insert(outShader);
 }
 
