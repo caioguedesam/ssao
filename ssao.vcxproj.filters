@@ -78,6 +78,9 @@
     <ClCompile Include="src\random\random.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\render\shader_compiler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\shaders\default_vert.glsl">
@@ -107,6 +110,7 @@
     <None Include="resources\shaders\final_pass_ps.glsl">
       <Filter>Resource Files\Shaders</Filter>
     </None>
+    <None Include=".gitignore" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\time\time.h">
@@ -170,6 +174,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\math\math.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\render\shader_compiler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\core\hash.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

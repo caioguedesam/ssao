@@ -5,6 +5,7 @@
 #include "time/time.h"
 #include "resource/resource_loader.h"
 #include "file/file_reader.h"
+#include "render/shader_compiler.h"
 
 void GetDisplayDimensions(uint32_t& w, uint32_t& h)
 {
@@ -148,7 +149,7 @@ void App::Run()
 	FileReader::ReadFile(SHADERS_PATH"default_vs.glsl", vertSrc);
 	FileReader::ReadFile(SHADERS_PATH"default_ps.glsl", fragSrc);
 
-	objShader.InitAndCompile(vertSrc, fragSrc);
+	ShaderCompiler::CompileAndLinkShader(&objShader, vertSrc, fragSrc);
 
 	Material objMat;
 	objMat.Init(&objShader);

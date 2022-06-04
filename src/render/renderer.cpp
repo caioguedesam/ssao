@@ -3,6 +3,7 @@
 #include "debugging/gl.h"
 #include "random/random.h"
 #include "math/math.h"
+#include "render/shader_compiler.h"
 
 std::vector<float> defaultQuadVertices =
 {
@@ -136,7 +137,7 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 
 	char ssaoShader_PS_Src[4096];
 	FileReader::ReadFile(SHADERS_PATH"ssao_ps.glsl", ssaoShader_PS_Src);
-	ssaoShader.InitAndCompile(screenQuad_VS_Src, ssaoShader_PS_Src);
+	ShaderCompiler::CompileAndLinkShader(&ssaoShader, screenQuad_VS_Src, ssaoShader_PS_Src);
 
 	ssaoMaterial.Init(&ssaoShader);
 	ssaoMaterial.AddTextureToSlot(&gPositionTexture, 0);
@@ -153,7 +154,7 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	// Initializing final pass resources
 	char finalPass_PS_Src[1024];
 	FileReader::ReadFile(SHADERS_PATH"final_pass_ps.glsl", finalPass_PS_Src);
-	finalPassShader.InitAndCompile(screenQuad_VS_Src, finalPass_PS_Src);
+	ShaderCompiler::CompileAndLinkShader(&finalPassShader, screenQuad_VS_Src, finalPass_PS_Src);
 
 	finalPassMaterial.Init(&finalPassShader);
 	finalPassMaterial.AddTextureToSlot(&gDiffuseTexture, 0);

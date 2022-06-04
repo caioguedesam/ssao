@@ -163,11 +163,13 @@
     <ClCompile Include="src\render\renderer.cpp" />
     <ClCompile Include="src\render\render_target.cpp" />
     <ClCompile Include="src\render\shader.cpp" />
+    <ClCompile Include="src\render\shader_compiler.cpp" />
     <ClCompile Include="src\render\texture.cpp" />
     <ClCompile Include="src\resource\resource_loader.cpp" />
     <ClCompile Include="src\time\time.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".gitignore" />
     <None Include="resources\shaders\default_frag.glsl" />
     <None Include="resources\shaders\default_ps.glsl" />
     <None Include="resources\shaders\default_vert.glsl" />
@@ -180,6 +182,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\app.h" />
+    <ClInclude Include="include\core\hash.h" />
     <ClInclude Include="include\debugging\assert.h" />
     <ClInclude Include="include\debugging\gl.h" />
     <ClInclude Include="include\debugging\log.h" />
@@ -197,6 +200,7 @@
     <ClInclude Include="include\render\renderer.h" />
     <ClInclude Include="include\render\render_target.h" />
     <ClInclude Include="include\render\shader.h" />
+    <ClInclude Include="include\render\shader_compiler.h" />
     <ClInclude Include="include\render\texture.h" />
     <ClInclude Include="include\resource\resource_loader.h" />
     <ClInclude Include="include\time\time.h" />
