@@ -1,4 +1,6 @@
 #include "render/texture.h"
+
+#include <glad/glad.h>
 #include "debugging/assert.h"
 #include "debugging/gl.h"
 

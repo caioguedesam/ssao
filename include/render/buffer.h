@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
-#include <glad/glad.h>
+
+typedef unsigned int GLenum;
 
 // TODO: Free resource
 class Buffer

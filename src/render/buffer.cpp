@@ -1,5 +1,5 @@
 #include "render/buffer.h"
-#include "debugging/assert.h"
+#include <glad/glad.h>
 #include "debugging/gl.h"
 
 Buffer::Buffer()

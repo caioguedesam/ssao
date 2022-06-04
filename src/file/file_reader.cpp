@@ -1,4 +1,5 @@
 #include "file/file_reader.h"
+#include <stdio.h>
 
 FileReader::Result FileReader::ReadFile(const char* path, char* buffer)
 {

@@ -1,8 +1,5 @@
 #pragma once
 
-#include <stdio.h>
-#include <glad/glad.h>
-
 #ifdef _DEBUG
 void GLCheckError(const char* statement, const char* fname, int line);
 

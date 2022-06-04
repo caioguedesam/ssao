@@ -1,4 +1,5 @@
 #include "render/renderable.h"
+#include <glad/glad.h>
 #include "debugging/gl.h"
 
 void Renderable::SetVertexData(Buffer* vb, Buffer* ib)
