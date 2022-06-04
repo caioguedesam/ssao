@@ -1,11 +1,25 @@
 #include  "render/shader_compiler.h"
+
+#include <sys/stat.h>
+
 #include "render/shader.h"
 #include "glad/glad.h"
 #include "debugging/gl.h"
 #include "debugging/assert.h"
-#include "core/hash.h"
+#include "file/file_reader.h"
+#include "globals.h"
 
-std::vector<Shader*> ShaderCompiler::shaderList;
+#if _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#endif
+
+#define SHADER_SOURCE_MAX_SIZE 4096
+
+//std::unordered_map<uint32_t, std::set<Shader*>> ShaderCompiler::shadersWithFile;
+std::set<Shader*> ShaderCompiler::shaderSet;
 
 void ShaderCompiler::CompileShader(ShaderType type, const char* src, uint32_t& outHandle)
 {
@@ -42,27 +56,65 @@ void ShaderCompiler::LinkShader(uint32_t VS_handle, uint32_t PS_handle, uint32_t
 	if (!ret)
 	{
 		char infoLog[2048];
-		GL(glGetShaderInfoLog(outHandle, 2048, NULL, infoLog));
+		GL(glGetProgramInfoLog(outHandle, 2048, NULL, infoLog));
 		ASSERT_FORMAT(ret, "Error linking shader program: %s",
 			infoLog);
 	}
 }
 
-void ShaderCompiler::CompileAndLinkShader(Shader* outShader, const char* VS_src, const char* PS_src)
+void ShaderCompiler::CompileAndLinkShader(Shader* outShader, const char* VS_path, const char* PS_path)
 {
+	char VS_src[SHADER_SOURCE_MAX_SIZE];
+	char PS_src[SHADER_SOURCE_MAX_SIZE];
+
+	FileReader::ReadFile(VS_path, VS_src);
+	FileReader::ReadFile(PS_path, PS_src);
+
 	CompileShader(ShaderType::VERTEX, VS_src, outShader->VS_handle);
 	CompileShader(ShaderType::PIXEL, PS_src, outShader->PS_handle);
-	outShader->VS_srcHash = HashString(VS_src);
-	outShader->PS_srcHash = HashString(PS_src);
 	LinkShader(outShader->VS_handle, outShader->PS_handle, outShader->handle);
+	outShader->VS_path = VS_path;
+	outShader->PS_path = PS_path;
+
+	shaderSet.insert(outShader);
 }
 
-void ShaderCompiler::CheckForDirtyShaderFiles()
+std::set<Shader*> ShaderCompiler::CheckForDirtyShaderFiles()
 {
+	std::set<Shader*> result;
+	struct _stat statBuffer;
+	int ret;
+	for (auto& shader : shaderSet)
+	{
+		ret = _stat(shader->VS_path, &statBuffer);
+		ASSERT_ZERO(ret, "Error checking vertex shader at path %s for reloading: %d", shader->VS_path, ret);
+		if (statBuffer.st_mtime > shader->timestamp)
+		{
+			shader->timestamp = statBuffer.st_mtime;
+			result.insert(shader);
+			continue;
+		}
+		ret = _stat(shader->PS_path, &statBuffer);
+		ASSERT_ZERO(ret, "Error checking pixel shader at path %s for reloading: %d", shader->PS_path, ret);
+		if (statBuffer.st_mtime > shader->timestamp)
+		{
+			shader->timestamp = statBuffer.st_mtime;
+			result.insert(shader);
+		}
+	}
 
+	return result;
 }
 
 void ShaderCompiler::ReloadDirtyShaders()
 {
-
+	std::set<Shader*> dirtyShaders = CheckForDirtyShaderFiles();
+	if (dirtyShaders.size())
+	{
+		Sleep(100);
+	}
+	for (auto& shader : dirtyShaders)
+	{
+		CompileAndLinkShader(shader, shader->VS_path, shader->PS_path);
+	}
 }

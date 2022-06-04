@@ -1,5 +1,4 @@
 #include "render/renderer.h"
-#include "file/file_reader.h"
 #include "debugging/gl.h"
 #include "random/random.h"
 #include "math/math.h"
@@ -132,12 +131,9 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	InitPostProcessResources(windowWidth, windowHeight);
 	RT_SSAO.Init(windowWidth, windowHeight, &ssaoResultTexture);
 
-	char screenQuad_VS_Src[4096];
-	FileReader::ReadFile(SHADERS_PATH"screen_quad_vs.glsl", screenQuad_VS_Src);
-
-	char ssaoShader_PS_Src[4096];
-	FileReader::ReadFile(SHADERS_PATH"ssao_ps.glsl", ssaoShader_PS_Src);
-	ShaderCompiler::CompileAndLinkShader(&ssaoShader, screenQuad_VS_Src, ssaoShader_PS_Src);
+	ShaderCompiler::CompileAndLinkShader(&ssaoShader, 
+		SHADERS_PATH"screen_quad_vs.glsl",
+		SHADERS_PATH"ssao_ps.glsl");
 
 	ssaoMaterial.Init(&ssaoShader);
 	ssaoMaterial.AddTextureToSlot(&gPositionTexture, 0);
@@ -152,9 +148,9 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	}
 
 	// Initializing final pass resources
-	char finalPass_PS_Src[1024];
-	FileReader::ReadFile(SHADERS_PATH"final_pass_ps.glsl", finalPass_PS_Src);
-	ShaderCompiler::CompileAndLinkShader(&finalPassShader, screenQuad_VS_Src, finalPass_PS_Src);
+	ShaderCompiler::CompileAndLinkShader(&finalPassShader, 
+		SHADERS_PATH"screen_quad_vs.glsl",
+		SHADERS_PATH"final_pass_ps.glsl");
 
 	finalPassMaterial.Init(&finalPassShader);
 	finalPassMaterial.AddTextureToSlot(&gDiffuseTexture, 0);
@@ -190,6 +186,8 @@ void Renderer::AddRenderable(Renderable* renderable)
 
 void Renderer::Render()
 {
+	ShaderCompiler::ReloadDirtyShaders();	// TODO_#SHADER_HOTRELOAD: Move this to its own thread.
+
 	// G-Buffer pass
 	RT_Geometry.Bind();
 	GL(glEnable(GL_DEPTH_TEST));

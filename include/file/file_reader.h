@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 
 class FileReader
 {
@@ -7,8 +8,10 @@ public:
 	{
 		OK = 0,
 		FAIL_OPEN,
-		FAIL_READ
+		FAIL_READ,
+		FAIL_CLOSE
 	};
 
 	static Result ReadFile(const char* path, char* buffer);
+	static std::vector<char*> GetFileNamesFromPath(const char* path);
 };

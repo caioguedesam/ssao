@@ -4,7 +4,6 @@
 
 #include "time/time.h"
 #include "resource/resource_loader.h"
-#include "file/file_reader.h"
 #include "render/shader_compiler.h"
 
 void GetDisplayDimensions(uint32_t& w, uint32_t& h)
@@ -144,12 +143,9 @@ void App::Run()
 	obj.SetVertexData(&vb, &ib);
 	Shader objShader;
 
-	char vertSrc[4096];
-	char fragSrc[4096];
-	FileReader::ReadFile(SHADERS_PATH"default_vs.glsl", vertSrc);
-	FileReader::ReadFile(SHADERS_PATH"default_ps.glsl", fragSrc);
-
-	ShaderCompiler::CompileAndLinkShader(&objShader, vertSrc, fragSrc);
+	ShaderCompiler::CompileAndLinkShader(&objShader, 
+		SHADERS_PATH"default_vs.glsl",
+		SHADERS_PATH"default_ps.glsl");
 
 	Material objMat;
 	objMat.Init(&objShader);
