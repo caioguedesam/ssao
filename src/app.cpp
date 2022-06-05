@@ -132,8 +132,10 @@ void App::DisplayGUI()
 	GUI::BeginFrame();
 	{
 		// Test GUI code
-		GUI::BeginWindow("Test window", 200, 100, 0, 0);
-		GUI::Text("This is a test text.");
+		GUI::BeginWindow("Debug", 200, 100, 0, 0);
+		char fps_str[64];
+		sprintf(fps_str, "FPS = %lf", Time::fps);
+		GUI::Text(fps_str);
 		GUI::EndWindow();
 	}
 	GUI::EndFrame();

@@ -10,6 +10,9 @@ public:
 	static double time;
 	static double deltaTime;
 
+	static uint64_t frameCount;
+	static double fps;
+
 	static void Init();
 	static void UpdateTime();
 };
