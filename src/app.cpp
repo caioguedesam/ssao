@@ -6,6 +6,7 @@
 #include "time/time.h"
 #include "resource/resource_loader.h"
 #include "render/shader_compiler.h"
+#include "gui/gui.h"
 
 void GetDisplayDimensions(uint32_t& w, uint32_t& h)
 {
@@ -26,6 +27,7 @@ void App::Init()
 		0, 0, 3.f, 45.f, static_cast<float>(appWidth) / static_cast<float>(appHeight));
 	Time::Init();
 	Input::Init();
+	GUI::Init(&renderer);
 
 	isRunning = true;
 }
@@ -125,6 +127,18 @@ void App::PollEvents(double dt)
 	}
 }
 
+void App::DisplayGUI()
+{
+	GUI::BeginFrame();
+	{
+		// Test GUI code
+		GUI::BeginWindow("Test window", 200, 100, 0, 0);
+		GUI::Text("This is a test text.");
+		GUI::EndWindow();
+	}
+	GUI::EndFrame();
+}
+
 void App::Run()
 {
 	Model backpackModel;
@@ -167,5 +181,9 @@ void App::Run()
 
 		// TODO: update logic here
 		renderer.Render();
+
+		DisplayGUI();
+
+		renderer.Flush();
 	}
 }

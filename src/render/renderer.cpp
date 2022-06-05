@@ -219,7 +219,10 @@ void Renderer::Render()
 	// Final pass
 	screenQuad.SetMaterial(&finalPassMaterial);
 	screenQuad.Draw(params);
+}
 
+void Renderer::Flush()
+{
 	// Swap buffers
 	SDL_GL_SwapWindow(pWindow->handle);
 }

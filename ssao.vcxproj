@@ -119,7 +119,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)dependencies\glad\include;$(SolutionDir)dependencies\sdl2\include;$(SolutionDir)include;$(SolutionDir)dependencies\glm;$(SolutionDir)dependencies\tinyobjloader;$(SolutionDir)dependencies\stb_image;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)dependencies\glad\include;$(SolutionDir)dependencies\sdl2\include;$(SolutionDir)include;$(SolutionDir)dependencies\glm;$(SolutionDir)dependencies\tinyobjloader;$(SolutionDir)dependencies\stb_image;$(SolutionDir)dependencies\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
@@ -150,11 +150,36 @@
     <ClCompile Include="dependencies\glad\src\glad.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="dependencies\imgui\backends\imgui_impl_opengl3.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="dependencies\imgui\backends\imgui_impl_sdl.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="dependencies\imgui\backends\imgui_impl_sdlrenderer.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="dependencies\imgui\imgui.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="dependencies\imgui\imgui_demo.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="dependencies\imgui\imgui_draw.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="dependencies\imgui\imgui_tables.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="dependencies\imgui\imgui_widgets.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="src\app.cpp" />
     <ClCompile Include="src\debugging\gl.cpp" />
     <ClCompile Include="src\display\window.cpp" />
     <ClCompile Include="src\file\file_reader.cpp" />
     <ClCompile Include="src\globals.cpp" />
+    <ClCompile Include="src\gui\gui.cpp" />
     <ClCompile Include="src\input\input.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\model\model.cpp" />
@@ -187,6 +212,16 @@
     <None Include="resources\shaders\ssao_ps.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="dependencies\imgui\backends\imgui_impl_opengl3.h" />
+    <ClInclude Include="dependencies\imgui\backends\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="dependencies\imgui\backends\imgui_impl_sdl.h" />
+    <ClInclude Include="dependencies\imgui\backends\imgui_impl_sdlrenderer.h" />
+    <ClInclude Include="dependencies\imgui\imconfig.h" />
+    <ClInclude Include="dependencies\imgui\imgui.h" />
+    <ClInclude Include="dependencies\imgui\imgui_internal.h" />
+    <ClInclude Include="dependencies\imgui\imstb_rectpack.h" />
+    <ClInclude Include="dependencies\imgui\imstb_textedit.h" />
+    <ClInclude Include="dependencies\imgui\imstb_truetype.h" />
     <ClInclude Include="include\app.h" />
     <ClInclude Include="include\core\hash.h" />
     <ClInclude Include="include\debugging\assert.h" />
@@ -195,6 +230,7 @@
     <ClInclude Include="include\display\window.h" />
     <ClInclude Include="include\file\file_reader.h" />
     <ClInclude Include="include\globals.h" />
+    <ClInclude Include="include\gui\gui.h" />
     <ClInclude Include="include\input\input.h" />
     <ClInclude Include="include\math\math.h" />
     <ClInclude Include="include\model\model.h" />

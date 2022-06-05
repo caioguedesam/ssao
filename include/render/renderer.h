@@ -71,4 +71,6 @@ public:
 	void AddRenderable(Renderable* renderable);
 
 	void Render();
+
+	void Flush();
 };
