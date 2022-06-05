@@ -1,15 +1,5 @@
+#include "stdafx.h"
 #include "file/file_reader.h"
-#include <stdio.h>
-#include <cerrno>
-
-// TODO_#MULTIPLATFORM: Some file access code is windows-only. Add versions to other platforms.
-#if _WIN32
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <windows.h>
-#include <fileapi.h>
-#endif
 
 FileReader::Result FileReader::ReadFile(const char* path, char* buffer)
 {

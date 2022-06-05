@@ -1,5 +1,5 @@
 #pragma once
-#include <stdint.h>
+#include "stdafx.h"
 #include <intrin.h>
 
 namespace Random

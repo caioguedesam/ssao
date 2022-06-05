@@ -1,4 +1,6 @@
+#include "stdafx.h"
 #include "render/camera.h"
+#include <glm/gtc/matrix_transform.hpp>
 
 void Camera::SetPosition(float x, float y, float z)
 {

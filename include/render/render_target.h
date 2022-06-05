@@ -1,7 +1,6 @@
 #pragma once
 
-#include <stdint.h>
-#include <vector>
+#include "stdafx.h"
 #include <glad/glad.h>
 
 #include "render/texture.h"

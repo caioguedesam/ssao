@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "render/shader.h"
 
 #include <glad/glad.h>

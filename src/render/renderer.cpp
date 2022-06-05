@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "render/renderer.h"
 #include "debugging/gl.h"
 #include "random/random.h"

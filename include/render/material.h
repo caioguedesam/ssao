@@ -1,8 +1,8 @@
 #pragma once
+#include "stdafx.h"
 
 #include "render/shader.h"
 #include "render/texture.h"
-#include <vector>
 
 class Material
 {

@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "time/time.h"
 
 std::chrono::time_point<std::chrono::high_resolution_clock> Time::lastTimePoint;

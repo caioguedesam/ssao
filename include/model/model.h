@@ -1,8 +1,6 @@
 #pragma once
 
-#include <vector>
-
-#include "debugging/assert.h"
+#include "stdafx.h"
 
 class Model
 {

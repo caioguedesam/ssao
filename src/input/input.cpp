@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "input/input.h"
 
 MouseData Input::mouseData;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <set>
-#include <stdint.h>
+#include "stdafx.h"
 
 class Shader;
 

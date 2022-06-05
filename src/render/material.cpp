@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "render/material.h"
 
 #define MAX_TEXTURE_SLOTS 16	// Change this in the future if needed

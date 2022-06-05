@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include  "render/shader_compiler.h"
 
 #include <sys/stat.h>
@@ -5,16 +6,8 @@
 #include "render/shader.h"
 #include "glad/glad.h"
 #include "debugging/gl.h"
-#include "debugging/assert.h"
 #include "file/file_reader.h"
 #include "globals.h"
-
-#if _WIN32
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <windows.h>
-#endif
 
 #define SHADER_SOURCE_MAX_SIZE 4096
 

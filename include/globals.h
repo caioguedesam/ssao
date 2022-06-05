@@ -1,5 +1,5 @@
 #pragma once
-#include <stdint.h>
+#include "stdafx.h"
 
 #define APP_DEFAULT_WIDTH 640
 #define APP_DEFAULT_HEIGHT 480

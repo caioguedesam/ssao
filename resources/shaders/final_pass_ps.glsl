@@ -9,7 +9,7 @@ uniform sampler2D tex1;	// SSAO result texture
 void main()
 {
 	vec4 diffuseColor = texture(tex0, vTexCoord);
-	
+	diffuseColor = vec4(1,1,1,1);
 	float ssaoColor = texture(tex1, vTexCoord).r;
 	outColor = diffuseColor - vec4(ssaoColor, ssaoColor, ssaoColor, 0.f);
 }

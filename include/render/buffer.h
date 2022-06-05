@@ -1,5 +1,5 @@
 #pragma once
-#include <stdint.h>
+#include "stdafx.h"
 
 typedef unsigned int GLenum;
 

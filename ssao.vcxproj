@@ -121,6 +121,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)dependencies\glad\include;$(SolutionDir)dependencies\sdl2\include;$(SolutionDir)include;$(SolutionDir)dependencies\glm;$(SolutionDir)dependencies\tinyobjloader;$(SolutionDir)dependencies\stb_image;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -146,7 +147,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="dependencies\glad\src\glad.c" />
+    <ClCompile Include="dependencies\glad\src\glad.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="src\app.cpp" />
     <ClCompile Include="src\debugging\gl.cpp" />
     <ClCompile Include="src\display\window.cpp" />
@@ -166,6 +169,9 @@
     <ClCompile Include="src\render\shader_compiler.cpp" />
     <ClCompile Include="src\render\texture.cpp" />
     <ClCompile Include="src\resource\resource_loader.cpp" />
+    <ClCompile Include="src\stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="src\time\time.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -203,6 +209,7 @@
     <ClInclude Include="include\render\shader_compiler.h" />
     <ClInclude Include="include\render\texture.h" />
     <ClInclude Include="include\resource\resource_loader.h" />
+    <ClInclude Include="include\stdafx.h" />
     <ClInclude Include="include\time\time.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

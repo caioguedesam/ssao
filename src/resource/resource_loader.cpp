@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #define TINYOBJLOADER_IMPLEMENTATION	// Only define this here.
 #define STB_IMAGE_IMPLEMENTATION		// Only define this here.
 

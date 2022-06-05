@@ -1,7 +1,6 @@
+#include "stdafx.h"
 #include "render/render_target.h"
-#include "debugging/assert.h"
 #include "debugging/gl.h"
-#include <iostream>
 
 #define MAX_TEXTURE_SLOTS 16	// Change this in the future if needed
 

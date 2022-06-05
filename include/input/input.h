@@ -1,5 +1,5 @@
 #pragma once
-#include <glm/glm.hpp>
+#include "stdafx.h"
 #include <SDL.h>
 
 #include "globals.h"

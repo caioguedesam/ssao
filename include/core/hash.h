@@ -1,5 +1,5 @@
 #pragma once
-#include <stdint.h>
+#include "stdafx.h"
 
 // Bob Jenkins' One-at-a-Time hash
 // https://stackoverflow.com/questions/114085/fast-string-hashing-algorithm-with-low-collision-rates-with-32-bit-integer

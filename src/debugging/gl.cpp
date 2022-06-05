@@ -1,7 +1,7 @@
 #include "debugging/gl.h"
+#include "stdafx.h"
 
 #include <glad/glad.h>
-#include <stdio.h>
 
 void GLCheckError(const char* statement, const char* fname, int line)
 {

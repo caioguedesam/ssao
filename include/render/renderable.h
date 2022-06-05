@@ -1,9 +1,8 @@
 #pragma once
-#include <glm/glm.hpp>
+#include "stdafx.h"
 
 #include "render/buffer.h"
 #include "render/material.h"
-#include "debugging/assert.h"
 
 struct RenderParams
 {

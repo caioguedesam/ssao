@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "app.h"
 
 #include <SDL.h>
