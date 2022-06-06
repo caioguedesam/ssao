@@ -11,9 +11,11 @@ layout (location = 2) out vec3 outNorm;			// Normals
 uniform sampler2D tex0;	// Diffuse color map
 uniform sampler2D tex1;	// Normal map (TODO_#NORMAL_MAP: Support normal mapping with tangent space transformation)
 
+uniform mat4 uView;
+
 void main()
 {
 	outDiffuse = texture(tex0, vTexCoord);
-	outPos = vPos;
-	outNorm = vNorm;
+	outPos = (uView * vec4(vPos, 1)).xyz;		// G-Buffer textures are stored in view space (for SSAO pass).
+	outNorm =(uView * vec4(vNorm, 1)).xyz;
 }

@@ -38,6 +38,8 @@ void Renderable::Draw(const RenderParams& params)
 {
 	material->Bind();
 	material->shader->SetUniform("uModel", params.model);
+	material->shader->SetUniform("uView", params.view);
+	material->shader->SetUniform("uProj", params.proj);
 	material->shader->SetUniform("uMV", params.view * params.model);
 	material->shader->SetUniform("uVP", params.proj * params.view);
 	material->shader->SetUniform("uMVP", params.proj * params.view * params.model);

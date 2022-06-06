@@ -12,4 +12,5 @@ void main()
 	diffuseColor = vec4(1,1,1,1);
 	float ssaoColor = texture(tex1, vTexCoord).r;
 	outColor = diffuseColor - vec4(ssaoColor, ssaoColor, ssaoColor, 0.f);
+	outColor = texture(tex0, vTexCoord);
 }
