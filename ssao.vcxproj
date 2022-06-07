@@ -201,14 +201,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
-    <None Include="resources\shaders\default_frag.glsl" />
     <None Include="resources\shaders\default_ps.glsl" />
-    <None Include="resources\shaders\default_vert.glsl" />
     <None Include="resources\shaders\default_vs.glsl" />
     <None Include="resources\shaders\final_pass_ps.glsl" />
     <None Include="resources\shaders\screen_quad_vs.glsl" />
-    <None Include="resources\shaders\second_pass_frag.glsl" />
-    <None Include="resources\shaders\second_pass_vert.glsl" />
     <None Include="resources\shaders\ssao_ps.glsl" />
   </ItemGroup>
   <ItemGroup>

@@ -141,10 +141,11 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	ssaoMaterial.AddTextureToSlot(&gNormalTexture, 1);
 	ssaoMaterial.AddTextureToSlot(&ssaoNoiseTexture, 2);
 	ssaoMaterial.shader->Bind();
-	char ssaoKernelName[16] = "samples[0]";
+	//char ssaoKernelName[16] = "samples[0]";
+	char ssaoKernelName[16];
 	for (int i = 0; i < 64; i++)
 	{
-		ssaoKernelName[8] = i + '0';
+		sprintf(ssaoKernelName, "samples[%d]", i);
 		ssaoMaterial.shader->SetUniform(ssaoKernelName, ssaoKernel[i]);
 	}
 
@@ -195,13 +196,13 @@ void Renderer::Render()
 	GL(glClearColor(0.f, 0.f, 0.f, 1.f));
 	GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
+	RenderParams params;
+	params.view = camera.GetViewMatrix();
+	params.proj = camera.GetProjectionMatrix();
 	for (int i = 0; i < renderables.size(); i++)
 	{
 		Renderable* renderable = renderables[i];
-		RenderParams params;
 		params.model = renderable->uModel;
-		params.view = camera.GetViewMatrix();
-		params.proj = camera.GetProjectionMatrix();
 
 		renderable->Draw(params);
 	}
@@ -211,7 +212,7 @@ void Renderer::Render()
 	RT_SSAO.Bind();
 	GL(glDisable(GL_DEPTH_TEST));
 	GL(glClearColor(1.f, 1.f, 1.f, 1.f));
-	RenderParams params;
+	params.model = glm::mat4(1.f);
 	screenQuad.SetMaterial(&ssaoMaterial);
 	screenQuad.Draw(params);
 	RT_SSAO.Unbind();
