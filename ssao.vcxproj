@@ -201,11 +201,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
-    <None Include="resources\shaders\default_ps.glsl" />
-    <None Include="resources\shaders\default_vs.glsl" />
-    <None Include="resources\shaders\final_pass_ps.glsl" />
-    <None Include="resources\shaders\screen_quad_vs.glsl" />
-    <None Include="resources\shaders\ssao_ps.glsl" />
+    <None Include="resources\shaders\default_ps.frag" />
+    <None Include="resources\shaders\default_vs.vert" />
+    <None Include="resources\shaders\final_pass_ps.frag" />
+    <None Include="resources\shaders\screen_quad_vs.vert" />
+    <None Include="resources\shaders\ssao_blur_ps.frag" />
+    <None Include="resources\shaders\ssao_ps.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dependencies\imgui\backends\imgui_impl_opengl3.h" />

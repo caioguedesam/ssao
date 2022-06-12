@@ -54,16 +54,16 @@ GLenum Texture::GLInternalFormat(Format texFormat)
 {
 	switch (texFormat)
 	{
-	case Texture::Format::R_16UNORM:
-		return GL_R16;
-	case Texture::Format::R_16FLOAT:
-		return GL_R16F;
-	case Texture::Format::RGB_UNORM:
+	case Texture::Format::R8_FLOAT:
+		return GL_RED;
+	case Texture::Format::R8_G8_B8_UNORM:
 		return GL_RGB;
-	case Texture::Format::RGBA_UNORM:
+	case Texture::Format::R8_G8_B8_A8_UNORM:
 		return GL_RGBA;
-	case Texture::Format::RGBA_16FLOAT:
-		return GL_RGB16F;
+	case Texture::Format::R16_G16_B16_A16_FLOAT:
+		return GL_RGBA16F;
+	case Texture::Format::R32_G32_B32_FLOAT:
+		return GL_RGBA32F;
 	default:
 		ASSERT_FORMAT(0, "No corresponding OpenGL internal format for texture format %d", static_cast<int>(texFormat));
 		return GL_NONE;
@@ -74,24 +74,24 @@ void Texture::GLFormatAndType(Format texFormat, GLenum& outFormat, GLenum& outTy
 {
 	switch (texFormat)
 	{
-	case Texture::Format::R_16UNORM:
-		outFormat = GL_RED;
-		outType = GL_UNSIGNED_BYTE;
-		break;
-	case Texture::Format::R_16FLOAT:
+	case Texture::Format::R8_FLOAT:
 		outFormat = GL_RED;
 		outType = GL_FLOAT;
 		break;
-	case Format::RGB_UNORM:
+	case Format::R8_G8_B8_UNORM:
 		outFormat = GL_RGB;
 		outType = GL_UNSIGNED_BYTE;
 		break;
-	case Format::RGBA_UNORM:
+	case Format::R8_G8_B8_A8_UNORM:
 		outFormat = GL_RGBA;
 		outType = GL_UNSIGNED_BYTE;
 		break;
-	case Format::RGBA_16FLOAT:
+	case Format::R16_G16_B16_A16_FLOAT:
 		outFormat = GL_RGBA;
+		outType = GL_FLOAT;
+		break;
+	case Texture::Format::R32_G32_B32_FLOAT:
+		outFormat = GL_RGB;
 		outType = GL_FLOAT;
 		break;
 	default:
@@ -104,9 +104,9 @@ void Texture::GLFormatAndType(Format texFormat, GLenum& outFormat, GLenum& outTy
 GLenum Texture::GLMinFilter(Params params)
 {
 	// TODO_#MIPS: Support mip map filtering options
-	if (params & Params::MIN_FILTER_NEAREST) return GL_NEAREST_MIPMAP_LINEAR;
-	if (params & Params::MIN_FILTER_LINEAR) return GL_LINEAR_MIPMAP_LINEAR;
-	else return GL_NEAREST_MIPMAP_LINEAR;	// default
+	if (params & Params::MIN_FILTER_NEAREST) return GL_NEAREST;
+	if (params & Params::MIN_FILTER_LINEAR) return GL_LINEAR;
+	else return GL_NEAREST;	// default
 }
 
 GLenum Texture::GLMagFilter(Params params)

@@ -23,21 +23,25 @@ public:
 	Renderable screenQuad;
 
 	// G-Buffer Pass
-	RenderTarget RT_Geometry;		// Bind: position, normal, diffuse textures
+	RenderTarget RT_Geometry;
 
 	Texture gPositionTexture;
 	Texture gNormalTexture;
 	Texture gDiffuseTexture;
 
 	// Post-processing pass (SSAO)
-	RenderTarget RT_SSAO;				// Bind: ssao texture
+	RenderTarget RT_SSAO;
+	RenderTarget RT_Blur;
 
 	std::vector<glm::vec3> ssaoKernel;	// Random points distributed between a unit hemisphere (biased towards center)
 	Texture ssaoNoiseTexture;			// Random rotation texture to introduce randomness when using SSAO kernel
 
 	Texture ssaoResultTexture;
+	Texture ssaoBlurTexture;
 	Material ssaoMaterial;
+	Material ssaoBlurMaterial;
 	Shader ssaoShader;
+	Shader ssaoBlurShader;
 
 	// Final pass (uses default screen quad)
 	Material finalPassMaterial;

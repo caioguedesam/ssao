@@ -116,22 +116,25 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="resources\shaders\default_vs.glsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
-    <None Include="resources\shaders\default_ps.glsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
-    <None Include="resources\shaders\screen_quad_vs.glsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
-    <None Include="resources\shaders\ssao_ps.glsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
-    <None Include="resources\shaders\final_pass_ps.glsl">
-      <Filter>Resource Files\Shaders</Filter>
-    </None>
     <None Include=".gitignore" />
+    <None Include="resources\shaders\default_ps.frag">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\default_vs.vert">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\final_pass_ps.frag">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\screen_quad_vs.vert">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\ssao_blur_ps.frag">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="resources\shaders\ssao_ps.frag">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\time\time.h">

@@ -84,13 +84,13 @@ void ResourceLoader::LoadTexture(Texture& targetTexture, const char* path)
 	switch (nC)
 	{
 	case 3:
-		imgFormat = Texture::Format::RGB_UNORM;
+		imgFormat = Texture::Format::R8_G8_B8_UNORM;
 		break;
 	case 4:
-		imgFormat = Texture::Format::RGBA_UNORM;
+		imgFormat = Texture::Format::R8_G8_B8_A8_UNORM;
 		break;
 	default:
-		imgFormat = Texture::Format::RGBA_UNORM;
+		imgFormat = Texture::Format::R8_G8_B8_A8_UNORM;
 		break;
 	}
 	targetTexture.Init(w, h, imgFormat, imgData);

@@ -73,7 +73,7 @@ void Renderer::InitPostProcessResources(uint32_t windowWidth, uint32_t windowHei
 		sample = glm::normalize(sample);
 		sample *= Random::UniformDistribution();
 		// Push sample towards center
-		float scale = (float)i / 64.f;
+		float scale = float(i) / 64.f;
 		scale = Math::Lerp(0.1f, 1.f, scale * scale);
 		sample *= scale;
 
@@ -90,8 +90,9 @@ void Renderer::InitPostProcessResources(uint32_t windowWidth, uint32_t windowHei
 		);
 		ssaoNoise.push_back(noise);
 	}
-	ssaoNoiseTexture.Init(4, 4, Texture::Format::RGBA_16FLOAT, &ssaoNoise[0]);
-	ssaoResultTexture.Init(windowWidth, windowHeight, Texture::Format::R_16UNORM, nullptr);
+	ssaoNoiseTexture.Init(4, 4, Texture::Format::R32_G32_B32_FLOAT, &ssaoNoise[0]);
+	ssaoResultTexture.Init(windowWidth, windowHeight, Texture::Format::R8_FLOAT, nullptr);
+	ssaoBlurTexture.Init(windowWidth, windowHeight, Texture::Format::R8_FLOAT, nullptr);
 }
 
 void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t windowX, uint32_t windowY, const char* windowTitle,
@@ -121,9 +122,9 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	screenQuad.SetVertexData(&defaultQuadVertexBuffer, &defaultQuadIndexBuffer);
 
 	// Initializing G-Buffer pass resources
-	gDiffuseTexture.Init(windowWidth, windowHeight, Texture::Format::RGBA_UNORM, nullptr);
-	gPositionTexture.Init(windowWidth, windowHeight, Texture::Format::RGBA_16FLOAT, nullptr, Texture::Params::WRAP_CLAMP_EDGE);
-	gNormalTexture.Init(windowWidth, windowHeight, Texture::Format::RGBA_16FLOAT, nullptr);
+	gDiffuseTexture.Init(windowWidth, windowHeight, Texture::Format::R8_G8_B8_A8_UNORM, nullptr);
+	gPositionTexture.Init(windowWidth, windowHeight, Texture::Format::R16_G16_B16_A16_FLOAT, nullptr, Texture::Params::WRAP_CLAMP_EDGE);
+	gNormalTexture.Init(windowWidth, windowHeight, Texture::Format::R16_G16_B16_A16_FLOAT, nullptr);
 	RT_Geometry.Init(windowWidth, windowHeight, &gDiffuseTexture);
 	RT_Geometry.SetOutputTexture(&gPositionTexture, 1);
 	RT_Geometry.SetOutputTexture(&gNormalTexture, 2);
@@ -131,10 +132,14 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	// Initializing Post-process pass (SSAO) resources
 	InitPostProcessResources(windowWidth, windowHeight);
 	RT_SSAO.Init(windowWidth, windowHeight, &ssaoResultTexture);
+	RT_Blur.Init(windowWidth, windowHeight, &ssaoBlurTexture);
 
 	ShaderCompiler::CompileAndLinkShader(&ssaoShader, 
-		SHADERS_PATH"screen_quad_vs.glsl",
-		SHADERS_PATH"ssao_ps.glsl");
+		SHADERS_PATH"screen_quad_vs.vert",
+		SHADERS_PATH"ssao_ps.frag");
+	ShaderCompiler::CompileAndLinkShader(&ssaoBlurShader,
+		SHADERS_PATH"screen_quad_vs.vert",
+		SHADERS_PATH"ssao_blur_ps.frag");
 
 	ssaoMaterial.Init(&ssaoShader);
 	ssaoMaterial.AddTextureToSlot(&gPositionTexture, 0);
@@ -148,15 +153,17 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 		sprintf(ssaoKernelName, "samples[%d]", i);
 		ssaoMaterial.shader->SetUniform(ssaoKernelName, ssaoKernel[i]);
 	}
+	ssaoBlurMaterial.Init(&ssaoBlurShader);
+	ssaoBlurMaterial.AddTextureToSlot(&ssaoResultTexture, 0);
 
 	// Initializing final pass resources
 	ShaderCompiler::CompileAndLinkShader(&finalPassShader, 
-		SHADERS_PATH"screen_quad_vs.glsl",
-		SHADERS_PATH"final_pass_ps.glsl");
+		SHADERS_PATH"screen_quad_vs.vert",
+		SHADERS_PATH"final_pass_ps.frag");
 
 	finalPassMaterial.Init(&finalPassShader);
 	finalPassMaterial.AddTextureToSlot(&gDiffuseTexture, 0);
-	finalPassMaterial.AddTextureToSlot(&ssaoResultTexture, 1);
+	finalPassMaterial.AddTextureToSlot(&ssaoBlurTexture, 1);
 }
 
 void Renderer::Destroy() {}
@@ -208,7 +215,7 @@ void Renderer::Render()
 	}
 	RT_Geometry.Unbind();
 
-	// Post-processing pass (SSAO)
+	// Post-processing pass (SSAO + blur)
 	RT_SSAO.Bind();
 	GL(glDisable(GL_DEPTH_TEST));
 	GL(glClearColor(1.f, 1.f, 1.f, 1.f));
@@ -216,6 +223,14 @@ void Renderer::Render()
 	screenQuad.SetMaterial(&ssaoMaterial);
 	screenQuad.Draw(params);
 	RT_SSAO.Unbind();
+
+	RT_Blur.Bind();
+	GL(glDisable(GL_DEPTH_TEST));
+	GL(glClearColor(1.f, 1.f, 1.f, 1.f));
+	params.model = glm::mat4(1.f);
+	screenQuad.SetMaterial(&ssaoBlurMaterial);
+	screenQuad.Draw(params);
+	RT_Blur.Unbind();
 
 	// Final pass
 	screenQuad.SetMaterial(&finalPassMaterial);

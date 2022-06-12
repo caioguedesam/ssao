@@ -11,18 +11,12 @@ public:
 	enum class Format
 	{
 		INVALID = 0,
-		R_16UNORM,
-		R_16FLOAT,
-		RGB_UNORM,
-		RGBA_UNORM,
-		RGBA_16FLOAT,
+		R8_FLOAT,
+		R8_G8_B8_UNORM,
+		R8_G8_B8_A8_UNORM,
+		R16_G16_B16_A16_FLOAT,
+		R32_G32_B32_FLOAT,
 	};
-
-	//enum class CreationFlags	// TODO: Maybe change this to regular enum (or even delete this)
-	//{
-	//	NONE = 0,
-	//	RENDER_TARGET,
-	//};
 
 	enum Params
 	{

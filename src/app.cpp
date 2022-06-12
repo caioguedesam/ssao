@@ -161,8 +161,8 @@ void App::Run()
 	Shader objShader;
 
 	ShaderCompiler::CompileAndLinkShader(&objShader, 
-		SHADERS_PATH"default_vs.glsl",
-		SHADERS_PATH"default_ps.glsl");
+		SHADERS_PATH"default_vs.vert",
+		SHADERS_PATH"default_ps.frag");
 
 	Material objMat;
 	objMat.Init(&objShader);

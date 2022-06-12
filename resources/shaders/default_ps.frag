@@ -16,6 +16,7 @@ uniform mat4 uView;
 void main()
 {
 	outDiffuse = texture(tex0, vTexCoord);
-	outPos = (uView * vec4(vPos, 1)).xyz;		// G-Buffer textures are stored in view space (for SSAO pass).
-	outNorm =(uView * vec4(vNorm, 1)).xyz;
+	//outPos = (uView * vec4(vPos, 1)).xyz;		// G-Buffer textures are stored in view space (for SSAO pass).
+	outPos = vPos;
+	outNorm = normalize(vNorm);
 }
