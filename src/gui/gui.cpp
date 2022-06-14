@@ -80,3 +80,8 @@ void GUI::Checkbox(const char* label, bool* value)
 {
     ImGui::Checkbox(label, value);
 }
+
+void GUI::Slider_int(const char* label, int* value, const uint32_t& minValue, const uint32_t& maxValue)
+{
+    ImGui::SliderInt(label, value, minValue, maxValue);
+}

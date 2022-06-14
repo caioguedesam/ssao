@@ -144,6 +144,16 @@ void App::DisplayGUI()
 		sprintf(fps_str, "FPS = %lf", Time::fps);
 		GUI::Text(fps_str);
 		GUI::Checkbox("Enable Blur", &renderer.enableBlurPass);
+
+		int oldSsaoKernelSize = renderer.ssaoData.ssaoKernelSize;
+		GUI::Slider_int("Kernel size", &renderer.ssaoData.ssaoKernelSize, 0, MAX_SSAO_KERNEL_SIZE);
+		if (oldSsaoKernelSize != renderer.ssaoData.ssaoKernelSize)
+		{
+			renderer.ssaoData.GenerateKernel();
+			renderer.ssaoData.BindKernel(&renderer.ssaoShader);
+		}
+
+		GUI::Slider_int("Noise dimension", &renderer.ssaoData.ssaoNoiseDimension, 0, MAX_SSAO_NOISE_DIMENSION);
 		GUI::EndWindow();
 	}
 	GUI::EndFrame();

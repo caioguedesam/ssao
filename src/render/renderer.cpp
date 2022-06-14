@@ -20,6 +20,50 @@ std::vector<uint32_t> defaultQuadIndices =
 	0, 3, 2,
 };
 
+void SSAOData::GenerateKernel()
+{
+	for (int i = 0; i < ssaoKernelSize; i++)	// 64 points for kernel
+	{
+		glm::vec3 sample(
+			Random::UniformDistribution(-1.f, 1.f),
+			Random::UniformDistribution(-1.f, 1.f),
+			Random::UniformDistribution(0.f, 1.f)
+		);
+		sample = glm::normalize(sample);
+		sample *= Random::UniformDistribution();
+		// Push sample towards center
+		float scale = float(i) / 64.f;
+		scale = Math::Lerp(0.1f, 1.f, scale * scale);
+		sample *= scale;
+
+		//ssaoKernel.push_back(sample);
+		ssaoKernel[i] = sample;
+	}
+}
+
+void SSAOData::BindKernel(Shader* sh)
+{
+	char ssaoKernelName[16];
+	for (int i = 0; i < 64; i++)	// TODO: Change this to use ssaokernelsize, then send size as uniform
+	{
+		sprintf(ssaoKernelName, "samples[%d]", i);
+		sh->SetUniform(ssaoKernelName, ssaoKernel[i]);
+	}
+}
+
+void SSAOData::GenerateNoise()
+{
+	for (int i = 0; i < ssaoNoiseDimension * ssaoNoiseDimension; i++)
+	{
+		glm::vec3 noise(
+			Random::UniformDistribution(-1.f, 1.f),
+			Random::UniformDistribution(-1.f, 1.f),
+			0.f
+		);
+		ssaoNoise[i] = noise;
+	}
+}
+
 Renderer::~Renderer()
 {
 	if (pGlContextHandle)
@@ -62,35 +106,38 @@ void Renderer::SetCamera(float x, float y, float z, float fov, float aspect)
 
 void Renderer::InitPostProcessResources(uint32_t windowWidth, uint32_t windowHeight)
 {
-	// Initializing post-processing resources and render target
-	for (int i = 0; i < 64; i++)	// 64 points for kernel
-	{
-		glm::vec3 sample(
-			Random::UniformDistribution(-1.f, 1.f),
-			Random::UniformDistribution(-1.f, 1.f),
-			Random::UniformDistribution(0.f, 1.f)
-		);
-		sample = glm::normalize(sample);
-		sample *= Random::UniformDistribution();
-		// Push sample towards center
-		float scale = float(i) / 64.f;
-		scale = Math::Lerp(0.1f, 1.f, scale * scale);
-		sample *= scale;
+	//// Initializing post-processing resources and render target
+	//for (int i = 0; i < 64; i++)	// 64 points for kernel
+	//{
+	//	glm::vec3 sample(
+	//		Random::UniformDistribution(-1.f, 1.f),
+	//		Random::UniformDistribution(-1.f, 1.f),
+	//		Random::UniformDistribution(0.f, 1.f)
+	//	);
+	//	sample = glm::normalize(sample);
+	//	sample *= Random::UniformDistribution();
+	//	// Push sample towards center
+	//	float scale = float(i) / 64.f;
+	//	scale = Math::Lerp(0.1f, 1.f, scale * scale);
+	//	sample *= scale;
 
-		ssaoKernel.push_back(sample);
-	}
+	//	ssaoKernel.push_back(sample);
+	//}
 
-	std::vector<glm::vec3> ssaoNoise;
-	for (int i = 0; i < 16; i++)
-	{
-		glm::vec3 noise(
-			Random::UniformDistribution(-1.f, 1.f),
-			Random::UniformDistribution(-1.f, 1.f),
-			0.f
-		);
-		ssaoNoise.push_back(noise);
-	}
-	ssaoNoiseTexture.Init(4, 4, Texture::Format::R32_G32_B32_FLOAT, &ssaoNoise[0]);
+	//std::vector<glm::vec3> ssaoNoise;
+	//for (int i = 0; i < 16; i++)
+	//{
+	//	glm::vec3 noise(
+	//		Random::UniformDistribution(-1.f, 1.f),
+	//		Random::UniformDistribution(-1.f, 1.f),
+	//		0.f
+	//	);
+	//	ssaoNoise.push_back(noise);
+	//}
+	ssaoData.GenerateKernel();
+	ssaoData.GenerateNoise();
+	//ssaoNoiseTexture.Init(4, 4, Texture::Format::R32_G32_B32_FLOAT, &ssaoNoise[0]);
+	ssaoNoiseTexture.Init(4, 4, Texture::Format::R32_G32_B32_FLOAT, &ssaoData.ssaoNoise[0]);
 	ssaoResultTexture.Init(windowWidth, windowHeight, Texture::Format::R8_FLOAT, nullptr);
 	ssaoBlurTexture.Init(windowWidth, windowHeight, Texture::Format::R8_FLOAT, nullptr);
 }
@@ -151,7 +198,8 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	for (int i = 0; i < 64; i++)
 	{
 		sprintf(ssaoKernelName, "samples[%d]", i);
-		ssaoMaterial.shader->SetUniform(ssaoKernelName, ssaoKernel[i]);
+		//ssaoMaterial.shader->SetUniform(ssaoKernelName, ssaoKernel[i]);
+		ssaoData.BindKernel(ssaoMaterial.shader);
 	}
 	ssaoBlurMaterial.Init(&ssaoBlurShader);
 	ssaoBlurMaterial.AddTextureToSlot(&ssaoResultTexture, 0);

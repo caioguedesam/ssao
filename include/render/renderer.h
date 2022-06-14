@@ -8,6 +8,21 @@
 #include "render/renderable.h"
 #include "render/render_target.h"
 
+#define MAX_SSAO_KERNEL_SIZE 256
+#define MAX_SSAO_NOISE_DIMENSION 64
+
+struct SSAOData
+{
+	glm::vec3 ssaoKernel[MAX_SSAO_KERNEL_SIZE];
+	int ssaoKernelSize = 64;
+	glm::vec3 ssaoNoise[MAX_SSAO_NOISE_DIMENSION];
+	int ssaoNoiseDimension = 4;
+
+	void GenerateKernel();
+	void BindKernel(Shader* sh);
+	void GenerateNoise();
+};
+
 class Renderer
 {
 public:
@@ -33,7 +48,8 @@ public:
 	RenderTarget RT_SSAO;
 	RenderTarget RT_Blur;
 
-	std::vector<glm::vec3> ssaoKernel;	// Random points distributed between a unit hemisphere (biased towards center)
+	//std::vector<glm::vec3> ssaoKernel;	// Random points distributed between a unit hemisphere (biased towards center)
+	SSAOData ssaoData;
 	Texture ssaoNoiseTexture;			// Random rotation texture to introduce randomness when using SSAO kernel
 
 	Texture ssaoResultTexture;
