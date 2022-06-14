@@ -9,6 +9,7 @@
 #include "render/shader_compiler.h"
 #include "gui/gui.h"
 
+// TODO_#MULTIPLATFORM: Remove this SDL dependency and use platform api
 void GetDisplayDimensions(uint32_t& w, uint32_t& h)
 {
 	ASSERT(SDL_WasInit(SDL_INIT_VIDEO), "Trying to get display dimensions without initializing SDL.");
@@ -46,6 +47,10 @@ void App::PollEvents(double dt)
 			case SDLK_ESCAPE:
 			{
 				isRunning = false;
+			} break;
+			case SDLK_p:
+			{
+				Input::ChangeInputMode(Input::currentState == Input::State::APP ? Input::State::GUI : Input::State::APP);
 			} break;
 			case SDLK_w:
 			{

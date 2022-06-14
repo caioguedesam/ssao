@@ -65,3 +65,8 @@ void GUI::Text(const char* text)
 {
     ImGui::Text(text);
 }
+
+bool GUI::Button(const char* label)
+{
+    return ImGui::Button(label);
+}

@@ -13,6 +13,13 @@ struct MouseData
 class Input
 {
 public:
+	enum class State : uint32_t
+	{
+		APP = 0,
+		GUI
+	};
+
+	static State currentState;
 	static MouseData mouseData;
 	static bool gotMouseData;
 
@@ -20,4 +27,5 @@ public:
 
 	static void UpdateMouseData(SDL_Event& e);
 	static void Update();
+	static void ChangeInputMode(State state);
 };

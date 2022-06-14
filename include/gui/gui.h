@@ -16,4 +16,5 @@ public:
 	static void BeginWindow(const char* title, const uint32_t& w, const uint32_t& h, const uint32_t& x, const uint32_t& y);
 	static void EndWindow();
 	static void Text(const char* text);
+	static bool Button(const char* label);
 };
