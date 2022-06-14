@@ -1,0 +1,15 @@
+> Dynamically set SSAO parameters (uniforms)
+	> Kernel size
+	> Noise texture size
+	> SSAO radius
+	> SSAO power (when lighting is implemented)
+
+> Switch between GUI and App mouse controls*
+
+> Optimize to send less stuff every frame to gpu
+
+> Performance diagnostics
+
+> Lighting
+
+> Final report

@@ -12,7 +12,7 @@ uniform vec3 samples[64];	// Kernel
 uniform mat4 uProj;
 
 // TODO_#SSAO_NOISE: This is hardcoded, and will break with resizing. Set this as constant uniform later.
-const vec2 noiseTexScale = vec2(640.0/4.0, 480.0/4.0);
+const vec2 noiseTexScale = vec2(1280.0/4.0, 720.0/4.0);
 float bias = 0.025;
 int kernelSize = 64;	// Kernel size is hardcoded
 float radius = 0.5;

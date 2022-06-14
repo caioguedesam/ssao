@@ -1,8 +1,8 @@
 #pragma once
 #include "stdafx.h"
 
-#define APP_DEFAULT_WIDTH 640
-#define APP_DEFAULT_HEIGHT 480
+#define APP_DEFAULT_WIDTH 1280
+#define APP_DEFAULT_HEIGHT 720
 
 #define RESOURCES_PATH "./resources/"
 #define SHADERS_PATH RESOURCES_PATH"shaders/"

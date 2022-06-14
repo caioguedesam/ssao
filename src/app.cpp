@@ -2,6 +2,7 @@
 #include "app.h"
 
 #include <SDL.h>
+#include "glm/gtx/transform.hpp"
 
 #include "time/time.h"
 #include "resource/resource_loader.h"
@@ -143,20 +144,28 @@ void App::DisplayGUI()
 
 void App::Run()
 {
-	Model backpackModel;
+	/*Model backpackModel;
 	ResourceLoader::LoadModel(backpackModel, MODELS_PATH"backpack.obj");
 	Texture backpackDiffuseMap;
 	Texture backpackNormalMap;
 	ResourceLoader::LoadTexture(backpackDiffuseMap, TEXTURES_PATH"backpack_diffuse.jpg");
-	ResourceLoader::LoadTexture(backpackNormalMap, TEXTURES_PATH"backpack_normal.png");
+	ResourceLoader::LoadTexture(backpackNormalMap, TEXTURES_PATH"backpack_normal.png");*/
 
-	Buffer vb;
+	Model sponza;
+	ResourceLoader::LoadModel(sponza, MODELS_PATH"sponza.obj");
+
+	/*Buffer vb;
 	vb.Init(GL_ARRAY_BUFFER, sizeof(float) * backpackModel.vertices.size(), backpackModel.vertices.size(), backpackModel.vertices.data());
 	Buffer ib;
-	ib.Init(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * backpackModel.indices.size(), backpackModel.indices.size(), backpackModel.indices.data());
+	ib.Init(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * backpackModel.indices.size(), backpackModel.indices.size(), backpackModel.indices.data());*/
+	Buffer vb;
+	vb.Init(GL_ARRAY_BUFFER, sizeof(float) * sponza.vertices.size(), sponza.vertices.size(), sponza.vertices.data());
+	Buffer ib;
+	ib.Init(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * sponza.indices.size(), sponza.indices.size(), sponza.indices.data());
 
 	Renderable obj;
 	obj.uModel = glm::mat4(1.f);
+	obj.uModel = glm::scale(obj.uModel, glm::vec3(0.01f, 0.01f, 0.01f));
 	obj.SetVertexData(&vb, &ib);
 	Shader objShader;
 
@@ -166,8 +175,8 @@ void App::Run()
 
 	Material objMat;
 	objMat.Init(&objShader);
-	objMat.AddTextureToSlot(&backpackDiffuseMap, 0);
-	objMat.AddTextureToSlot(&backpackNormalMap, 1);
+	/*objMat.AddTextureToSlot(&backpackDiffuseMap, 0);
+	objMat.AddTextureToSlot(&backpackNormalMap, 1);*/
 
 	obj.SetMaterial(&objMat);
 
