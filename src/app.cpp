@@ -153,7 +153,13 @@ void App::DisplayGUI()
 			renderer.ssaoData.BindKernel(&renderer.ssaoShader);
 		}
 
+		int oldSsaoKernelDimension = renderer.ssaoData.ssaoNoiseDimension;
 		GUI::Slider_int("Noise dimension", &renderer.ssaoData.ssaoNoiseDimension, 0, MAX_SSAO_NOISE_DIMENSION);
+		if (oldSsaoKernelDimension != renderer.ssaoData.ssaoNoiseDimension)
+		{
+			renderer.ssaoData.GenerateNoise();
+			renderer.ssaoData.BindNoiseTexture(&renderer.ssaoShader, &renderer.ssaoNoiseTexture);
+		}
 		GUI::EndWindow();
 	}
 	GUI::EndFrame();

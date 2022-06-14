@@ -66,6 +66,13 @@ void SSAOData::GenerateNoise()
 	}
 }
 
+void SSAOData::BindNoiseTexture(Shader* sh, Texture* noiseTex)
+{
+	sh->Bind();
+	sh->SetUniform("noiseDimension", ssaoNoiseDimension);
+	noiseTex->Init(ssaoNoiseDimension, ssaoNoiseDimension, Texture::Format::R32_G32_B32_FLOAT, &ssaoNoise[0]);
+}
+
 Renderer::~Renderer()
 {
 	if (pGlContextHandle)
@@ -139,6 +146,7 @@ void Renderer::InitPostProcessResources(uint32_t windowWidth, uint32_t windowHei
 	ssaoData.GenerateKernel();
 	ssaoData.GenerateNoise();
 	//ssaoNoiseTexture.Init(4, 4, Texture::Format::R32_G32_B32_FLOAT, &ssaoNoise[0]);
+	//ssaoData.BindNoiseTexture(&ssaoNoiseTexture);
 	ssaoNoiseTexture.Init(4, 4, Texture::Format::R32_G32_B32_FLOAT, &ssaoData.ssaoNoise[0]);
 	ssaoResultTexture.Init(windowWidth, windowHeight, Texture::Format::R8_FLOAT, nullptr);
 	ssaoBlurTexture.Init(windowWidth, windowHeight, Texture::Format::R8_FLOAT, nullptr);
@@ -193,9 +201,9 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 		SHADERS_PATH"ssao_blur_ps.frag");
 
 	ssaoMaterial.Init(&ssaoShader);
-	ssaoMaterial.AddTextureToSlot(&gPositionTexture, 0);
+	/*ssaoMaterial.AddTextureToSlot(&gPositionTexture, 0);
 	ssaoMaterial.AddTextureToSlot(&gNormalTexture, 1);
-	ssaoMaterial.AddTextureToSlot(&ssaoNoiseTexture, 2);
+	ssaoMaterial.AddTextureToSlot(&ssaoNoiseTexture, 2);*/
 	ssaoMaterial.shader->Bind();
 	//char ssaoKernelName[16] = "samples[0]";
 	//char ssaoKernelName[16];
@@ -205,6 +213,12 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	//	//ssaoMaterial.shader->SetUniform(ssaoKernelName, ssaoKernel[i]);
 	//}
 	ssaoData.BindKernel(ssaoMaterial.shader);
+	ssaoData.BindNoiseTexture(ssaoMaterial.shader, &ssaoNoiseTexture);
+
+	ssaoMaterial.AddTextureToSlot(&gPositionTexture, 0);
+	ssaoMaterial.AddTextureToSlot(&gNormalTexture, 1);
+	ssaoMaterial.AddTextureToSlot(&ssaoNoiseTexture, 2);
+
 	ssaoBlurMaterial.Init(&ssaoBlurShader);
 	ssaoBlurMaterial.AddTextureToSlot(&ssaoResultTexture, 0);
 
