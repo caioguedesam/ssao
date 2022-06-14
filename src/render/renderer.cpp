@@ -154,6 +154,8 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
+	SDL_GL_SetSwapInterval(0);	// No vsync
+
 	CreateNewWindow(windowWidth, windowHeight, windowX, windowY, windowTitle);
 	CreateNewRenderContext();
 	RetrieveAPIFunctionLocations();
