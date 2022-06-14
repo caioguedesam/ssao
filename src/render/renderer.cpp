@@ -73,6 +73,12 @@ void SSAOData::BindNoiseTexture(Shader* sh, Texture* noiseTex)
 	noiseTex->Init(ssaoNoiseDimension, ssaoNoiseDimension, Texture::Format::R32_G32_B32_FLOAT, &ssaoNoise[0]);
 }
 
+void SSAOData::BindRadius(Shader* sh)
+{
+	sh->Bind();
+	sh->SetUniform("radius", ssaoRadius);
+}
+
 Renderer::~Renderer()
 {
 	if (pGlContextHandle)

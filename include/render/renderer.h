@@ -17,11 +17,13 @@ struct SSAOData
 	int ssaoKernelSize = 64;
 	glm::vec3 ssaoNoise[MAX_SSAO_NOISE_DIMENSION*MAX_SSAO_NOISE_DIMENSION];
 	int ssaoNoiseDimension = 4;
+	float ssaoRadius = 0.5f;
 
 	void GenerateKernel();
 	void BindKernel(Shader* sh);
 	void GenerateNoise();
 	void BindNoiseTexture(Shader* sh, Texture* noiseTex);
+	void BindRadius(Shader* sh);
 };
 
 class Renderer

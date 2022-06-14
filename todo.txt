@@ -1,7 +1,5 @@
 REQUIRED:
 > Dynamically set SSAO parameters (uniforms)
-	> Kernel size*
-	> Noise texture size
 	> SSAO radius
 	> SSAO power (when lighting is implemented)
 

@@ -13,7 +13,7 @@ uniform sampler2D tex1;	// Normal
 uniform sampler2D tex2;	// Noise
 
 uniform int kernelSize;
-const int noiseDimension = 4;
+uniform int noiseDimension;
 uniform vec3 samples[MAX_KERNEL_SIZE];	// Kernel
 
 uniform mat4 uProj;

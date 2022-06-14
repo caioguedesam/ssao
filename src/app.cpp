@@ -160,6 +160,9 @@ void App::DisplayGUI()
 			renderer.ssaoData.GenerateNoise();
 			renderer.ssaoData.BindNoiseTexture(&renderer.ssaoShader, &renderer.ssaoNoiseTexture);
 		}
+
+		int oldRadius;
+
 		GUI::EndWindow();
 	}
 	GUI::EndFrame();
