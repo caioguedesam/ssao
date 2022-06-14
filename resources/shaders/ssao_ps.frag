@@ -1,4 +1,9 @@
 #version 330 core
+
+#define MAX_KERNEL_SIZE 256
+#define SCREEN_WIDTH 1280.0
+#define SCREEN_HEIGHT 720.0
+
 in vec2 vTexCoord;
 
 layout (location = 0) out float ssaoResult;	// SSAO output texture (R16_UNORM)
@@ -7,18 +12,21 @@ uniform sampler2D tex0;	// Position
 uniform sampler2D tex1;	// Normal
 uniform sampler2D tex2;	// Noise
 
-uniform vec3 samples[64];	// Kernel
+uniform int kernelSize;
+const int noiseDimension = 4;
+uniform vec3 samples[MAX_KERNEL_SIZE];	// Kernel
 
 uniform mat4 uProj;
 
 // TODO_#SSAO_NOISE: This is hardcoded, and will break with resizing. Set this as constant uniform later.
-const vec2 noiseTexScale = vec2(1280.0/4.0, 720.0/4.0);
+//const vec2 noiseTexScale = vec2(1280.0/4.0, 720.0/4.0);
 float bias = 0.025;
-int kernelSize = 64;	// Kernel size is hardcoded
+//int kernelSize = 64;	// Kernel size is hardcoded
 float radius = 0.5;
 
 void main()
 {
+	vec2 noiseTexScale = vec2(SCREEN_WIDTH/noiseDimension, SCREEN_HEIGHT/noiseDimension);
 	vec3 fragmentPosition = texture(tex0, vTexCoord).xyz;
 	vec3 fragmentNormal = normalize(texture(tex1, vTexCoord).rgb);
 	vec3 tilt = normalize(texture(tex2, vTexCoord * noiseTexScale).xyz);

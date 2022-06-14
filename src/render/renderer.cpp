@@ -43,12 +43,14 @@ void SSAOData::GenerateKernel()
 
 void SSAOData::BindKernel(Shader* sh)
 {
-	char ssaoKernelName[16];
-	for (int i = 0; i < 64; i++)	// TODO: Change this to use ssaokernelsize, then send size as uniform
+	sh->Bind();
+	char ssaoKernelName[32];
+	for (int i = 0; i < ssaoKernelSize; i++)
 	{
 		sprintf(ssaoKernelName, "samples[%d]", i);
 		sh->SetUniform(ssaoKernelName, ssaoKernel[i]);
 	}
+	sh->SetUniform("kernelSize", ssaoKernelSize);
 }
 
 void SSAOData::GenerateNoise()
@@ -194,13 +196,13 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	ssaoMaterial.AddTextureToSlot(&ssaoNoiseTexture, 2);
 	ssaoMaterial.shader->Bind();
 	//char ssaoKernelName[16] = "samples[0]";
-	char ssaoKernelName[16];
-	for (int i = 0; i < 64; i++)
-	{
-		sprintf(ssaoKernelName, "samples[%d]", i);
-		//ssaoMaterial.shader->SetUniform(ssaoKernelName, ssaoKernel[i]);
-		ssaoData.BindKernel(ssaoMaterial.shader);
-	}
+	//char ssaoKernelName[16];
+	//for (int i = 0; i < 64; i++)
+	//{
+	//	sprintf(ssaoKernelName, "samples[%d]", i);
+	//	//ssaoMaterial.shader->SetUniform(ssaoKernelName, ssaoKernel[i]);
+	//}
+	ssaoData.BindKernel(ssaoMaterial.shader);
 	ssaoBlurMaterial.Init(&ssaoBlurShader);
 	ssaoBlurMaterial.AddTextureToSlot(&ssaoResultTexture, 0);
 
