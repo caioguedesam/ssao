@@ -1,15 +1,10 @@
 REQUIRED:
-> Dynamically set SSAO parameters (uniforms)
-	> SSAO radius
-	> SSAO power (when lighting is implemented)
-
-> Optimize to send less stuff every frame to gpu
-
-> Performance diagnostics
-
+> Performance diagnostics*
 > Final report
 
 OPTIONAL:
 > Lighting
+	> Dynamically set SSAO power
 
 > Improve customized render pass pipeline
+> Optimize to send less stuff every frame to gpu
