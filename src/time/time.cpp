@@ -1,11 +1,27 @@
 #include "stdafx.h"
 #include "time/time.h"
 
+#define MAX_FRAMES_TO_TRACK 10
+
 std::chrono::time_point<std::chrono::high_resolution_clock> Time::lastTimePoint;
 double Time::time;
 double Time::deltaTime;
 uint64_t Time::frameCount;
 double Time::fps;
+
+double lastFrameTimes[MAX_FRAMES_TO_TRACK];
+int lastFrameTimePointer = 0;
+
+double GetFPSFromLastFrameTimes()
+{
+	double sum = 0.;
+	for (int i = 0; i < MAX_FRAMES_TO_TRACK; i++)
+	{
+		sum += lastFrameTimes[i];
+	}
+	sum /= MAX_FRAMES_TO_TRACK;
+	return 1. / sum;
+}
 
 void Time::Init()
 {
@@ -14,6 +30,10 @@ void Time::Init()
 	deltaTime = 0.;
 	frameCount = 0;
 	fps = 0.;
+	for (int i = 0; i < MAX_FRAMES_TO_TRACK; i++)
+	{
+		lastFrameTimes[i] = 0.;
+	}
 }
 
 void Time::UpdateTime()
@@ -26,8 +46,8 @@ void Time::UpdateTime()
 	lastTimePoint = currentTimePoint;
 
 	frameCount++;
-	if (frameCount % 100 == 0)
-	{
-		fps = 1. / deltaTime;	// Update fps every hundred frames
-	}
+	lastFrameTimes[lastFrameTimePointer] = deltaTime;
+	lastFrameTimePointer++;
+	if (lastFrameTimePointer == MAX_FRAMES_TO_TRACK) lastFrameTimePointer = 0;
+	fps = GetFPSFromLastFrameTimes();
 }

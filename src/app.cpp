@@ -141,7 +141,7 @@ void App::DisplayGUI()
 		// Test GUI code
 		GUI::BeginWindow("Debug", 200, 100, 0, 0);
 		char fps_str[64];
-		sprintf(fps_str, "FPS = %lf", Time::fps);
+		sprintf(fps_str, "FPS: %.1lf", Time::fps);
 		GUI::Text(fps_str);
 		GUI::Checkbox("Enable Blur", &renderer.enableBlurPass);
 
