@@ -39,6 +39,7 @@ void App::PollEvents(double dt)
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
 	{
+		GUI::ProcessSDLEvent(&event);
 		if (event.type == SDL_KEYDOWN)
 		{
 			SDL_Keysym key = event.key.keysym;
@@ -142,6 +143,7 @@ void App::DisplayGUI()
 		char fps_str[64];
 		sprintf(fps_str, "FPS = %lf", Time::fps);
 		GUI::Text(fps_str);
+		GUI::Checkbox("Enable Blur", &renderer.enableBlurPass);
 		GUI::EndWindow();
 	}
 	GUI::EndFrame();

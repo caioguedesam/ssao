@@ -29,6 +29,11 @@ void GUI::Init(Renderer* renderer)
     ImGui_ImplOpenGL3_Init("#version 330");
 }
 
+void GUI::ProcessSDLEvent(SDL_Event* event)
+{
+    ImGui_ImplSDL2_ProcessEvent(event);
+}
+
 void GUI::Destroy()
 {
     ImGui_ImplOpenGL3_Shutdown();
@@ -69,4 +74,9 @@ void GUI::Text(const char* text)
 bool GUI::Button(const char* label)
 {
     return ImGui::Button(label);
+}
+
+void GUI::Checkbox(const char* label, bool* value)
+{
+    ImGui::Checkbox(label, value);
 }

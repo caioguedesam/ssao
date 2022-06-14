@@ -42,6 +42,7 @@ public:
 	Material ssaoBlurMaterial;
 	Shader ssaoShader;
 	Shader ssaoBlurShader;
+	bool enableBlurPass = true;
 
 	// Final pass (uses default screen quad)
 	Material finalPassMaterial;

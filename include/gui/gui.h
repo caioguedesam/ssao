@@ -1,6 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include "imgui.h"
+#include <SDL.h>
 
 class Renderer;
 
@@ -9,6 +10,7 @@ class GUI
 public:
 
 	static void Init(Renderer* renderer);
+	static void ProcessSDLEvent(SDL_Event* event);
 	static void Destroy();
 	static void BeginFrame();
 	static void EndFrame();
@@ -17,4 +19,5 @@ public:
 	static void EndWindow();
 	static void Text(const char* text);
 	static bool Button(const char* label);
+	static void Checkbox(const char* label, bool* value);
 };

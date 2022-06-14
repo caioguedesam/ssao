@@ -224,15 +224,19 @@ void Renderer::Render()
 	screenQuad.Draw(params);
 	RT_SSAO.Unbind();
 
-	RT_Blur.Bind();
-	GL(glDisable(GL_DEPTH_TEST));
-	GL(glClearColor(1.f, 1.f, 1.f, 1.f));
-	params.model = glm::mat4(1.f);
-	screenQuad.SetMaterial(&ssaoBlurMaterial);
-	screenQuad.Draw(params);
-	RT_Blur.Unbind();
+	if (enableBlurPass)	//TODO_#CUSTOMIZE_RENDER_PASS: For the love of god improve this
+	{
+		RT_Blur.Bind();
+		GL(glDisable(GL_DEPTH_TEST));
+		GL(glClearColor(1.f, 1.f, 1.f, 1.f));
+		params.model = glm::mat4(1.f);
+		screenQuad.SetMaterial(&ssaoBlurMaterial);
+		screenQuad.Draw(params);
+		RT_Blur.Unbind();
+	}
 
 	// Final pass
+	finalPassMaterial.AddTextureToSlot(enableBlurPass ? &ssaoBlurTexture : &ssaoResultTexture, 1);	//TODO_#CUSTOMIZE_RENDER_PASS: For the love of god improve this
 	screenQuad.SetMaterial(&finalPassMaterial);
 	screenQuad.Draw(params);
 }
