@@ -15,6 +15,7 @@ uniform sampler2D tex2;	// Noise
 uniform int kernelSize;
 uniform int noiseDimension;
 uniform vec3 samples[MAX_KERNEL_SIZE];	// Kernel
+uniform float radius;
 
 uniform mat4 uProj;
 
@@ -22,7 +23,7 @@ uniform mat4 uProj;
 //const vec2 noiseTexScale = vec2(1280.0/4.0, 720.0/4.0);
 float bias = 0.025;
 //int kernelSize = 64;	// Kernel size is hardcoded
-float radius = 0.5;
+//float radius = 0.5;
 
 void main()
 {

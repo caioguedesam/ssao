@@ -85,3 +85,8 @@ void GUI::Slider_int(const char* label, int* value, const uint32_t& minValue, co
 {
     ImGui::SliderInt(label, value, minValue, maxValue);
 }
+
+void GUI::Slider_float(const char* label, float* value, const float& minValue, const float& maxValue)
+{
+    ImGui::SliderFloat(label, value, minValue, maxValue);
+}

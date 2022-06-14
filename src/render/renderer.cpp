@@ -220,6 +220,7 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	//}
 	ssaoData.BindKernel(ssaoMaterial.shader);
 	ssaoData.BindNoiseTexture(ssaoMaterial.shader, &ssaoNoiseTexture);
+	ssaoData.BindRadius(ssaoMaterial.shader);
 
 	ssaoMaterial.AddTextureToSlot(&gPositionTexture, 0);
 	ssaoMaterial.AddTextureToSlot(&gNormalTexture, 1);

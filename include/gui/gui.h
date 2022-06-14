@@ -21,4 +21,5 @@ public:
 	static bool Button(const char* label);
 	static void Checkbox(const char* label, bool* value);
 	static void Slider_int(const char* label, int* value, const uint32_t& minValue, const uint32_t& maxValue);
+	static void Slider_float(const char* label, float* value, const float& minValue, const float& maxValue);
 };

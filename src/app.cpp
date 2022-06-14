@@ -139,7 +139,7 @@ void App::DisplayGUI()
 	GUI::BeginFrame();
 	{
 		// Test GUI code
-		GUI::BeginWindow("Debug", 200, 100, 0, 0);
+		GUI::BeginWindow("Debug", 320, 150, 0, 0);
 		char fps_str[64];
 		sprintf(fps_str, "FPS: %.1lf", Time::fps);
 		GUI::Text(fps_str);
@@ -161,7 +161,12 @@ void App::DisplayGUI()
 			renderer.ssaoData.BindNoiseTexture(&renderer.ssaoShader, &renderer.ssaoNoiseTexture);
 		}
 
-		int oldRadius;
+		int oldRadius = renderer.ssaoData.ssaoRadius;
+		GUI::Slider_float("Radius", &renderer.ssaoData.ssaoRadius, 0, MAX_SSAO_RADIUS);
+		if (oldRadius != renderer.ssaoData.ssaoRadius)
+		{
+			renderer.ssaoData.BindRadius(&renderer.ssaoShader);
+		}
 
 		GUI::EndWindow();
 	}

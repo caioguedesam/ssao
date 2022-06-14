@@ -10,6 +10,7 @@
 
 #define MAX_SSAO_KERNEL_SIZE 256
 #define MAX_SSAO_NOISE_DIMENSION 64
+#define MAX_SSAO_RADIUS 5
 
 struct SSAOData
 {

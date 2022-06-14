@@ -25,6 +25,13 @@ void Shader::SetUniform(const char* uName, const int& uValue)
 	GL(glUniform1i(location, uValue));
 }
 
+void Shader::SetUniform(const char* uName, const float& uValue)
+{
+	GLint location;
+	GL(location = glGetUniformLocation(handle, uName));	// TODO: Cache this
+	GL(glUniform1f(location, uValue));
+}
+
 void Shader::SetUniform(const char* uName, const glm::vec3& uValue)
 {
 	GLint location;
