@@ -207,6 +207,7 @@
     <ClCompile Include="src\render\shader_compiler.cpp" />
     <ClCompile Include="src\render\texture.cpp" />
     <ClCompile Include="src\resource\resource_loader.cpp" />
+    <ClCompile Include="src\resource\shader_resource_manager.cpp" />
     <ClCompile Include="src\resource\texture_resource_manager.cpp" />
     <ClCompile Include="src\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -258,6 +259,7 @@
     <ClInclude Include="include\render\texture.h" />
     <ClInclude Include="include\resource\resource_loader.h" />
     <ClInclude Include="include\resource\resource_manager.h" />
+    <ClInclude Include="include\resource\shader_resource_manager.h" />
     <ClInclude Include="include\resource\texture_resource_manager.h" />
     <ClInclude Include="include\stdafx.h" />
     <ClInclude Include="include\time\time.h" />
