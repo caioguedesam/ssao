@@ -39,6 +39,7 @@ ResourceHandle<Texture> TextureResourceManager::loadFromFile(const char* filepat
 	desc.format = imgFormat;
 
 	ResourceHandle<Texture> handle = createTexture(desc, imgData);
+	handleList[filepath] = handle;
 	return handle;
 }
 

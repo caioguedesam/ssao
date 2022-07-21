@@ -38,3 +38,9 @@ void Shader::SetUniform(const char* uName, const glm::vec3& uValue)
 	GL(location = glGetUniformLocation(handle, uName));	// TODO: Cache this
 	GL(glUniform3fv(location, 1, &uValue[0]));
 }
+
+ShaderPipeline::ShaderPipeline(ResourceHandle<Shader> vs, ResourceHandle<Shader> ps)
+{
+	this->vs = vs;
+	this->ps = ps;
+}
