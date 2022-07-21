@@ -6,12 +6,12 @@
 void Material::Init(Shader* sh)
 {
 	shader = sh;
-	textures = std::vector<Texture*>(MAX_TEXTURE_SLOTS);
+	textures = std::vector<ResourceHandle<Texture>>(MAX_TEXTURE_SLOTS);
 }
 
-void Material::AddTextureToSlot(Texture* tex, uint32_t slot)
+void Material::AddTextureToSlot(ResourceHandle<Texture> textureHandle, uint32_t slot)
 {
-	textures[slot] = tex;
+	textures[slot] = textureHandle;
 }
 
 void Material::Bind()
@@ -19,10 +19,10 @@ void Material::Bind()
 	shader->Bind();
 	for (uint32_t i = 0; i < MAX_TEXTURE_SLOTS; i++)
 	{
-		if (textures[i])
+		if (textures[i].isValid())
 		{
-			// TODO: Support multiple texture dimensions
-			textures[i]->Bind(i);
+			// TODO_TEXTURE: Support multiple texture dimensions
+			g_textureResourceManager.bindTexture(textures[i], i);
 		}
 	}
 }

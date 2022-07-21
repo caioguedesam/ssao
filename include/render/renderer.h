@@ -4,6 +4,9 @@
 #include <SDL.h>
 
 #include "display/window.h"
+
+#include "resource/texture_resource_manager.h"
+
 #include "render/camera.h"
 #include "render/renderable.h"
 #include "render/render_target.h"
@@ -23,7 +26,7 @@ struct SSAOData
 	void GenerateKernel();
 	void BindKernel(Shader* sh);
 	void GenerateNoise();
-	void BindNoiseTexture(Shader* sh, Texture* noiseTex);
+	void BindNoiseTexture(Shader* sh, ResourceHandle<Texture> noiseTextureHandle);
 	void BindRadius(Shader* sh);
 };
 
@@ -44,9 +47,9 @@ public:
 	// G-Buffer Pass
 	RenderTarget RT_Geometry;
 
-	Texture gPositionTexture;
-	Texture gNormalTexture;
-	Texture gDiffuseTexture;
+	ResourceHandle<Texture> gPositionTexture;
+	ResourceHandle<Texture> gNormalTexture;
+	ResourceHandle<Texture> gDiffuseTexture;
 
 	// Post-processing pass (SSAO)
 	RenderTarget RT_SSAO;
@@ -54,10 +57,10 @@ public:
 
 	//std::vector<glm::vec3> ssaoKernel;	// Random points distributed between a unit hemisphere (biased towards center)
 	SSAOData ssaoData;
-	Texture ssaoNoiseTexture;			// Random rotation texture to introduce randomness when using SSAO kernel
+	ResourceHandle<Texture> ssaoNoiseTexture;			// Random rotation texture to introduce randomness when using SSAO kernel
 
-	Texture ssaoResultTexture;
-	Texture ssaoBlurTexture;
+	ResourceHandle<Texture> ssaoResultTexture;
+	ResourceHandle<Texture> ssaoBlurTexture;
 	Material ssaoMaterial;
 	Material ssaoBlurMaterial;
 	Shader ssaoShader;

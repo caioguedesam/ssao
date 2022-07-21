@@ -19,12 +19,12 @@ void RenderTarget::Unbind()
 	GL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 }
 
-void RenderTarget::SetOutputTexture(Texture* tex, uint32_t slot)
+void RenderTarget::SetOutputTexture(ResourceHandle<Texture> textureHandle, uint32_t slot)
 {
 	Bind();
-	textures[slot] = tex;
-	tex->Bind(slot);
-	GL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + slot, GL_TEXTURE_2D, tex->handle, 0));
+	textures[slot] = textureHandle;
+	g_textureResourceManager.bindTexture(textureHandle, slot);
+	GL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + slot, GL_TEXTURE_2D, g_textureResourceManager.get(textureHandle)->apiHandle, 0));
 	UpdateDrawTargets();
 }
 
@@ -33,7 +33,7 @@ void RenderTarget::UpdateDrawTargets()
 	std::vector<GLenum> drawTargets;
 	for (int i = 0; i < MAX_TEXTURE_SLOTS; i++)
 	{
-		if (textures[i] != nullptr)
+		if (textures[i].isValid())
 		{
 			drawTargets.push_back(GL_COLOR_ATTACHMENT0 + i);
 		}
@@ -41,18 +41,18 @@ void RenderTarget::UpdateDrawTargets()
 	GL(glDrawBuffers(drawTargets.size(), &drawTargets[0]));
 }
 
-void RenderTarget::Init(uint32_t w, uint32_t h, Texture* firstTex)
+void RenderTarget::Init(uint32_t w, uint32_t h, ResourceHandle<Texture> firstTextureHandle)
 {
 	if (!handle)
 	{
 		GL(glGenFramebuffers(1, &handle));
-		textures = std::vector<Texture*>(MAX_TEXTURE_SLOTS, nullptr);
+		textures = std::vector<ResourceHandle<Texture>>(MAX_TEXTURE_SLOTS);
 	}
 
 	Bind();
 
 	// Create color texture and attach
-	SetOutputTexture(firstTex, 0);
+	SetOutputTexture(firstTextureHandle, 0);
 
 	// Create depth buffer and attach
 	GL(glGenRenderbuffers(1, &depthBuffer));

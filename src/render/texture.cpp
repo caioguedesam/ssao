@@ -4,65 +4,60 @@
 #include <glad/glad.h>
 #include "debugging/gl.h"
 
-Texture::Texture()
+void Texture::init(const TextureDesc desc, void* pData)
 {
-}
-
-void Texture::Bind(uint32_t texUnit)
-{
-	GL(glActiveTexture(GL_TEXTURE0 + texUnit));
-	// TODO: Support multiple texture dimensions
-	GL(glBindTexture(GL_TEXTURE_2D, handle));
-}
-
-void Texture::Init(uint32_t w, uint32_t h, Format texFormat, void* bufferData, Params params/*, CreationFlags flags*/)
-{
-	if (!handle)
+	if (!apiHandle)
 	{
-		GL(glGenTextures(1, &handle));
+		GL(glGenTextures(1, &apiHandle));
 	}
 
-	/*if (!((uint32_t)flags & (uint32_t)CreationFlags::RENDER_TARGET))
-	{
-		ASSERT(bufferData, "Null texture data");
-	}*/
-	width = w;
-	height = h;
-	format = texFormat;
-	pData = bufferData;
+	this->desc = desc;
+	setData(pData);
 
-	Bind(0);
-	// TODO: Support multiple texture channels and formats
-	GLenum glInternalFormat = GLInternalFormat(format);
+	bind(0);
+
+	GLenum glInternalFormat = GLInternalFormat(desc.format);
 	GLenum glFormat, glType;
-	GLFormatAndType(format, glFormat, glType);
+	GLFormatAndType(desc.format, glFormat, glType);
 
-	GL(glTexImage2D(GL_TEXTURE_2D, 0, glInternalFormat, width, height, 0, glFormat, glType, pData));
+	GL(glTexImage2D(GL_TEXTURE_2D, 0, glInternalFormat, desc.width, desc.height, 0, glFormat, glType, pData));
 	GL(glGenerateMipmap(GL_TEXTURE_2D));	// TODO_#MIPS: Support proper mip map generation
 
-	GLenum minFilter = GLMinFilter(params);
-	GLenum magFilter = GLMagFilter(params);
-	GLenum wrapU = GLWrapU(params);
-	GLenum wrapV = GLWrapV(params);
+	GLenum minFilter = GLMinFilter(desc.params);
+	GLenum magFilter = GLMagFilter(desc.params);
+	GLenum wrapU = GLWrapU(desc.params);
+	GLenum wrapV = GLWrapV(desc.params);
 	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapU));
 	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapV));
 	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter));
 	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter));
 }
 
-GLenum Texture::GLInternalFormat(Format texFormat)
+void Texture::setData(void* pData)
+{
+	this->pData = pData;
+}
+
+void Texture::bind(uint32_t texUnit)
+{
+	GL(glActiveTexture(GL_TEXTURE0 + texUnit));
+	// TODO_TEXTURE: Support multiple texture dimensions
+	GL(glBindTexture(GL_TEXTURE_2D, apiHandle));
+}
+
+GLenum Texture::GLInternalFormat(TextureFormat texFormat)
 {
 	switch (texFormat)
 	{
-	case Texture::Format::R8_FLOAT:
+	case TextureFormat::R8_FLOAT:
 		return GL_RED;
-	case Texture::Format::R8_G8_B8_UNORM:
+	case TextureFormat::R8_G8_B8_UNORM:
 		return GL_RGB;
-	case Texture::Format::R8_G8_B8_A8_UNORM:
+	case TextureFormat::R8_G8_B8_A8_UNORM:
 		return GL_RGBA;
-	case Texture::Format::R16_G16_B16_A16_FLOAT:
+	case TextureFormat::R16_G16_B16_A16_FLOAT:
 		return GL_RGBA16F;
-	case Texture::Format::R32_G32_B32_FLOAT:
+	case TextureFormat::R32_G32_B32_FLOAT:
 		return GL_RGBA32F;
 	default:
 		ASSERT_FORMAT(0, "No corresponding OpenGL internal format for texture format %d", static_cast<int>(texFormat));
@@ -70,27 +65,27 @@ GLenum Texture::GLInternalFormat(Format texFormat)
 	}
 }
 
-void Texture::GLFormatAndType(Format texFormat, GLenum& outFormat, GLenum& outType)
+void Texture::GLFormatAndType(TextureFormat texFormat, GLenum& outFormat, GLenum& outType)
 {
 	switch (texFormat)
 	{
-	case Texture::Format::R8_FLOAT:
+	case TextureFormat::R8_FLOAT:
 		outFormat = GL_RED;
 		outType = GL_FLOAT;
 		break;
-	case Format::R8_G8_B8_UNORM:
+	case TextureFormat::R8_G8_B8_UNORM:
 		outFormat = GL_RGB;
 		outType = GL_UNSIGNED_BYTE;
 		break;
-	case Format::R8_G8_B8_A8_UNORM:
+	case TextureFormat::R8_G8_B8_A8_UNORM:
 		outFormat = GL_RGBA;
 		outType = GL_UNSIGNED_BYTE;
 		break;
-	case Format::R16_G16_B16_A16_FLOAT:
+	case TextureFormat::R16_G16_B16_A16_FLOAT:
 		outFormat = GL_RGBA;
 		outType = GL_FLOAT;
 		break;
-	case Texture::Format::R32_G32_B32_FLOAT:
+	case TextureFormat::R32_G32_B32_FLOAT:
 		outFormat = GL_RGB;
 		outType = GL_FLOAT;
 		break;
@@ -101,35 +96,35 @@ void Texture::GLFormatAndType(Format texFormat, GLenum& outFormat, GLenum& outTy
 	}
 }
 
-GLenum Texture::GLMinFilter(Params params)
+GLenum Texture::GLMinFilter(TextureParams params)
 {
 	// TODO_#MIPS: Support mip map filtering options
-	if (params & Params::MIN_FILTER_NEAREST) return GL_NEAREST;
-	if (params & Params::MIN_FILTER_LINEAR) return GL_LINEAR;
+	if (params & TextureParams::MIN_FILTER_NEAREST) return GL_NEAREST;
+	if (params & TextureParams::MIN_FILTER_LINEAR) return GL_LINEAR;
 	else return GL_NEAREST;	// default
 }
 
-GLenum Texture::GLMagFilter(Params params)
+GLenum Texture::GLMagFilter(TextureParams params)
 {
-	if (params & Params::MAG_FILTER_NEAREST) return GL_NEAREST;
-	if (params & Params::MAG_FILTER_LINEAR) return GL_LINEAR;
+	if (params & TextureParams::MAG_FILTER_NEAREST) return GL_NEAREST;
+	if (params & TextureParams::MAG_FILTER_LINEAR) return GL_LINEAR;
 	else return GL_NEAREST;	// default
 }
 
-GLenum Texture::GLWrapU(Params params)
+GLenum Texture::GLWrapU(TextureParams params)
 {
-	if (params & Params::WRAP_REPEAT) return GL_REPEAT;
-	if (params & Params::WRAP_MIRRORED_REPEAT) return GL_MIRRORED_REPEAT;
-	if (params & Params::WRAP_CLAMP_EDGE) return GL_CLAMP_TO_EDGE;
-	if (params & Params::WRAP_CLAMP_BORDER) return GL_CLAMP_TO_BORDER;
+	if (params & TextureParams::WRAP_REPEAT) return GL_REPEAT;
+	if (params & TextureParams::WRAP_MIRRORED_REPEAT) return GL_MIRRORED_REPEAT;
+	if (params & TextureParams::WRAP_CLAMP_EDGE) return GL_CLAMP_TO_EDGE;
+	if (params & TextureParams::WRAP_CLAMP_BORDER) return GL_CLAMP_TO_BORDER;
 	else return GL_REPEAT;	// default
 }
 
-GLenum Texture::GLWrapV(Params params)
+GLenum Texture::GLWrapV(TextureParams params)
 {
-	if (params & Params::WRAP_REPEAT) return GL_REPEAT;
-	if (params & Params::WRAP_MIRRORED_REPEAT) return GL_MIRRORED_REPEAT;
-	if (params & Params::WRAP_CLAMP_EDGE) return GL_CLAMP_TO_EDGE;
-	if (params & Params::WRAP_CLAMP_BORDER) return GL_CLAMP_TO_BORDER;
+	if (params & TextureParams::WRAP_REPEAT) return GL_REPEAT;
+	if (params & TextureParams::WRAP_MIRRORED_REPEAT) return GL_MIRRORED_REPEAT;
+	if (params & TextureParams::WRAP_CLAMP_EDGE) return GL_CLAMP_TO_EDGE;
+	if (params & TextureParams::WRAP_CLAMP_BORDER) return GL_CLAMP_TO_BORDER;
 	else return GL_REPEAT;	// default
 }

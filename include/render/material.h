@@ -2,15 +2,15 @@
 #include "stdafx.h"
 
 #include "render/shader.h"
-#include "render/texture.h"
+#include "resource/texture_resource_manager.h"
 
 class Material
 {
 public:
 	Shader* shader;
-	std::vector<Texture*> textures;
+	std::vector<ResourceHandle<Texture>> textures;
 
 	void Init(Shader* sh);
-	void AddTextureToSlot(Texture* tex, uint32_t slot);
+	void AddTextureToSlot(ResourceHandle<Texture> textureHandle, uint32_t slot);
 	void Bind();
 };

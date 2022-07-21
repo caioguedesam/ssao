@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #define TINYOBJLOADER_IMPLEMENTATION	// Only define this here.
-#define STB_IMAGE_IMPLEMENTATION		// Only define this here.
 
 #include "resource/resource_loader.h"
 
@@ -72,27 +71,4 @@ void ResourceLoader::LoadModel(Model& targetModel, const char* path)
 			indexOffset += 3;
 		}
 	}
-}
-
-void ResourceLoader::LoadTexture(Texture& targetTexture, const char* path)
-{
-	int w, h, nC;
-	// TODO: Currently this only loads textures with 8-bit components per pixel. Add support later for other formats
-	// such as 16-bit floats.
-	unsigned char* imgData = stbi_load(path, &w, &h, &nC, 0);
-	Texture::Format imgFormat;
-	switch (nC)
-	{
-	case 3:
-		imgFormat = Texture::Format::R8_G8_B8_UNORM;
-		break;
-	case 4:
-		imgFormat = Texture::Format::R8_G8_B8_A8_UNORM;
-		break;
-	default:
-		imgFormat = Texture::Format::R8_G8_B8_A8_UNORM;
-		break;
-	}
-	targetTexture.Init(w, h, imgFormat, imgData);
-	stbi_image_free(imgData);
 }

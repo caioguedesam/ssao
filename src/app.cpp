@@ -6,6 +6,7 @@
 
 #include "time/time.h"
 #include "resource/resource_loader.h"
+#include "resource/texture_resource_manager.h"
 #include "render/shader_compiler.h"
 #include "gui/gui.h"
 
@@ -25,10 +26,16 @@ void App::Init()
 	uint32_t appHeight = APP_DEFAULT_HEIGHT;
 	GetDisplayDimensions(g_screenWidth, g_screenHeight);
 
-	renderer.Init(appWidth, appHeight, (g_screenWidth - appWidth) / 2, (g_screenHeight - appHeight) / 2, "SSAO",
-		0, 0, 3.f, 45.f, static_cast<float>(appWidth) / static_cast<float>(appHeight));
+	// Core engine systems initialization
 	Time::Init();
 	Input::Init();
+	
+	// Resource system initialization
+	g_textureResourceManager.init();
+
+	// Rendering system initialization
+	renderer.Init(appWidth, appHeight, (g_screenWidth - appWidth) / 2, (g_screenHeight - appHeight) / 2, "SSAO",
+		0, 0, 3.f, 45.f, static_cast<float>(appWidth) / static_cast<float>(appHeight));
 	GUI::Init(&renderer);
 
 	isRunning = true;
@@ -158,7 +165,7 @@ void App::DisplayGUI()
 		if (oldSsaoKernelDimension != renderer.ssaoData.ssaoNoiseDimension)
 		{
 			renderer.ssaoData.GenerateNoise();
-			renderer.ssaoData.BindNoiseTexture(&renderer.ssaoShader, &renderer.ssaoNoiseTexture);
+			renderer.ssaoData.BindNoiseTexture(&renderer.ssaoShader, renderer.ssaoNoiseTexture);
 		}
 
 		int oldRadius = renderer.ssaoData.ssaoRadius;
@@ -175,20 +182,9 @@ void App::DisplayGUI()
 
 void App::Run()
 {
-	/*Model backpackModel;
-	ResourceLoader::LoadModel(backpackModel, MODELS_PATH"backpack.obj");
-	Texture backpackDiffuseMap;
-	Texture backpackNormalMap;
-	ResourceLoader::LoadTexture(backpackDiffuseMap, TEXTURES_PATH"backpack_diffuse.jpg");
-	ResourceLoader::LoadTexture(backpackNormalMap, TEXTURES_PATH"backpack_normal.png");*/
-
 	Model sponza;
 	ResourceLoader::LoadModel(sponza, MODELS_PATH"sponza.obj");
 
-	/*Buffer vb;
-	vb.Init(GL_ARRAY_BUFFER, sizeof(float) * backpackModel.vertices.size(), backpackModel.vertices.size(), backpackModel.vertices.data());
-	Buffer ib;
-	ib.Init(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * backpackModel.indices.size(), backpackModel.indices.size(), backpackModel.indices.data());*/
 	Buffer vb;
 	vb.Init(GL_ARRAY_BUFFER, sizeof(float) * sponza.vertices.size(), sponza.vertices.size(), sponza.vertices.data());
 	Buffer ib;
@@ -206,8 +202,6 @@ void App::Run()
 
 	Material objMat;
 	objMat.Init(&objShader);
-	/*objMat.AddTextureToSlot(&backpackDiffuseMap, 0);
-	objMat.AddTextureToSlot(&backpackNormalMap, 1);*/
 
 	obj.SetMaterial(&objMat);
 

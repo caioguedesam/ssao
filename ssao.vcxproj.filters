@@ -114,6 +114,9 @@
     <ClCompile Include="dependencies\imgui\imgui_widgets.cpp">
       <Filter>Dependencies</Filter>
     </ClCompile>
+    <ClCompile Include="src\resource\texture_resource_manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
@@ -241,6 +244,12 @@
     </ClInclude>
     <ClInclude Include="dependencies\imgui\imstb_truetype.h">
       <Filter>Dependencies</Filter>
+    </ClInclude>
+    <ClInclude Include="include\resource\resource_manager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\resource\texture_resource_manager.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

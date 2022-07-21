@@ -66,11 +66,17 @@ void SSAOData::GenerateNoise()
 	}
 }
 
-void SSAOData::BindNoiseTexture(Shader* sh, Texture* noiseTex)
+void SSAOData::BindNoiseTexture(Shader* sh, ResourceHandle<Texture> textureHandle)
 {
 	sh->Bind();
 	sh->SetUniform("noiseDimension", ssaoNoiseDimension);
-	noiseTex->Init(ssaoNoiseDimension, ssaoNoiseDimension, Texture::Format::R32_G32_B32_FLOAT, &ssaoNoise[0]);
+	g_textureResourceManager.updateTexture(textureHandle, 
+		{ 
+			static_cast<uint32_t>(ssaoNoiseDimension), 
+			static_cast<uint32_t>(ssaoNoiseDimension),
+			TextureFormat::R32_G32_B32_FLOAT
+		},
+		&ssaoNoise[0]);
 }
 
 void SSAOData::BindRadius(Shader* sh)
@@ -121,41 +127,12 @@ void Renderer::SetCamera(float x, float y, float z, float fov, float aspect)
 
 void Renderer::InitPostProcessResources(uint32_t windowWidth, uint32_t windowHeight)
 {
-	//// Initializing post-processing resources and render target
-	//for (int i = 0; i < 64; i++)	// 64 points for kernel
-	//{
-	//	glm::vec3 sample(
-	//		Random::UniformDistribution(-1.f, 1.f),
-	//		Random::UniformDistribution(-1.f, 1.f),
-	//		Random::UniformDistribution(0.f, 1.f)
-	//	);
-	//	sample = glm::normalize(sample);
-	//	sample *= Random::UniformDistribution();
-	//	// Push sample towards center
-	//	float scale = float(i) / 64.f;
-	//	scale = Math::Lerp(0.1f, 1.f, scale * scale);
-	//	sample *= scale;
-
-	//	ssaoKernel.push_back(sample);
-	//}
-
-	//std::vector<glm::vec3> ssaoNoise;
-	//for (int i = 0; i < 16; i++)
-	//{
-	//	glm::vec3 noise(
-	//		Random::UniformDistribution(-1.f, 1.f),
-	//		Random::UniformDistribution(-1.f, 1.f),
-	//		0.f
-	//	);
-	//	ssaoNoise.push_back(noise);
-	//}
 	ssaoData.GenerateKernel();
 	ssaoData.GenerateNoise();
-	//ssaoNoiseTexture.Init(4, 4, Texture::Format::R32_G32_B32_FLOAT, &ssaoNoise[0]);
-	//ssaoData.BindNoiseTexture(&ssaoNoiseTexture);
-	ssaoNoiseTexture.Init(4, 4, Texture::Format::R32_G32_B32_FLOAT, &ssaoData.ssaoNoise[0]);
-	ssaoResultTexture.Init(windowWidth, windowHeight, Texture::Format::R8_FLOAT, nullptr);
-	ssaoBlurTexture.Init(windowWidth, windowHeight, Texture::Format::R8_FLOAT, nullptr);
+
+	ssaoNoiseTexture = g_textureResourceManager.createTexture({ 4, 4, TextureFormat::R32_G32_B32_FLOAT }, &ssaoData.ssaoNoise[0]);
+	ssaoResultTexture = g_textureResourceManager.createTexture({ windowWidth, windowHeight, TextureFormat::R8_FLOAT }, nullptr);
+	ssaoBlurTexture = g_textureResourceManager.createTexture({ windowWidth, windowHeight, TextureFormat::R8_FLOAT }, nullptr);
 }
 
 void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t windowX, uint32_t windowY, const char* windowTitle,
@@ -187,17 +164,18 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	screenQuad.SetVertexData(&defaultQuadVertexBuffer, &defaultQuadIndexBuffer);
 
 	// Initializing G-Buffer pass resources
-	gDiffuseTexture.Init(windowWidth, windowHeight, Texture::Format::R8_G8_B8_A8_UNORM, nullptr);
-	gPositionTexture.Init(windowWidth, windowHeight, Texture::Format::R16_G16_B16_A16_FLOAT, nullptr, Texture::Params::WRAP_CLAMP_EDGE);
-	gNormalTexture.Init(windowWidth, windowHeight, Texture::Format::R16_G16_B16_A16_FLOAT, nullptr);
-	RT_Geometry.Init(windowWidth, windowHeight, &gDiffuseTexture);
-	RT_Geometry.SetOutputTexture(&gPositionTexture, 1);
-	RT_Geometry.SetOutputTexture(&gNormalTexture, 2);
+	gDiffuseTexture = g_textureResourceManager.createTexture({ windowWidth, windowHeight, TextureFormat::R8_G8_B8_A8_UNORM }, nullptr);
+	gPositionTexture = g_textureResourceManager.createTexture({ windowWidth, windowHeight, TextureFormat::R16_G16_B16_A16_FLOAT, TextureParams::WRAP_CLAMP_EDGE }, nullptr);
+	gNormalTexture = g_textureResourceManager.createTexture({ windowWidth, windowHeight, TextureFormat::R16_G16_B16_A16_FLOAT }, nullptr);
+
+	RT_Geometry.Init(windowWidth, windowHeight, gDiffuseTexture);
+	RT_Geometry.SetOutputTexture(gPositionTexture, 1);
+	RT_Geometry.SetOutputTexture(gNormalTexture, 2);
 
 	// Initializing Post-process pass (SSAO) resources
 	InitPostProcessResources(windowWidth, windowHeight);
-	RT_SSAO.Init(windowWidth, windowHeight, &ssaoResultTexture);
-	RT_Blur.Init(windowWidth, windowHeight, &ssaoBlurTexture);
+	RT_SSAO.Init(windowWidth, windowHeight, ssaoResultTexture);
+	RT_Blur.Init(windowWidth, windowHeight, ssaoBlurTexture);
 
 	ShaderCompiler::CompileAndLinkShader(&ssaoShader, 
 		SHADERS_PATH"screen_quad_vs.vert",
@@ -207,27 +185,18 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 		SHADERS_PATH"ssao_blur_ps.frag");
 
 	ssaoMaterial.Init(&ssaoShader);
-	/*ssaoMaterial.AddTextureToSlot(&gPositionTexture, 0);
-	ssaoMaterial.AddTextureToSlot(&gNormalTexture, 1);
-	ssaoMaterial.AddTextureToSlot(&ssaoNoiseTexture, 2);*/
 	ssaoMaterial.shader->Bind();
-	//char ssaoKernelName[16] = "samples[0]";
-	//char ssaoKernelName[16];
-	//for (int i = 0; i < 64; i++)
-	//{
-	//	sprintf(ssaoKernelName, "samples[%d]", i);
-	//	//ssaoMaterial.shader->SetUniform(ssaoKernelName, ssaoKernel[i]);
-	//}
+
 	ssaoData.BindKernel(ssaoMaterial.shader);
-	ssaoData.BindNoiseTexture(ssaoMaterial.shader, &ssaoNoiseTexture);
+	ssaoData.BindNoiseTexture(ssaoMaterial.shader, ssaoNoiseTexture);
 	ssaoData.BindRadius(ssaoMaterial.shader);
 
-	ssaoMaterial.AddTextureToSlot(&gPositionTexture, 0);
-	ssaoMaterial.AddTextureToSlot(&gNormalTexture, 1);
-	ssaoMaterial.AddTextureToSlot(&ssaoNoiseTexture, 2);
+	ssaoMaterial.AddTextureToSlot(gPositionTexture, 0);
+	ssaoMaterial.AddTextureToSlot(gNormalTexture, 1);
+	ssaoMaterial.AddTextureToSlot(ssaoNoiseTexture, 2);
 
 	ssaoBlurMaterial.Init(&ssaoBlurShader);
-	ssaoBlurMaterial.AddTextureToSlot(&ssaoResultTexture, 0);
+	ssaoBlurMaterial.AddTextureToSlot(ssaoResultTexture, 0);
 
 	// Initializing final pass resources
 	ShaderCompiler::CompileAndLinkShader(&finalPassShader, 
@@ -235,8 +204,8 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 		SHADERS_PATH"final_pass_ps.frag");
 
 	finalPassMaterial.Init(&finalPassShader);
-	finalPassMaterial.AddTextureToSlot(&gDiffuseTexture, 0);
-	finalPassMaterial.AddTextureToSlot(&ssaoBlurTexture, 1);
+	finalPassMaterial.AddTextureToSlot(gDiffuseTexture, 0);
+	finalPassMaterial.AddTextureToSlot(ssaoBlurTexture, 1);
 }
 
 void Renderer::Destroy() {}
@@ -309,7 +278,7 @@ void Renderer::Render()
 	}
 
 	// Final pass
-	finalPassMaterial.AddTextureToSlot(enableBlurPass ? &ssaoBlurTexture : &ssaoResultTexture, 1);	//TODO_#CUSTOMIZE_RENDER_PASS: For the love of god improve this
+	finalPassMaterial.AddTextureToSlot(enableBlurPass ? ssaoBlurTexture : ssaoResultTexture, 1);	//TODO_#CUSTOMIZE_RENDER_PASS: For the love of god improve this
 	screenQuad.SetMaterial(&finalPassMaterial);
 	screenQuad.Draw(params);
 }

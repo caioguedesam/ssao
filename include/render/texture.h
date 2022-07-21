@@ -4,49 +4,54 @@
 
 typedef unsigned int GLenum;
 
+enum TextureFormat : uint32_t
+{
+	INVALID = 0,
+	R8_FLOAT,
+	R8_G8_B8_UNORM,
+	R8_G8_B8_A8_UNORM,
+	R16_G16_B16_A16_FLOAT,
+	R32_G32_B32_FLOAT,
+};
+
+enum TextureParams : uint32_t
+{
+	NONE = 0,
+	MIN_FILTER_NEAREST = 1 << 0,
+	MIN_FILTER_LINEAR = 1 << 1,
+	MAG_FILTER_NEAREST = 1 << 2,
+	MAG_FILTER_LINEAR = 1 << 3,
+	WRAP_REPEAT = 1 << 4,
+	WRAP_MIRRORED_REPEAT = 1 << 5,
+	WRAP_CLAMP_EDGE = 1 << 6,
+	WRAP_CLAMP_BORDER = 1 << 7
+};
+
+struct TextureDesc
+{
+	uint32_t width = 0;
+	uint32_t height = 0;
+	TextureFormat format = TextureFormat::INVALID;
+	TextureParams params = TextureParams::NONE;
+};
+
 // TODO: Free resource
 class Texture
 {
 public:
-	enum class Format
-	{
-		INVALID = 0,
-		R8_FLOAT,
-		R8_G8_B8_UNORM,
-		R8_G8_B8_A8_UNORM,
-		R16_G16_B16_A16_FLOAT,
-		R32_G32_B32_FLOAT,
-	};
-
-	enum Params
-	{
-		NONE						= 0,
-		MIN_FILTER_NEAREST			= 1 << 0,
-		MIN_FILTER_LINEAR			= 1 << 1,
-		MAG_FILTER_NEAREST			= 1 << 2,
-		MAG_FILTER_LINEAR			= 1 << 3,
-		WRAP_REPEAT					= 1 << 4,
-		WRAP_MIRRORED_REPEAT		= 1 << 5,
-		WRAP_CLAMP_EDGE				= 1 << 6,
-		WRAP_CLAMP_BORDER			= 1 << 7
-	};
-
-	uint32_t handle;
-	uint32_t width;
-	uint32_t height;
-	Format format;
+	TextureDesc desc;
+	uint32_t apiHandle;
 	void* pData;
 
-	Texture();
+	void init(const TextureDesc desc, void* pData);
+	void setData(void* pData);
+	void bind(uint32_t texUnit);
 
-	void Bind(uint32_t texUnit);
-
-	void Init(uint32_t w, uint32_t h, Format texFormat, void* bufferData, Params params = Params::NONE/*, CreationFlags flags = CreationFlags::NONE*/);
-
-	static GLenum GLInternalFormat(Format texFormat);
-	static void GLFormatAndType(Format texFormat, GLenum& outFormat, GLenum& outType);
-	static GLenum GLMinFilter(Params params);
-	static GLenum GLMagFilter(Params params);
-	static GLenum GLWrapU(Params params);
-	static GLenum GLWrapV(Params params);
+	// TODO_TEXTURE: Remove these API specific functions from here
+	static GLenum GLInternalFormat(TextureFormat texFormat);
+	static void GLFormatAndType(TextureFormat texFormat, GLenum& outFormat, GLenum& outType);
+	static GLenum GLMinFilter(TextureParams params);
+	static GLenum GLMagFilter(TextureParams params);
+	static GLenum GLWrapU(TextureParams params);
+	static GLenum GLWrapV(TextureParams params);
 };
