@@ -1,6 +1,11 @@
 #include "stdafx.h"
 #include "file/file_reader.h"
 
+FileReaderPath::FileReaderPath(const char* str)
+{
+	strcpy(path, str);
+}
+
 FileReader::Result FileReader::ReadFile(const char* path, char* buffer)
 {
 #if _WIN32
@@ -65,18 +70,24 @@ FileReader::Result FileReader::ReadFile(const char* path, char* buffer)
 #endif
 }
 
-std::vector<char*> FileReader::GetFileNamesFromPath(const char* path)
+std::vector<FileReaderPath> FileReader::getFileNamesFromPath(const char* path)
 {
 #if _WIN32
 	WIN32_FIND_DATAA findData;
-	std::vector<char*> result;
+	std::vector<FileReaderPath> result;
 	char query[MAX_PATH];
 	strcpy(query, path);
-	strcat(query, "\\*");
+	strcat(query, "*");		// TODO_FILE: Assuming path ends in forward slash /
 	HANDLE hFind = FindFirstFileA(query, &findData);
 	do
 	{
-		result.push_back(findData.cFileName);
+		if (strcmp(findData.cFileName, ".") == 0 || strcmp(findData.cFileName, "..") == 0)
+		{
+			continue;
+		}
+
+		result.push_back(FileReaderPath(findData.cFileName));
+
 	} while (FindNextFileA(hFind, &findData));
 	FindClose(hFind);
 

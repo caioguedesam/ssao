@@ -11,13 +11,10 @@ struct ShaderResourceManager : ResourceManager<Shader>
 	void init();
 	void destroy();
 
-	ResourceHandle<Shader> compileShader(const char* resourcePath);
-	void setShaderUniform(ResourceHandle<Shader> shaderHandle, const char* uName, const glm::mat4& uValue);
-	void setShaderUniform(ResourceHandle<Shader> shaderHandle, const char* uName, const int& uValue);
-	void setShaderUniform(ResourceHandle<Shader> shaderHandle, const char* uName, const float& uValue);
-	void setShaderUniform(ResourceHandle<Shader> shaderHandle, const char* uName, const glm::vec3& uValue);
+	ResourceHandle<Shader> compileShader(const char* filePath);
+	ResourceHandle<Shader> getFromFile(const char* filePath);
 	
-	ShaderPipeline createShaderPipeline(ResourceHandle<Shader> vs, ResourceHandle<Shader> ps);
+	ShaderPipeline createLinkedShaderPipeline(ResourceHandle<Shader> vs, ResourceHandle<Shader> ps);
 	void linkShaders(ShaderPipeline& shaderPipeline);
 	void bindShaderPipeline(ShaderPipeline& shaderPipeline);
 

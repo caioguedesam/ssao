@@ -1,9 +1,15 @@
 #pragma once
 #include "stdafx.h"
 
-class FileReader
+struct FileReaderPath
 {
-public:
+	char path[MAX_PATH] = "";
+
+	FileReaderPath(const char* str);
+};
+
+struct FileReader
+{
 	enum class Result
 	{
 		OK = 0,
@@ -13,5 +19,5 @@ public:
 	};
 
 	static Result ReadFile(const char* path, char* buffer);
-	static std::vector<char*> GetFileNamesFromPath(const char* path);
+	static std::vector<FileReaderPath> getFileNamesFromPath(const char* path);
 };

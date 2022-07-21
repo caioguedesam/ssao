@@ -25,7 +25,7 @@
 
 enum ShaderType : uint32_t
 {
-	INVALID = 0,
+	INVALID_SHADER = 0,
 	VERTEX,
 	PIXEL
 };
@@ -35,11 +35,6 @@ struct Shader
 	uint32_t apiHandle = UINT32_MAX;
 	ShaderType type;
 	size_t timestamp = 0;
-
-	void setUniform(const char* uName, const glm::mat4& uValue);
-	void setUniform(const char* uName, const int& uValue);
-	void setUniform(const char* uName, const float& uValue);
-	void setUniform(const char* uName, const glm::vec3& uValue);
 };
 
 struct ShaderPipeline
@@ -50,7 +45,12 @@ struct ShaderPipeline
 	ResourceHandle<Shader> ps;
 	// TODO_SHADER: Other shader stages? (geometry, hull...)
 
+	ShaderPipeline();
 	ShaderPipeline(ResourceHandle<Shader> vs, ResourceHandle<Shader> ps);
 
 	void bind();
+	void setUniform(const char* uName, const glm::mat4& uValue);
+	void setUniform(const char* uName, const int& uValue);
+	void setUniform(const char* uName, const float& uValue);
+	void setUniform(const char* uName, const glm::vec3& uValue);
 };

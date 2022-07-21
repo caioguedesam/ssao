@@ -3,21 +3,35 @@
 #include "file/file_reader.h"
 #include "debugging/gl.h"
 #include "glad/glad.h"
+#include "globals.h"
 
 #define SHADER_SOURCE_MAX_SIZE 4096
 
 ShaderResourceManager g_shaderResourceManager;
 
-void ShaderResourceManager::init() {}
+void ShaderResourceManager::init() 
+{
+	// Fetch and compile all shaders
+	std::vector<FileReaderPath> files = FileReader::getFileNamesFromPath(SHADERS_PATH);
+	for (int i = 0; i < files.size(); i++)
+	{
+		char path[MAX_PATH] = "";
+		strcat(path, SHADERS_PATH);
+		strcat(path, files[i].path);
+		compileShader(path);
+	}
+
+	// TODO_SHADER: Set up shader hot reload again
+}
 
 void ShaderResourceManager::destroy() {}
 
-ResourceHandle<Shader> ShaderResourceManager::compileShader(const char* resourcePath)
+ResourceHandle<Shader> ShaderResourceManager::compileShader(const char* filePath)
 {
 	ResourceHandle<Shader> handle;
-	if (handleList.count(resourcePath))
+	if (handleList.count(filePath))
 	{
-		handle = handleList[resourcePath];
+		handle = handleList[filePath];
 	}
 	else
 	{
@@ -27,12 +41,12 @@ ResourceHandle<Shader> ShaderResourceManager::compileShader(const char* resource
 
 	ShaderType type;
 	GLenum glType;
-	if (strstr(resourcePath, ".vert"))
+	if (strstr(filePath, ".vert"))
 	{
 		type = ShaderType::VERTEX;
 		glType = GL_VERTEX_SHADER;
 	}
-	else if (strstr(resourcePath, ".frag"))
+	else if (strstr(filePath, ".frag"))
 	{
 		type = ShaderType::PIXEL;
 		glType = GL_FRAGMENT_SHADER;
@@ -45,7 +59,7 @@ ResourceHandle<Shader> ShaderResourceManager::compileShader(const char* resource
 	}
 
 	char shaderSource[SHADER_SOURCE_MAX_SIZE];
-	FileReader::ReadFile(resourcePath, shaderSource);
+	FileReader::ReadFile(filePath, shaderSource);	// TODO_SHADER: Keep going from here: filePath should include resources/shaders/
 	const char* shaderSource_cstr = shaderSource;
 
 	GL(glShaderSource(apiHandle, 1, &shaderSource_cstr, NULL));
@@ -62,33 +76,20 @@ ResourceHandle<Shader> ShaderResourceManager::compileShader(const char* resource
 			infoLog);
 	}
 
-	handleList[resourcePath] = handle;
+	handleList[filePath] = handle;
 	return handle;
 }
 
-void ShaderResourceManager::setShaderUniform(ResourceHandle<Shader> shaderHandle, const char* uName, const glm::mat4& uValue)
+ResourceHandle<Shader> ShaderResourceManager::getFromFile(const char* filePath)
 {
-	get(shaderHandle)->setUniform(uName, uValue);
+	ASSERT(handleList.count(filePath), "Trying to get shader from file that was not compiled yet.");
+	return handleList[filePath];
 }
 
-void ShaderResourceManager::setShaderUniform(ResourceHandle<Shader> shaderHandle, const char* uName, const int& uValue)
-{
-	get(shaderHandle)->setUniform(uName, uValue);
-}
-
-void ShaderResourceManager::setShaderUniform(ResourceHandle<Shader> shaderHandle, const char* uName, const float& uValue)
-{
-	get(shaderHandle)->setUniform(uName, uValue);
-}
-
-void ShaderResourceManager::setShaderUniform(ResourceHandle<Shader> shaderHandle, const char* uName, const glm::vec3& uValue)
-{
-	get(shaderHandle)->setUniform(uName, uValue);
-}
-
-ShaderPipeline ShaderResourceManager::createShaderPipeline(ResourceHandle<Shader> vs, ResourceHandle<Shader> ps)
+ShaderPipeline ShaderResourceManager::createLinkedShaderPipeline(ResourceHandle<Shader> vs, ResourceHandle<Shader> ps)
 {
 	ShaderPipeline shaderPipeline(vs, ps);
+	linkShaders(shaderPipeline);
 	return shaderPipeline;
 }
 

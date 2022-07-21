@@ -24,10 +24,10 @@ struct SSAOData
 	float ssaoRadius = 0.5f;
 
 	void GenerateKernel();
-	void BindKernel(Shader* sh);
+	void bindKernel(ShaderPipeline& shaderPipeline);
 	void GenerateNoise();
-	void BindNoiseTexture(Shader* sh, ResourceHandle<Texture> noiseTextureHandle);
-	void BindRadius(Shader* sh);
+	void bindNoiseTexture(ShaderPipeline& shaderPipeline, ResourceHandle<Texture> noiseTextureHandle);
+	void bindRadius(ShaderPipeline& shaderPipeline);
 };
 
 class Renderer
@@ -63,13 +63,13 @@ public:
 	ResourceHandle<Texture> ssaoBlurTexture;
 	Material ssaoMaterial;
 	Material ssaoBlurMaterial;
-	Shader ssaoShader;
-	Shader ssaoBlurShader;
+	//ShaderPipeline ssaoShaderPipeline;
+	//ShaderPipeline ssaoBlurShaderPipeline;
 	bool enableBlurPass = true;
 
 	// Final pass (uses default screen quad)
 	Material finalPassMaterial;
-	Shader finalPassShader;
+	//Shader finalPassShader;
 
 	~Renderer();
 
@@ -87,6 +87,7 @@ public:
 
 	void Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t windowX, uint32_t windowY, const char* windowTitle,
 		float cameraX, float cameraY, float cameraZ, float cameraFOV, float cameraAspect);
+	void initializeRenderResources(uint32_t windowWidth, uint32_t windowHeight);
 
 	void Destroy();
 

@@ -6,7 +6,7 @@ typedef unsigned int GLenum;
 
 enum TextureFormat : uint32_t
 {
-	INVALID = 0,
+	INVALID_TEXTURE = 0,
 	R8_FLOAT,
 	R8_G8_B8_UNORM,
 	R8_G8_B8_A8_UNORM,
@@ -16,7 +16,7 @@ enum TextureFormat : uint32_t
 
 enum TextureParams : uint32_t
 {
-	NONE = 0,
+	TEXPARAMS_NONE = 0,
 	MIN_FILTER_NEAREST = 1 << 0,
 	MIN_FILTER_LINEAR = 1 << 1,
 	MAG_FILTER_NEAREST = 1 << 2,
@@ -31,8 +31,8 @@ struct TextureDesc
 {
 	uint32_t width = 0;
 	uint32_t height = 0;
-	TextureFormat format = TextureFormat::INVALID;
-	TextureParams params = TextureParams::NONE;
+	TextureFormat format = TextureFormat::INVALID_TEXTURE;
+	TextureParams params = TextureParams::TEXPARAMS_NONE;
 };
 
 // TODO: Free resource

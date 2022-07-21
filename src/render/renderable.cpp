@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "resource/shader_resource_manager.h"
 #include "render/renderable.h"
 #include <glad/glad.h>
 #include "debugging/gl.h"
@@ -34,20 +35,31 @@ void Renderable::SetMaterial(Material* mat)
 	material = mat;
 }
 
+void bindStandardUniforms(ShaderPipeline shaderPipeline, const RenderParams& params)
+{
+	// TODO_SHADER: Change "model" to "world" matrix. WVP is just a better name.
+	shaderPipeline.setUniform("uModel", params.model);
+	shaderPipeline.setUniform("uView", params.view);
+	shaderPipeline.setUniform("uProj", params.proj);
+	shaderPipeline.setUniform("uMV", params.view * params.model);
+	shaderPipeline.setUniform("uVP", params.proj * params.view);
+	shaderPipeline.setUniform("uMVP", params.proj * params.view * params.model);
+
+	// TODO_SHADER: Get per uniform names from shader instead of this.
+	shaderPipeline.setUniform("tex0", 0);
+	shaderPipeline.setUniform("tex1", 1);
+	shaderPipeline.setUniform("tex2", 2);
+	shaderPipeline.setUniform("tex3", 3);
+}
+
 void Renderable::Draw(const RenderParams& params)
 {
-	material->Bind();
-	material->shader->SetUniform("uModel", params.model);
-	material->shader->SetUniform("uView", params.view);
-	material->shader->SetUniform("uProj", params.proj);
-	material->shader->SetUniform("uMV", params.view * params.model);
-	material->shader->SetUniform("uVP", params.proj * params.view);
-	material->shader->SetUniform("uMVP", params.proj * params.view * params.model);
-	// TODO: Change this to a better uniform association system later
-	material->shader->SetUniform("tex0", 0);
-	material->shader->SetUniform("tex1", 1);
-	material->shader->SetUniform("tex2", 2);
-	material->shader->SetUniform("tex3", 3);
+	material->bind();
+
+	// TODO_SHADER: Make a better process for binding all this default stuff, uniform buffers, etc.
+	// I like OGLDev's pipeline stuff.
+
+	bindStandardUniforms(material->shaderPipeline, params);
 
 	GL(glBindVertexArray(vaoHandle));
 
