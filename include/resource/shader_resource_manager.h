@@ -18,7 +18,8 @@ struct ShaderResourceManager : ResourceManager<Shader>
 	void setShaderUniform(ResourceHandle<Shader> shaderHandle, const char* uName, const glm::vec3& uValue);
 	
 	ShaderPipeline createShaderPipeline(ResourceHandle<Shader> vs, ResourceHandle<Shader> ps);
-	void bindShaderPipeline(const ShaderPipeline& shaderPipeline);
+	void linkShaders(ShaderPipeline& shaderPipeline);
+	void bindShaderPipeline(ShaderPipeline& shaderPipeline);
 
 	// TODO_MEMORY, TODO_TEXTURE: Texture freeing (on demand/destruction)
 };

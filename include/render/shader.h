@@ -36,7 +36,6 @@ struct Shader
 	ShaderType type;
 	size_t timestamp = 0;
 
-	void bind();
 	void setUniform(const char* uName, const glm::mat4& uValue);
 	void setUniform(const char* uName, const int& uValue);
 	void setUniform(const char* uName, const float& uValue);

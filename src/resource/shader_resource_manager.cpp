@@ -66,10 +66,25 @@ ResourceHandle<Shader> ShaderResourceManager::compileShader(const char* resource
 	return handle;
 }
 
-void ShaderResourceManager::setShaderUniform(ResourceHandle<Shader> shaderHandle, const char* uName, const glm::mat4& uValue);
-void ShaderResourceManager::setShaderUniform(ResourceHandle<Shader> shaderHandle, const char* uName, const int& uValue);
-void ShaderResourceManager::setShaderUniform(ResourceHandle<Shader> shaderHandle, const char* uName, const float& uValue);
-void ShaderResourceManager::setShaderUniform(ResourceHandle<Shader> shaderHandle, const char* uName, const glm::vec3& uValue);
+void ShaderResourceManager::setShaderUniform(ResourceHandle<Shader> shaderHandle, const char* uName, const glm::mat4& uValue)
+{
+	get(shaderHandle)->setUniform(uName, uValue);
+}
+
+void ShaderResourceManager::setShaderUniform(ResourceHandle<Shader> shaderHandle, const char* uName, const int& uValue)
+{
+	get(shaderHandle)->setUniform(uName, uValue);
+}
+
+void ShaderResourceManager::setShaderUniform(ResourceHandle<Shader> shaderHandle, const char* uName, const float& uValue)
+{
+	get(shaderHandle)->setUniform(uName, uValue);
+}
+
+void ShaderResourceManager::setShaderUniform(ResourceHandle<Shader> shaderHandle, const char* uName, const glm::vec3& uValue)
+{
+	get(shaderHandle)->setUniform(uName, uValue);
+}
 
 ShaderPipeline ShaderResourceManager::createShaderPipeline(ResourceHandle<Shader> vs, ResourceHandle<Shader> ps)
 {
@@ -77,7 +92,31 @@ ShaderPipeline ShaderResourceManager::createShaderPipeline(ResourceHandle<Shader
 	return shaderPipeline;
 }
 
-void ShaderResourceManager::bindShaderPipeline(const ShaderPipeline& shaderPipeline)
+void ShaderResourceManager::linkShaders(ShaderPipeline& shaderPipeline)
+{
+	if (shaderPipeline.apiHandle == UINT32_MAX)
+	{
+		GL(shaderPipeline.apiHandle = glCreateProgram());
+	}
+
+	uint32_t vsHandle = get(shaderPipeline.vs)->apiHandle;
+	uint32_t psHandle = get(shaderPipeline.ps)->apiHandle;
+
+	GL(glAttachShader(shaderPipeline.apiHandle, vsHandle));
+	GL(glAttachShader(shaderPipeline.apiHandle, psHandle));
+	GL(glLinkProgram(shaderPipeline.apiHandle));
+	int ret = 0;
+	GL(glGetProgramiv(shaderPipeline.apiHandle, GL_LINK_STATUS, &ret));
+	if (!ret)
+	{
+		char infoLog[2048];
+		GL(glGetProgramInfoLog(shaderPipeline.apiHandle, 2048, NULL, infoLog));
+		ASSERT_FORMAT(ret, "Error linking shader program: %s",
+			infoLog);
+	}
+}
+
+void ShaderResourceManager::bindShaderPipeline(ShaderPipeline& shaderPipeline)
 {
 	shaderPipeline.bind();
 }
