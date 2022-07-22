@@ -12,7 +12,7 @@ ShaderResourceManager g_shaderResourceManager;
 void ShaderResourceManager::init() 
 {
 	// Fetch and compile all shaders
-	std::vector<FileReaderPath> files = FileReader::getFileNamesFromPath(SHADERS_PATH);
+	std::vector<FilePath> files = FileReader::getFileNamesFromPath(SHADERS_PATH);
 	for (int i = 0; i < files.size(); i++)
 	{
 		char path[MAX_PATH] = "";
@@ -53,7 +53,7 @@ ResourceHandle<Shader> ShaderResourceManager::compileShader(const char* filePath
 	}
 
 	uint32_t apiHandle = get(handle)->apiHandle;
-	if (apiHandle == UINT32_MAX)
+	if (apiHandle == HANDLE_INVALID)
 	{
 		GL(apiHandle = glCreateShader(glType));
 	}
@@ -76,14 +76,17 @@ ResourceHandle<Shader> ShaderResourceManager::compileShader(const char* filePath
 			infoLog);
 	}
 
-	handleList[filePath] = handle;
+	get(handle)->apiHandle = apiHandle;
+	get(handle)->type = type;
+	handleList[FilePath(filePath)] = handle;
 	return handle;
 }
 
 ResourceHandle<Shader> ShaderResourceManager::getFromFile(const char* filePath)
 {
-	ASSERT(handleList.count(filePath), "Trying to get shader from file that was not compiled yet.");
-	return handleList[filePath];
+	FilePath path(filePath);
+	ASSERT(handleList.count(path), "Trying to get shader from file that was not compiled yet.");
+	return handleList[path];
 }
 
 ShaderPipeline ShaderResourceManager::createLinkedShaderPipeline(ResourceHandle<Shader> vs, ResourceHandle<Shader> ps)
@@ -95,7 +98,7 @@ ShaderPipeline ShaderResourceManager::createLinkedShaderPipeline(ResourceHandle<
 
 void ShaderResourceManager::linkShaders(ShaderPipeline& shaderPipeline)
 {
-	if (shaderPipeline.apiHandle == UINT32_MAX)
+	if (shaderPipeline.apiHandle == HANDLE_INVALID)
 	{
 		GL(shaderPipeline.apiHandle = glCreateProgram());
 	}

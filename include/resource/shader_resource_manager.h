@@ -1,12 +1,13 @@
 #pragma once
 #include "stdafx.h"
 #include "resource/resource_manager.h"
+#include "file/file_reader.h"
 #include "render/shader.h"
 #include "core/hash.h"
 
 struct ShaderResourceManager : ResourceManager<Shader>
 {
-	std::unordered_map<const char*, ResourceHandle<Shader>, HashFunction_CSTR> handleList;
+	std::unordered_map<FilePath, ResourceHandle<Shader>, HashFunction_FilePath> handleList;
 
 	void init();
 	void destroy();

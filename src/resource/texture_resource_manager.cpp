@@ -10,9 +10,10 @@ TextureResourceManager g_textureResourceManager;
 
 ResourceHandle<Texture> TextureResourceManager::loadFromFile(const char* filepath)
 {
-	if (handleList.count(filepath))
+	FilePath path(filepath);
+	if (handleList.count(path))
 	{
-		return handleList[filepath];
+		return handleList[path];
 	}
 
 	int w, h, nC;
@@ -39,7 +40,7 @@ ResourceHandle<Texture> TextureResourceManager::loadFromFile(const char* filepat
 	desc.format = imgFormat;
 
 	ResourceHandle<Texture> handle = createTexture(desc, imgData);
-	handleList[filepath] = handle;
+	handleList[path] = handle;
 	return handle;
 }
 

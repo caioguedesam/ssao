@@ -6,7 +6,7 @@
 
 void Texture::init(const TextureDesc desc, void* pData)
 {
-	if (!apiHandle)
+	if (apiHandle == HANDLE_INVALID)
 	{
 		GL(glGenTextures(1, &apiHandle));
 	}

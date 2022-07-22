@@ -44,6 +44,6 @@ ShaderPipeline::ShaderPipeline(ResourceHandle<Shader> vs, ResourceHandle<Shader>
 
 void ShaderPipeline::bind()
 {
-	ASSERT(apiHandle != 0, "Trying to bind invalid shader pipeline");
+	ASSERT(apiHandle != HANDLE_INVALID, "Trying to bind invalid shader pipeline");
 	GL(glUseProgram(apiHandle));
 }

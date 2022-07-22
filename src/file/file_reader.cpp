@@ -1,9 +1,15 @@
 #include "stdafx.h"
 #include "file/file_reader.h"
+#include "core/hash.h"
 
-FileReaderPath::FileReaderPath(const char* str)
+FilePath::FilePath(const char* str)
 {
 	strcpy(path, str);
+}
+
+size_t HashFunction_FilePath::operator()(const FilePath& fp) const
+{
+	return HashString(fp.path);
 }
 
 FileReader::Result FileReader::ReadFile(const char* path, char* buffer)
@@ -70,11 +76,11 @@ FileReader::Result FileReader::ReadFile(const char* path, char* buffer)
 #endif
 }
 
-std::vector<FileReaderPath> FileReader::getFileNamesFromPath(const char* path)
+std::vector<FilePath> FileReader::getFileNamesFromPath(const char* path)
 {
 #if _WIN32
 	WIN32_FIND_DATAA findData;
-	std::vector<FileReaderPath> result;
+	std::vector<FilePath> result;
 	char query[MAX_PATH];
 	strcpy(query, path);
 	strcat(query, "*");		// TODO_FILE: Assuming path ends in forward slash /
@@ -86,7 +92,7 @@ std::vector<FileReaderPath> FileReader::getFileNamesFromPath(const char* path)
 			continue;
 		}
 
-		result.push_back(FileReaderPath(findData.cFileName));
+		result.push_back(FilePath(findData.cFileName));
 
 	} while (FindNextFileA(hFind, &findData));
 	FindClose(hFind);

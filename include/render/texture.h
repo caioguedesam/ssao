@@ -1,6 +1,7 @@
 #pragma once
 
 #include "stdafx.h"
+#include "resource/resource_manager.h"
 
 typedef unsigned int GLenum;
 
@@ -40,7 +41,7 @@ class Texture
 {
 public:
 	TextureDesc desc;
-	uint32_t apiHandle;
+	uint32_t apiHandle = HANDLE_INVALID;
 	void* pData;
 
 	void init(const TextureDesc desc, void* pData);

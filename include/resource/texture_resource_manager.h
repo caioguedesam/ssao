@@ -2,11 +2,12 @@
 #include "stdafx.h"
 #include "resource/resource_manager.h"
 #include "render/texture.h"
+#include "file/file_reader.h"
 #include "core/hash.h"
 
 struct TextureResourceManager : ResourceManager<Texture>
 {
-	std::unordered_map<const char*, ResourceHandle<Texture>, HashFunction_CSTR> handleList;
+	std::unordered_map<FilePath, ResourceHandle<Texture>, HashFunction_FilePath> handleList;
 
 	void init();
 	void destroy();
