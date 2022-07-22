@@ -257,6 +257,7 @@
     <ClInclude Include="include\render\shader.h" />
     <ClInclude Include="include\render\shader_compiler.h" />
     <ClInclude Include="include\render\texture.h" />
+    <ClInclude Include="include\resource\buffer_resource_manager.h" />
     <ClInclude Include="include\resource\resource_loader.h" />
     <ClInclude Include="include\resource\resource_manager.h" />
     <ClInclude Include="include\resource\shader_resource_manager.h" />

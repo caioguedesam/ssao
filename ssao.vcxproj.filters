@@ -257,5 +257,8 @@
     <ClInclude Include="include\resource\shader_resource_manager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\resource\buffer_resource_manager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -19,7 +19,7 @@ struct ShaderResourceManager : ResourceManager<Shader>
 	void linkShaders(ShaderPipeline& shaderPipeline);
 	void bindShaderPipeline(ShaderPipeline& shaderPipeline);
 
-	// TODO_MEMORY, TODO_TEXTURE: Texture freeing (on demand/destruction)
+	// TODO_MEMORY, TODO_SHADER: Shader freeing (on demand/destruction)
 };
 
 extern ShaderResourceManager g_shaderResourceManager;
