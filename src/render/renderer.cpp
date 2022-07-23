@@ -3,7 +3,7 @@
 #include "debugging/gl.h"
 #include "random/random.h"
 #include "math/math.h"
-#include "render/shader_compiler.h"
+#include "resource/buffer_resource_manager.h"
 
 std::vector<float> defaultQuadVertices =
 {
@@ -162,9 +162,21 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 void Renderer::initializeRenderResources(uint32_t windowWidth, uint32_t windowHeight)
 {
 	// Initializing default resources
-	defaultQuadVertexBuffer.Init(GL_ARRAY_BUFFER, sizeof(float) * defaultQuadVertices.size(), defaultQuadVertices.size(), defaultQuadVertices.data());
-	defaultQuadIndexBuffer.Init(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * defaultQuadIndices.size(), defaultQuadIndices.size(), defaultQuadIndices.data());
-	screenQuad.SetVertexData(&defaultQuadVertexBuffer, &defaultQuadIndexBuffer);
+	defaultQuadVertexBuffer = g_bufferResourceManager.createBuffer(
+		{
+			BufferType::VERTEX_BUFFER,
+			BufferFormat::R32_FLOAT,
+			defaultQuadVertices.size()
+		}, defaultQuadVertices.data()
+	);
+	defaultQuadIndexBuffer = g_bufferResourceManager.createBuffer(
+		{
+			BufferType::INDEX_BUFFER,
+			BufferFormat::R32_UINT,
+			defaultQuadIndices.size()
+		}, defaultQuadIndices.data()
+	);
+	screenQuad.setVertexData(defaultQuadVertexBuffer, defaultQuadIndexBuffer);
 
 	// Initializing G-Buffer pass resources
 	gDiffuseTexture = g_textureResourceManager.createTexture({ windowWidth, windowHeight, TextureFormat::R8_G8_B8_A8_UNORM }, nullptr);
@@ -225,20 +237,6 @@ void Renderer::OnResize(uint32_t newWidth, uint32_t newHeight)
 	SetViewport(newWidth, newHeight, 0, 0);
 }
 
-void Renderer::SetVertexBuffer(Buffer* buffer, uint32_t elementSize, uint32_t elementStride, uint32_t firstElementOffset)
-{
-	buffer->Bind(GL_ARRAY_BUFFER);
-	// TODO: Currently vertex attributes are hard set.
-	uint32_t offset = firstElementOffset * elementSize;
-	GL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * elementSize, (void*)offset));
-	GL(glEnableVertexAttribArray(0));
-}
-
-void Renderer::SetIndexBuffer(Buffer* buffer, uint32_t elementSize, uint32_t elementStride, uint32_t firstElementOffset)
-{
-	buffer->Bind(GL_ELEMENT_ARRAY_BUFFER);
-}
-
 void Renderer::AddRenderable(Renderable* renderable)
 {
 	renderables.push_back(renderable);
@@ -262,7 +260,7 @@ void Renderer::Render()
 		Renderable* renderable = renderables[i];
 		params.model = renderable->uModel;
 
-		renderable->Draw(params);
+		renderable->draw(params);
 	}
 	RT_Geometry.Unbind();
 
@@ -271,8 +269,8 @@ void Renderer::Render()
 	GL(glDisable(GL_DEPTH_TEST));
 	GL(glClearColor(1.f, 1.f, 1.f, 1.f));
 	params.model = glm::mat4(1.f);
-	screenQuad.SetMaterial(&ssaoMaterial);
-	screenQuad.Draw(params);
+	screenQuad.setMaterial(&ssaoMaterial);
+	screenQuad.draw(params);
 	RT_SSAO.Unbind();
 
 	if (enableBlurPass)	//TODO_#CUSTOMIZE_RENDER_PASS: For the love of god improve this
@@ -281,15 +279,15 @@ void Renderer::Render()
 		GL(glDisable(GL_DEPTH_TEST));
 		GL(glClearColor(1.f, 1.f, 1.f, 1.f));
 		params.model = glm::mat4(1.f);
-		screenQuad.SetMaterial(&ssaoBlurMaterial);
-		screenQuad.Draw(params);
+		screenQuad.setMaterial(&ssaoBlurMaterial);
+		screenQuad.draw(params);
 		RT_Blur.Unbind();
 	}
 
 	// Final pass
 	finalPassMaterial.addTextureToSlot(enableBlurPass ? ssaoBlurTexture : ssaoResultTexture, 1);	//TODO_#CUSTOMIZE_RENDER_PASS: For the love of god improve this
-	screenQuad.SetMaterial(&finalPassMaterial);
-	screenQuad.Draw(params);
+	screenQuad.setMaterial(&finalPassMaterial);
+	screenQuad.draw(params);
 }
 
 void Renderer::Flush()

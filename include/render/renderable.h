@@ -14,17 +14,16 @@ struct RenderParams
 class Renderable
 {
 public:
-	uint32_t vaoHandle = UINT32_MAX;
-	Buffer* vertexBuffer;
-	Buffer* indexBuffer;
-	//Shader* shader;
+	uint32_t vaoHandle = HANDLE_INVALID;
+	
+	ResourceHandle<Buffer> vertexBuffer;
+	ResourceHandle<Buffer> indexBuffer;
+
 	Material* material;
 	glm::mat4 uModel;
 
-	void SetVertexData(Buffer* vb, Buffer* ib);
+	void setVertexData(ResourceHandle<Buffer> vertexBuffer, ResourceHandle<Buffer> indexBuffer);
+	void setMaterial(Material* mat);
 
-	//void SetShader(Shader* sh);
-	void SetMaterial(Material* mat);
-
-	void Draw(const RenderParams& params);
+	void draw(const RenderParams& params);
 };

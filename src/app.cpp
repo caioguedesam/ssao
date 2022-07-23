@@ -6,6 +6,7 @@
 
 #include "time/time.h"
 #include "resource/resource_loader.h"
+#include "resource/buffer_resource_manager.h"
 #include "resource/texture_resource_manager.h"
 #include "resource/shader_resource_manager.h"
 #include "render/shader_compiler.h"
@@ -189,15 +190,13 @@ void App::Run()
 	Model sponza;
 	ResourceLoader::LoadModel(sponza, MODELS_PATH"sponza.obj");
 
-	Buffer vb;
-	vb.Init(GL_ARRAY_BUFFER, sizeof(float) * sponza.vertices.size(), sponza.vertices.size(), sponza.vertices.data());
-	Buffer ib;
-	ib.Init(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * sponza.indices.size(), sponza.indices.size(), sponza.indices.data());
+	ResourceHandle<Buffer> vertexBuffer = g_bufferResourceManager.createBuffer({ BufferType::VERTEX_BUFFER, BufferFormat::R32_FLOAT, sponza.vertices.size() }, sponza.vertices.data());
+	ResourceHandle<Buffer> indexBuffer = g_bufferResourceManager.createBuffer({ BufferType::INDEX_BUFFER, BufferFormat::R32_UINT, sponza.indices.size() }, sponza.indices.data());
 
 	Renderable obj;
 	obj.uModel = glm::mat4(1.f);
 	obj.uModel = glm::scale(obj.uModel, glm::vec3(0.01f, 0.01f, 0.01f));
-	obj.SetVertexData(&vb, &ib);
+	obj.setVertexData(vertexBuffer, indexBuffer);
 
 	ResourceHandle<Shader> vs_obj = g_shaderResourceManager.getFromFile(SHADERS_PATH"default_vs.vert");
 	ResourceHandle<Shader> ps_obj = g_shaderResourceManager.getFromFile(SHADERS_PATH"default_ps.frag");
@@ -206,7 +205,7 @@ void App::Run()
 	Material objMat;
 	objMat.init(objShaderPipeline);
 
-	obj.SetMaterial(&objMat);
+	obj.setMaterial(&objMat);
 
 	renderer.AddRenderable(&obj);
 

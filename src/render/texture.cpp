@@ -35,11 +35,13 @@ void Texture::init(const TextureDesc desc, void* pData)
 
 void Texture::setData(void* pData)
 {
+	ASSERT(apiHandle != HANDLE_INVALID, "Trying to set data to invalid texture resource.");
 	this->pData = pData;
 }
 
 void Texture::bind(uint32_t texUnit)
 {
+	ASSERT(apiHandle != HANDLE_INVALID, "Trying to bind invalid texture resource.");
 	GL(glActiveTexture(GL_TEXTURE0 + texUnit));
 	// TODO_TEXTURE: Support multiple texture dimensions
 	GL(glBindTexture(GL_TEXTURE_2D, apiHandle));

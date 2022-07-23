@@ -206,6 +206,7 @@
     <ClCompile Include="src\render\shader.cpp" />
     <ClCompile Include="src\render\shader_compiler.cpp" />
     <ClCompile Include="src\render\texture.cpp" />
+    <ClCompile Include="src\resource\buffer_resource_manager.cpp" />
     <ClCompile Include="src\resource\resource_loader.cpp" />
     <ClCompile Include="src\resource\shader_resource_manager.cpp" />
     <ClCompile Include="src\resource\texture_resource_manager.cpp" />

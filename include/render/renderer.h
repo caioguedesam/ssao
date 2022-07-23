@@ -40,8 +40,8 @@ public:
 	std::vector<Renderable*> renderables;
 
 	// Default render resources
-	Buffer defaultQuadVertexBuffer;
-	Buffer defaultQuadIndexBuffer;
+	ResourceHandle<Buffer> defaultQuadVertexBuffer;
+	ResourceHandle<Buffer> defaultQuadIndexBuffer;
 	Renderable screenQuad;
 
 	// G-Buffer Pass
@@ -92,10 +92,6 @@ public:
 	void Destroy();
 
 	void OnResize(uint32_t newWidth, uint32_t newHeight);
-
-	void SetVertexBuffer(Buffer* buffer, uint32_t elementSize, uint32_t elementStride, uint32_t firstElementOffset);
-
-	void SetIndexBuffer(Buffer* buffer, uint32_t elementSize, uint32_t elementStride, uint32_t firstElementOffset);
 
 	void AddRenderable(Renderable* renderable);
 

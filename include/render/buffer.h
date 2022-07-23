@@ -22,26 +22,22 @@ struct BufferDesc
 {
 	BufferType type;
 	BufferFormat format;
-	uint32_t count;
+	size_t count;
 };
 
 // TODO: Free resource
 struct Buffer
 {
-	uint32_t apiHandle;
+	uint32_t apiHandle = HANDLE_INVALID;
 	BufferDesc desc;
 	void* pData;
 
-	Buffer();
-
-	/*void Init(GLenum bindTarget, uint32_t bufferSize, uint32_t bufferCount, void* bufferData);
-	void Bind(GLenum bindTarget);*/
-
 	void init(BufferDesc desc, void* pData);
+	void setData(void* pData);
 	uint32_t getStride();
-	uint32_t getSize();
+	size_t getCount();
+	size_t getSize();
 
+	uint32_t getBindTarget();
 	void bind();
-
-	static uint32_t getFormatSize();
 };

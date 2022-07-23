@@ -71,7 +71,6 @@ void TextureResourceManager::updateTexture(ResourceHandle<Texture> handle, Textu
 
 void TextureResourceManager::setTextureData(ResourceHandle<Texture> handle, void* pData)
 {
-	ASSERT(handle.isValid(), "Trying to set data for invalid texture handle.");
 	Texture* texture = get(handle);
 	texture->setData(pData);
 }
