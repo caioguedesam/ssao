@@ -6,7 +6,9 @@
 
 #include "time/time.h"
 #include "resource/resource_loader.h"
+#include "resource/buffer_resource_manager.h"
 #include "resource/texture_resource_manager.h"
+#include "resource/shader_resource_manager.h"
 #include "render/shader_compiler.h"
 #include "gui/gui.h"
 
@@ -29,13 +31,16 @@ void App::Init()
 	// Core engine systems initialization
 	Time::Init();
 	Input::Init();
-	
-	// Resource system initialization
-	g_textureResourceManager.init();
 
 	// Rendering system initialization
 	renderer.Init(appWidth, appHeight, (g_screenWidth - appWidth) / 2, (g_screenHeight - appHeight) / 2, "SSAO",
 		0, 0, 3.f, 45.f, static_cast<float>(appWidth) / static_cast<float>(appHeight));
+
+	// Resource system initialization
+	g_textureResourceManager.init();
+	g_shaderResourceManager.init();
+	renderer.initializeRenderResources(appWidth, appHeight);
+
 	GUI::Init(&renderer);
 
 	isRunning = true;
@@ -157,7 +162,7 @@ void App::DisplayGUI()
 		if (oldSsaoKernelSize != renderer.ssaoData.ssaoKernelSize)
 		{
 			renderer.ssaoData.GenerateKernel();
-			renderer.ssaoData.BindKernel(&renderer.ssaoShader);
+			renderer.ssaoData.bindKernel(renderer.ssaoMaterial.shaderPipeline);
 		}
 
 		int oldSsaoKernelDimension = renderer.ssaoData.ssaoNoiseDimension;
@@ -165,14 +170,14 @@ void App::DisplayGUI()
 		if (oldSsaoKernelDimension != renderer.ssaoData.ssaoNoiseDimension)
 		{
 			renderer.ssaoData.GenerateNoise();
-			renderer.ssaoData.BindNoiseTexture(&renderer.ssaoShader, renderer.ssaoNoiseTexture);
+			renderer.ssaoData.bindNoiseTexture(renderer.ssaoMaterial.shaderPipeline, renderer.ssaoNoiseTexture);
 		}
 
 		int oldRadius = renderer.ssaoData.ssaoRadius;
 		GUI::Slider_float("Radius", &renderer.ssaoData.ssaoRadius, 0, MAX_SSAO_RADIUS);
 		if (oldRadius != renderer.ssaoData.ssaoRadius)
 		{
-			renderer.ssaoData.BindRadius(&renderer.ssaoShader);
+			renderer.ssaoData.bindRadius(renderer.ssaoMaterial.shaderPipeline);
 		}
 
 		GUI::EndWindow();
@@ -185,25 +190,22 @@ void App::Run()
 	Model sponza;
 	ResourceLoader::LoadModel(sponza, MODELS_PATH"sponza.obj");
 
-	Buffer vb;
-	vb.Init(GL_ARRAY_BUFFER, sizeof(float) * sponza.vertices.size(), sponza.vertices.size(), sponza.vertices.data());
-	Buffer ib;
-	ib.Init(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * sponza.indices.size(), sponza.indices.size(), sponza.indices.data());
+	ResourceHandle<Buffer> vertexBuffer = g_bufferResourceManager.createBuffer({ BufferType::VERTEX_BUFFER, BufferFormat::R32_FLOAT, sponza.vertices.size() }, sponza.vertices.data());
+	ResourceHandle<Buffer> indexBuffer = g_bufferResourceManager.createBuffer({ BufferType::INDEX_BUFFER, BufferFormat::R32_UINT, sponza.indices.size() }, sponza.indices.data());
 
 	Renderable obj;
 	obj.uModel = glm::mat4(1.f);
 	obj.uModel = glm::scale(obj.uModel, glm::vec3(0.01f, 0.01f, 0.01f));
-	obj.SetVertexData(&vb, &ib);
-	Shader objShader;
+	obj.setVertexData(vertexBuffer, indexBuffer);
 
-	ShaderCompiler::CompileAndLinkShader(&objShader, 
-		SHADERS_PATH"default_vs.vert",
-		SHADERS_PATH"default_ps.frag");
+	ResourceHandle<Shader> vs_obj = g_shaderResourceManager.getFromFile(SHADERS_PATH"default_vs.vert");
+	ResourceHandle<Shader> ps_obj = g_shaderResourceManager.getFromFile(SHADERS_PATH"default_ps.frag");
+	ShaderPipeline objShaderPipeline = g_shaderResourceManager.createLinkedShaderPipeline(vs_obj, ps_obj);
 
 	Material objMat;
-	objMat.Init(&objShader);
+	objMat.init(objShaderPipeline);
 
-	obj.SetMaterial(&objMat);
+	obj.setMaterial(&objMat);
 
 	renderer.AddRenderable(&obj);
 

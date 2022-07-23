@@ -1,55 +1,70 @@
 #include "stdafx.h"
+#include "resource/buffer_resource_manager.h"
+#include "resource/shader_resource_manager.h"
 #include "render/renderable.h"
 #include <glad/glad.h>
 #include "debugging/gl.h"
 
-void Renderable::SetVertexData(Buffer* vb, Buffer* ib)
+void Renderable::setVertexData(ResourceHandle<Buffer> vertexBuffer, ResourceHandle<Buffer> indexBuffer)
 {
-	if (vaoHandle == UINT32_MAX)
+	if (vaoHandle == HANDLE_INVALID)
 	{
 		GL(glGenVertexArrays(1, &vaoHandle));
 	}
 
-	vertexBuffer = vb;
-	indexBuffer = ib;
+	this->vertexBuffer = vertexBuffer;
+	this->indexBuffer = indexBuffer;
 
 	GL(glBindVertexArray(vaoHandle));
-	vertexBuffer->Bind(GL_ARRAY_BUFFER);
-	indexBuffer->Bind(GL_ELEMENT_ARRAY_BUFFER);
 
-	GL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * vertexBuffer->sizeInBytes / vertexBuffer->count, (void*)0));
+	g_bufferResourceManager.bindBuffer(vertexBuffer);
+	g_bufferResourceManager.bindBuffer(indexBuffer);
+
+	// For vertex buffers: vertex position (x, y, z) -> vertex normals (x, y, z) -> vertex UVs (u, v)
+	GL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * g_bufferResourceManager.get(vertexBuffer)->getStride(), (void*)0));
 	GL(glEnableVertexAttribArray(0));
 
-	GL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * vertexBuffer->sizeInBytes / vertexBuffer->count, (void*)(3 * sizeof(float))));
+	GL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * g_bufferResourceManager.get(vertexBuffer)->getStride(), (void*)(3 * sizeof(float))));
 	GL(glEnableVertexAttribArray(1));
 
-	GL(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * vertexBuffer->sizeInBytes / vertexBuffer->count, (void*)(6 * sizeof(float))));
+	GL(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * g_bufferResourceManager.get(vertexBuffer)->getStride(), (void*)(6 * sizeof(float))));
 	GL(glEnableVertexAttribArray(2));
 
 	GL(glBindVertexArray(0));
 }
 
-void Renderable::SetMaterial(Material* mat)
+void Renderable::setMaterial(Material* mat)
 {
 	material = mat;
 }
 
-void Renderable::Draw(const RenderParams& params)
+void bindStandardUniforms(ShaderPipeline shaderPipeline, const RenderParams& params)
 {
-	material->Bind();
-	material->shader->SetUniform("uModel", params.model);
-	material->shader->SetUniform("uView", params.view);
-	material->shader->SetUniform("uProj", params.proj);
-	material->shader->SetUniform("uMV", params.view * params.model);
-	material->shader->SetUniform("uVP", params.proj * params.view);
-	material->shader->SetUniform("uMVP", params.proj * params.view * params.model);
-	// TODO: Change this to a better uniform association system later
-	material->shader->SetUniform("tex0", 0);
-	material->shader->SetUniform("tex1", 1);
-	material->shader->SetUniform("tex2", 2);
-	material->shader->SetUniform("tex3", 3);
+	// TODO_SHADER: Change "model" to "world" matrix. WVP is just a better name.
+	shaderPipeline.setUniform("uModel", params.model);
+	shaderPipeline.setUniform("uView", params.view);
+	shaderPipeline.setUniform("uProj", params.proj);
+	shaderPipeline.setUniform("uMV", params.view * params.model);
+	shaderPipeline.setUniform("uVP", params.proj * params.view);
+	shaderPipeline.setUniform("uMVP", params.proj * params.view * params.model);
+
+	// TODO_SHADER: Get per uniform names from shader instead of this.
+	shaderPipeline.setUniform("tex0", 0);
+	shaderPipeline.setUniform("tex1", 1);
+	shaderPipeline.setUniform("tex2", 2);
+	shaderPipeline.setUniform("tex3", 3);
+}
+
+void Renderable::draw(const RenderParams& params)
+{
+	material->bind();
+
+	// TODO_SHADER: Make a better process for binding all this default stuff, uniform buffers, etc.
+	// I like OGLDev's pipeline stuff.
+
+	bindStandardUniforms(material->shaderPipeline, params);
 
 	GL(glBindVertexArray(vaoHandle));
 
-	GL(glDrawElements(GL_TRIANGLES, indexBuffer->count, GL_UNSIGNED_INT, 0));
+	GL(glDrawElements(GL_TRIANGLES, g_bufferResourceManager.get(indexBuffer)->getCount(), GL_UNSIGNED_INT, 0));
 }

@@ -10,9 +10,10 @@ TextureResourceManager g_textureResourceManager;
 
 ResourceHandle<Texture> TextureResourceManager::loadFromFile(const char* filepath)
 {
-	if (handleList.count(filepath))
+	FilePath path(filepath);
+	if (handleList.count(path))
 	{
-		return handleList[filepath];
+		return handleList[path];
 	}
 
 	int w, h, nC;
@@ -39,6 +40,7 @@ ResourceHandle<Texture> TextureResourceManager::loadFromFile(const char* filepat
 	desc.format = imgFormat;
 
 	ResourceHandle<Texture> handle = createTexture(desc, imgData);
+	handleList[path] = handle;
 	return handle;
 }
 
@@ -69,7 +71,6 @@ void TextureResourceManager::updateTexture(ResourceHandle<Texture> handle, Textu
 
 void TextureResourceManager::setTextureData(ResourceHandle<Texture> handle, void* pData)
 {
-	ASSERT(handle.isValid(), "Trying to set data for invalid texture handle.");
 	Texture* texture = get(handle);
 	texture->setData(pData);
 }

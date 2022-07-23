@@ -2,12 +2,12 @@
 #include "stdafx.h"
 #include "core/hash.h"
 
-#define RESOURCE_INVALID 0
+#define HANDLE_INVALID 0
 
 template<typename T>
 struct ResourceHandle
 {
-	uint32_t base = RESOURCE_INVALID;
+	uint32_t base = HANDLE_INVALID;
 
 	ResourceHandle() {};
 
@@ -17,7 +17,7 @@ struct ResourceHandle
 	}
 
 	inline bool operator==(const ResourceHandle<T>& rhs) const { return base == rhs.base; }
-	inline bool isValid() const { return base != RESOURCE_INVALID; }
+	inline bool isValid() const { return base != HANDLE_INVALID; }
 };
 
 struct HashFunction_ResourceHandle

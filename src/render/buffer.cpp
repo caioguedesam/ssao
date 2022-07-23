@@ -3,26 +3,68 @@
 #include <glad/glad.h>
 #include "debugging/gl.h"
 
-Buffer::Buffer()
+void Buffer::init(BufferDesc desc, void* pData)
 {
-	
-}
-
-void Buffer::Bind(GLenum bindTarget)
-{
-	GL(glBindBuffer(bindTarget, handle));
-}
-
-void Buffer::Init(GLenum bindTarget, uint32_t bufferSize, uint32_t bufferCount, void* bufferData)
-{
-	if (!handle)
+	if (apiHandle == HANDLE_INVALID)
 	{
-		GL(glGenBuffers(1, &handle));
+		GL(glGenBuffers(1, &apiHandle));
 	}
 
-	sizeInBytes = bufferSize;
-	count = bufferCount;
-	pData = bufferData;
-	Bind(bindTarget);
-	GL(glBufferData(bindTarget, sizeInBytes, pData, GL_STATIC_DRAW));
+	this->desc = desc;
+	setData(pData);
+	bind();
+	GL(glBufferData(getBindTarget(), getSize(), pData, GL_STATIC_DRAW));	// TODO_GL, TODO_BUFFER: Discriminate between static, dynamic and stream buffers
+}
+
+void Buffer::setData(void* pData)
+{
+	ASSERT(apiHandle != HANDLE_INVALID, "Trying to set data of invalid buffer resource.");
+	this->pData = pData;
+}
+
+uint32_t Buffer::getStride()
+{
+	ASSERT(apiHandle != HANDLE_INVALID, "Trying to get stride of invalid buffer resource.");
+	switch (desc.format)
+	{
+	case BufferFormat::R32_FLOAT:
+	case BufferFormat::R32_UINT:
+		return 4;
+	default:
+		ASSERT(0, "Trying to get stride of invalid buffer format.");
+		break;
+	}
+	return UINT32_MAX;
+}
+
+size_t Buffer::getCount()
+{
+	ASSERT(apiHandle != HANDLE_INVALID, "Trying to get count of invalid buffer resource.");
+	return desc.count;
+}
+
+size_t Buffer::getSize()
+{
+	return getStride() * getCount();
+}
+
+uint32_t Buffer::getBindTarget()
+{
+	ASSERT(apiHandle != HANDLE_INVALID, "Trying to get bind target of invalid buffer resource.");
+	switch (desc.type)
+	{
+	case VERTEX_BUFFER:
+		return GL_ARRAY_BUFFER;
+	case INDEX_BUFFER:
+		return GL_ELEMENT_ARRAY_BUFFER;
+	default:
+		ASSERT(0, "No corresponding buffer bind target for given buffer type.");
+		break;
+	}
+}
+
+void Buffer::bind()
+{
+	ASSERT(apiHandle != HANDLE_INVALID, "Trying to bind invalid buffer resource.");
+	GL(glBindBuffer(getBindTarget(), apiHandle));
 }

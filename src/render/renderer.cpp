@@ -3,7 +3,7 @@
 #include "debugging/gl.h"
 #include "random/random.h"
 #include "math/math.h"
-#include "render/shader_compiler.h"
+#include "resource/buffer_resource_manager.h"
 
 std::vector<float> defaultQuadVertices =
 {
@@ -41,16 +41,16 @@ void SSAOData::GenerateKernel()
 	}
 }
 
-void SSAOData::BindKernel(Shader* sh)
+void SSAOData::bindKernel(ShaderPipeline& shaderPipeline)
 {
-	sh->Bind();
+	shaderPipeline.bind();
 	char ssaoKernelName[32];
 	for (int i = 0; i < ssaoKernelSize; i++)
 	{
 		sprintf(ssaoKernelName, "samples[%d]", i);
-		sh->SetUniform(ssaoKernelName, ssaoKernel[i]);
+		shaderPipeline.setUniform(ssaoKernelName, ssaoKernel[i]);
 	}
-	sh->SetUniform("kernelSize", ssaoKernelSize);
+	shaderPipeline.setUniform("kernelSize", ssaoKernelSize);
 }
 
 void SSAOData::GenerateNoise()
@@ -66,10 +66,10 @@ void SSAOData::GenerateNoise()
 	}
 }
 
-void SSAOData::BindNoiseTexture(Shader* sh, ResourceHandle<Texture> textureHandle)
+void SSAOData::bindNoiseTexture(ShaderPipeline& shaderPipeline, ResourceHandle<Texture> textureHandle)
 {
-	sh->Bind();
-	sh->SetUniform("noiseDimension", ssaoNoiseDimension);
+	shaderPipeline.bind();
+	shaderPipeline.setUniform("noiseDimension", ssaoNoiseDimension);
 	g_textureResourceManager.updateTexture(textureHandle, 
 		{ 
 			static_cast<uint32_t>(ssaoNoiseDimension), 
@@ -79,10 +79,10 @@ void SSAOData::BindNoiseTexture(Shader* sh, ResourceHandle<Texture> textureHandl
 		&ssaoNoise[0]);
 }
 
-void SSAOData::BindRadius(Shader* sh)
+void SSAOData::bindRadius(ShaderPipeline& shaderPipeline)
 {
-	sh->Bind();
-	sh->SetUniform("radius", ssaoRadius);
+	shaderPipeline.bind();
+	shaderPipeline.setUniform("radius", ssaoRadius);
 }
 
 Renderer::~Renderer()
@@ -157,11 +157,26 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 
 	SetViewport(windowWidth, windowHeight, 0, 0);
 	SetCamera(cameraX, cameraY, cameraZ, cameraFOV, cameraAspect);
+}
 
+void Renderer::initializeRenderResources(uint32_t windowWidth, uint32_t windowHeight)
+{
 	// Initializing default resources
-	defaultQuadVertexBuffer.Init(GL_ARRAY_BUFFER, sizeof(float) * defaultQuadVertices.size(), defaultQuadVertices.size(), defaultQuadVertices.data());
-	defaultQuadIndexBuffer.Init(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * defaultQuadIndices.size(), defaultQuadIndices.size(), defaultQuadIndices.data());
-	screenQuad.SetVertexData(&defaultQuadVertexBuffer, &defaultQuadIndexBuffer);
+	defaultQuadVertexBuffer = g_bufferResourceManager.createBuffer(
+		{
+			BufferType::VERTEX_BUFFER,
+			BufferFormat::R32_FLOAT,
+			defaultQuadVertices.size()
+		}, defaultQuadVertices.data()
+	);
+	defaultQuadIndexBuffer = g_bufferResourceManager.createBuffer(
+		{
+			BufferType::INDEX_BUFFER,
+			BufferFormat::R32_UINT,
+			defaultQuadIndices.size()
+		}, defaultQuadIndices.data()
+	);
+	screenQuad.setVertexData(defaultQuadVertexBuffer, defaultQuadIndexBuffer);
 
 	// Initializing G-Buffer pass resources
 	gDiffuseTexture = g_textureResourceManager.createTexture({ windowWidth, windowHeight, TextureFormat::R8_G8_B8_A8_UNORM }, nullptr);
@@ -177,35 +192,41 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	RT_SSAO.Init(windowWidth, windowHeight, ssaoResultTexture);
 	RT_Blur.Init(windowWidth, windowHeight, ssaoBlurTexture);
 
-	ShaderCompiler::CompileAndLinkShader(&ssaoShader, 
-		SHADERS_PATH"screen_quad_vs.vert",
-		SHADERS_PATH"ssao_ps.frag");
-	ShaderCompiler::CompileAndLinkShader(&ssaoBlurShader,
-		SHADERS_PATH"screen_quad_vs.vert",
-		SHADERS_PATH"ssao_blur_ps.frag");
+	// SSAO pass resources
+	{
+		ResourceHandle<Shader> vs_ssao = g_shaderResourceManager.getFromFile(SHADERS_PATH"screen_quad_vs.vert");
+		ResourceHandle<Shader> ps_ssao = g_shaderResourceManager.getFromFile(SHADERS_PATH"ssao_ps.frag");
+		ShaderPipeline ssaoShaderPipeline = g_shaderResourceManager.createLinkedShaderPipeline(vs_ssao, ps_ssao);
+		ssaoMaterial.init(ssaoShaderPipeline);
 
-	ssaoMaterial.Init(&ssaoShader);
-	ssaoMaterial.shader->Bind();
+		ssaoData.bindKernel(ssaoMaterial.shaderPipeline);
+		ssaoData.bindNoiseTexture(ssaoMaterial.shaderPipeline, ssaoNoiseTexture);
+		ssaoData.bindRadius(ssaoMaterial.shaderPipeline);
+		ssaoMaterial.addTextureToSlot(gPositionTexture, 0);
+		ssaoMaterial.addTextureToSlot(gNormalTexture, 1);
+		ssaoMaterial.addTextureToSlot(ssaoNoiseTexture, 2);
+	}
 
-	ssaoData.BindKernel(ssaoMaterial.shader);
-	ssaoData.BindNoiseTexture(ssaoMaterial.shader, ssaoNoiseTexture);
-	ssaoData.BindRadius(ssaoMaterial.shader);
+	// Blur pass resources
+	{
+		ResourceHandle<Shader> vs_ssaoBlur = g_shaderResourceManager.getFromFile(SHADERS_PATH"screen_quad_vs.vert");
+		ResourceHandle<Shader> ps_ssaoBlur = g_shaderResourceManager.getFromFile(SHADERS_PATH"ssao_blur_ps.frag");
+		ShaderPipeline ssaoBlurShaderPipeline = g_shaderResourceManager.createLinkedShaderPipeline(vs_ssaoBlur, ps_ssaoBlur);
+		ssaoBlurMaterial.init(ssaoBlurShaderPipeline);
 
-	ssaoMaterial.AddTextureToSlot(gPositionTexture, 0);
-	ssaoMaterial.AddTextureToSlot(gNormalTexture, 1);
-	ssaoMaterial.AddTextureToSlot(ssaoNoiseTexture, 2);
+		ssaoBlurMaterial.addTextureToSlot(ssaoResultTexture, 0);
+	}
 
-	ssaoBlurMaterial.Init(&ssaoBlurShader);
-	ssaoBlurMaterial.AddTextureToSlot(ssaoResultTexture, 0);
+	// Final pass resources
+	{
+		ResourceHandle<Shader> vs_final = g_shaderResourceManager.getFromFile(SHADERS_PATH"screen_quad_vs.vert");
+		ResourceHandle<Shader> ps_final = g_shaderResourceManager.getFromFile(SHADERS_PATH"final_pass_ps.frag");
+		ShaderPipeline finalPassShaderPipeline = g_shaderResourceManager.createLinkedShaderPipeline(vs_final, ps_final);
+		finalPassMaterial.init(finalPassShaderPipeline);
 
-	// Initializing final pass resources
-	ShaderCompiler::CompileAndLinkShader(&finalPassShader, 
-		SHADERS_PATH"screen_quad_vs.vert",
-		SHADERS_PATH"final_pass_ps.frag");
-
-	finalPassMaterial.Init(&finalPassShader);
-	finalPassMaterial.AddTextureToSlot(gDiffuseTexture, 0);
-	finalPassMaterial.AddTextureToSlot(ssaoBlurTexture, 1);
+		finalPassMaterial.addTextureToSlot(gDiffuseTexture, 0);
+		finalPassMaterial.addTextureToSlot(ssaoBlurTexture, 1);
+	}
 }
 
 void Renderer::Destroy() {}
@@ -216,20 +237,6 @@ void Renderer::OnResize(uint32_t newWidth, uint32_t newHeight)
 	SetViewport(newWidth, newHeight, 0, 0);
 }
 
-void Renderer::SetVertexBuffer(Buffer* buffer, uint32_t elementSize, uint32_t elementStride, uint32_t firstElementOffset)
-{
-	buffer->Bind(GL_ARRAY_BUFFER);
-	// TODO: Currently vertex attributes are hard set.
-	uint32_t offset = firstElementOffset * elementSize;
-	GL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * elementSize, (void*)offset));
-	GL(glEnableVertexAttribArray(0));
-}
-
-void Renderer::SetIndexBuffer(Buffer* buffer, uint32_t elementSize, uint32_t elementStride, uint32_t firstElementOffset)
-{
-	buffer->Bind(GL_ELEMENT_ARRAY_BUFFER);
-}
-
 void Renderer::AddRenderable(Renderable* renderable)
 {
 	renderables.push_back(renderable);
@@ -237,7 +244,7 @@ void Renderer::AddRenderable(Renderable* renderable)
 
 void Renderer::Render()
 {
-	ShaderCompiler::ReloadDirtyShaders();	// TODO_#SHADER_HOTRELOAD: Move this to its own thread.
+	//ShaderCompiler::ReloadDirtyShaders();	// TODO_SHADER: Reimplement this using new shader resource manager
 
 	// G-Buffer pass
 	RT_Geometry.Bind();
@@ -253,7 +260,7 @@ void Renderer::Render()
 		Renderable* renderable = renderables[i];
 		params.model = renderable->uModel;
 
-		renderable->Draw(params);
+		renderable->draw(params);
 	}
 	RT_Geometry.Unbind();
 
@@ -262,8 +269,8 @@ void Renderer::Render()
 	GL(glDisable(GL_DEPTH_TEST));
 	GL(glClearColor(1.f, 1.f, 1.f, 1.f));
 	params.model = glm::mat4(1.f);
-	screenQuad.SetMaterial(&ssaoMaterial);
-	screenQuad.Draw(params);
+	screenQuad.setMaterial(&ssaoMaterial);
+	screenQuad.draw(params);
 	RT_SSAO.Unbind();
 
 	if (enableBlurPass)	//TODO_#CUSTOMIZE_RENDER_PASS: For the love of god improve this
@@ -272,15 +279,15 @@ void Renderer::Render()
 		GL(glDisable(GL_DEPTH_TEST));
 		GL(glClearColor(1.f, 1.f, 1.f, 1.f));
 		params.model = glm::mat4(1.f);
-		screenQuad.SetMaterial(&ssaoBlurMaterial);
-		screenQuad.Draw(params);
+		screenQuad.setMaterial(&ssaoBlurMaterial);
+		screenQuad.draw(params);
 		RT_Blur.Unbind();
 	}
 
 	// Final pass
-	finalPassMaterial.AddTextureToSlot(enableBlurPass ? ssaoBlurTexture : ssaoResultTexture, 1);	//TODO_#CUSTOMIZE_RENDER_PASS: For the love of god improve this
-	screenQuad.SetMaterial(&finalPassMaterial);
-	screenQuad.Draw(params);
+	finalPassMaterial.addTextureToSlot(enableBlurPass ? ssaoBlurTexture : ssaoResultTexture, 1);	//TODO_#CUSTOMIZE_RENDER_PASS: For the love of god improve this
+	screenQuad.setMaterial(&finalPassMaterial);
+	screenQuad.draw(params);
 }
 
 void Renderer::Flush()
