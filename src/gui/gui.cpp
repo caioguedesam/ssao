@@ -5,7 +5,7 @@
 
 #include "render/renderer.h"
 
-void GUI::Init(Renderer* renderer)
+void GUI::init(Renderer* renderer)
 {
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -112,64 +112,73 @@ void GUI::Init(Renderer* renderer)
     ImGui_ImplOpenGL3_Init("#version 330");
 }
 
-void GUI::ProcessSDLEvent(SDL_Event* event)
+void GUI::processSDLEvent(SDL_Event* event)
 {
     ImGui_ImplSDL2_ProcessEvent(event);
 }
 
-void GUI::Destroy()
+void GUI::destroy()
 {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
 }
 
-void GUI::BeginFrame()
+void GUI::beginFrame()
 {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 }
 
-void GUI::EndFrame()
+void GUI::endFrame()
 {
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void GUI::BeginWindow(const char* title, const uint32_t& w, const uint32_t& h, const uint32_t& x, const uint32_t& y)
+void GUI::beginWindow(const char* title, const uint32_t& w, const uint32_t& h, const uint32_t& x, const uint32_t& y)
 {
     ImGui::SetNextWindowPos(ImVec2(x, y));
     ImGui::SetNextWindowSize(ImVec2(w, h));
     ImGui::Begin(title);
 }
 
-void GUI::EndWindow()
+void GUI::endWindow()
 {
     ImGui::End();
 }
 
-void GUI::Text(const char* text)
+void GUI::text(const char* text)
 {
     ImGui::Text(text);
 }
 
-bool GUI::Button(const char* label)
+bool GUI::button(const char* label)
 {
     return ImGui::Button(label);
 }
 
-void GUI::Checkbox(const char* label, bool* value)
+void GUI::checkbox(const char* label, bool* value)
 {
     ImGui::Checkbox(label, value);
 }
 
-void GUI::Slider_int(const char* label, int* value, const uint32_t& minValue, const uint32_t& maxValue)
+void GUI::slider_int(const char* label, int* value, const uint32_t& minValue, const uint32_t& maxValue)
 {
     ImGui::SliderInt(label, value, minValue, maxValue);
 }
 
-void GUI::Slider_float(const char* label, float* value, const float& minValue, const float& maxValue)
+void GUI::slider_float(const char* label, float* value, const float& minValue, const float& maxValue)
 {
     ImGui::SliderFloat(label, value, minValue, maxValue);
+}
+
+void GUI::image(ResourceHandle<Texture> textureHandle, uint32_t w, uint32_t h)
+{
+    ImGui::Image(
+        (void*)(intptr_t)g_textureResourceManager.get(textureHandle)->apiHandle,
+        ImVec2(w, h),
+        ImVec2(0, 1), ImVec2(1, 0)  // OpenGL maps textures down to up left to right, so invert v coordinate.
+    );
 }

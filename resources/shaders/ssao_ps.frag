@@ -1,8 +1,8 @@
 #version 330 core
 
 #define MAX_KERNEL_SIZE 256
-#define SCREEN_WIDTH 1280.0
-#define SCREEN_HEIGHT 720.0
+#define SCREEN_WIDTH 1920.0
+#define SCREEN_HEIGHT 1080.0
 
 in vec2 vTexCoord;
 

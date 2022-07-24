@@ -9,7 +9,7 @@
 class RenderTarget
 {
 public:
-	uint32_t handle;
+	uint32_t handle = HANDLE_INVALID;
 	std::vector<ResourceHandle<Texture>> textures;
 	uint32_t depthBuffer;	// Should this be a proper resource?
 

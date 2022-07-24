@@ -30,11 +30,24 @@ struct SSAOData
 	void bindRadius(ShaderPipeline& shaderPipeline);
 };
 
+struct RenderViewport
+{
+	uint32_t width = 0;
+	uint32_t height = 0;
+	uint32_t x = 0;
+	uint32_t y = 0;
+
+	RenderViewport();
+	RenderViewport(const uint32_t& width, const uint32_t& height, const uint32_t& x, const uint32_t& y);
+	void set();
+};
+
 class Renderer
 {
 public:
 	Window* pWindow;
 	SDL_GLContext pGlContextHandle;
+	RenderViewport renderViewport;
 	Camera camera;
 
 	std::vector<Renderable*> renderables;
@@ -55,7 +68,6 @@ public:
 	RenderTarget RT_SSAO;
 	RenderTarget RT_Blur;
 
-	//std::vector<glm::vec3> ssaoKernel;	// Random points distributed between a unit hemisphere (biased towards center)
 	SSAOData ssaoData;
 	ResourceHandle<Texture> ssaoNoiseTexture;			// Random rotation texture to introduce randomness when using SSAO kernel
 
@@ -63,13 +75,13 @@ public:
 	ResourceHandle<Texture> ssaoBlurTexture;
 	Material ssaoMaterial;
 	Material ssaoBlurMaterial;
-	//ShaderPipeline ssaoShaderPipeline;
-	//ShaderPipeline ssaoBlurShaderPipeline;
 	bool enableBlurPass = true;
 
-	// Final pass (uses default screen quad)
+	// Final pass
+	RenderTarget RT_Final;
+
+	ResourceHandle<Texture> finalPassTexture;
 	Material finalPassMaterial;
-	//Shader finalPassShader;
 
 	~Renderer();
 
@@ -79,7 +91,8 @@ public:
 
 	void RetrieveAPIFunctionLocations();
 
-	void SetViewport(uint32_t width, uint32_t height, uint32_t x, uint32_t y);
+	void setViewport();
+	void setViewport(uint32_t w, uint32_t h, uint32_t x, uint32_t y);
 
 	void SetCamera(float x, float y, float z, float fov, float aspect);
 
@@ -91,10 +104,11 @@ public:
 
 	void Destroy();
 
-	void OnResize(uint32_t newWidth, uint32_t newHeight);
+	//void OnResize(uint32_t newWidth, uint32_t newHeight);		//TODO_RESIZE: Disabled until I figure out resizing again.
 
 	void AddRenderable(Renderable* renderable);
 
+	void clear(const float& r = 0.0f, const float& g = 0.0f, const float& b = 0.0f, const float& a = 0.0f);
 	void Render();
 
 	void Flush();

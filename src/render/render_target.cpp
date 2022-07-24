@@ -43,7 +43,7 @@ void RenderTarget::UpdateDrawTargets()
 
 void RenderTarget::Init(uint32_t w, uint32_t h, ResourceHandle<Texture> firstTextureHandle)
 {
-	if (!handle)
+	if (handle == HANDLE_INVALID)
 	{
 		GL(glGenFramebuffers(1, &handle));
 		textures = std::vector<ResourceHandle<Texture>>(MAX_TEXTURE_SLOTS);

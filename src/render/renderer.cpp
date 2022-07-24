@@ -85,6 +85,15 @@ void SSAOData::bindRadius(ShaderPipeline& shaderPipeline)
 	shaderPipeline.setUniform("radius", ssaoRadius);
 }
 
+RenderViewport::RenderViewport() {}
+RenderViewport::RenderViewport(const uint32_t& width, const uint32_t& height, const uint32_t& x, const uint32_t& y)
+	: width(width), height(height), x(x), y(y) {}
+
+void RenderViewport::set()
+{
+	GL(glViewport(x, y, width, height));
+}
+
 Renderer::~Renderer()
 {
 	if (pGlContextHandle)
@@ -115,9 +124,15 @@ void Renderer::RetrieveAPIFunctionLocations()
 	ASSERT(result, "Failed to retrieve OpenGL API function locations using GLAD.");
 }
 
-void Renderer::SetViewport(uint32_t width, uint32_t height, uint32_t x, uint32_t y)
+void Renderer::setViewport()
 {
-	GL(glViewport(x, y, width, height));
+	renderViewport.set();
+}
+
+void Renderer::setViewport(uint32_t w, uint32_t h, uint32_t x, uint32_t y)
+{
+	renderViewport = RenderViewport(w, h, x, y);
+	renderViewport.set();
 }
 
 void Renderer::SetCamera(float x, float y, float z, float fov, float aspect)
@@ -155,7 +170,7 @@ void Renderer::Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t window
 	GL(glEnable(GL_CULL_FACE));
 	GL(glFrontFace(GL_CCW));
 
-	SetViewport(windowWidth, windowHeight, 0, 0);
+	setViewport(windowWidth, windowHeight, 0, 0);
 	SetCamera(cameraX, cameraY, cameraZ, cameraFOV, cameraAspect);
 }
 
@@ -213,65 +228,79 @@ void Renderer::initializeRenderResources(uint32_t windowWidth, uint32_t windowHe
 		ResourceHandle<Shader> ps_ssaoBlur = g_shaderResourceManager.getFromFile(SHADERS_PATH"ssao_blur_ps.frag");
 		ShaderPipeline ssaoBlurShaderPipeline = g_shaderResourceManager.createLinkedShaderPipeline(vs_ssaoBlur, ps_ssaoBlur);
 		ssaoBlurMaterial.init(ssaoBlurShaderPipeline);
-
 		ssaoBlurMaterial.addTextureToSlot(ssaoResultTexture, 0);
 	}
 
 	// Final pass resources
 	{
+		finalPassTexture = g_textureResourceManager.createTexture({ windowWidth, windowHeight, TextureFormat::R8_G8_B8_A8_UNORM }, nullptr);
 		ResourceHandle<Shader> vs_final = g_shaderResourceManager.getFromFile(SHADERS_PATH"screen_quad_vs.vert");
 		ResourceHandle<Shader> ps_final = g_shaderResourceManager.getFromFile(SHADERS_PATH"final_pass_ps.frag");
 		ShaderPipeline finalPassShaderPipeline = g_shaderResourceManager.createLinkedShaderPipeline(vs_final, ps_final);
 		finalPassMaterial.init(finalPassShaderPipeline);
-
 		finalPassMaterial.addTextureToSlot(gDiffuseTexture, 0);
 		finalPassMaterial.addTextureToSlot(ssaoBlurTexture, 1);
+		RT_Final.Init(windowWidth, windowHeight, finalPassTexture);
 	}
 }
 
 void Renderer::Destroy() {}
 
-void Renderer::OnResize(uint32_t newWidth, uint32_t newHeight)
-{
-	pWindow->OnResize(newWidth, newHeight);
-	SetViewport(newWidth, newHeight, 0, 0);
-}
+//void Renderer::OnResize(uint32_t newWidth, uint32_t newHeight)
+//{
+//	pWindow->OnResize(newWidth, newHeight);
+//	setViewport(newWidth, newHeight, 0, 0);
+//}
 
 void Renderer::AddRenderable(Renderable* renderable)
 {
 	renderables.push_back(renderable);
 }
 
+void Renderer::clear(const float& r, const float& g, const float& b, const float& a)
+{
+	GL(glClearColor(r, g, b, a));
+	GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+}
+
 void Renderer::Render()
 {
 	//ShaderCompiler::ReloadDirtyShaders();	// TODO_SHADER: Reimplement this using new shader resource manager
 
-	// G-Buffer pass
-	RT_Geometry.Bind();
-	GL(glEnable(GL_DEPTH_TEST));
-	GL(glClearColor(0.f, 0.f, 0.f, 1.f));
-	GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-
-	RenderParams params;
-	params.view = camera.GetViewMatrix();
-	params.proj = camera.GetProjectionMatrix();
-	for (int i = 0; i < renderables.size(); i++)
+	// Pre-render configuration
 	{
-		Renderable* renderable = renderables[i];
-		params.model = renderable->uModel;
-
-		renderable->draw(params);
+		setViewport();
+		GL(glEnable(GL_DEPTH_TEST));
+		clear(0.169f, 0.169f, 0.169f, 1.f);		// This clears background
 	}
-	RT_Geometry.Unbind();
+
+	// G-Buffer pass
+	RenderParams params;
+	{
+		RT_Geometry.Bind();
+		clear();								// This clears geometry render target
+		params.view = camera.GetViewMatrix();
+		params.proj = camera.GetProjectionMatrix();
+		for (int i = 0; i < renderables.size(); i++)
+		{
+			Renderable* renderable = renderables[i];
+			params.model = renderable->uModel;
+
+			renderable->draw(params);
+		}
+		RT_Geometry.Unbind();
+	}
 
 	// Post-processing pass (SSAO + blur)
-	RT_SSAO.Bind();
-	GL(glDisable(GL_DEPTH_TEST));
-	GL(glClearColor(1.f, 1.f, 1.f, 1.f));
-	params.model = glm::mat4(1.f);
-	screenQuad.setMaterial(&ssaoMaterial);
-	screenQuad.draw(params);
-	RT_SSAO.Unbind();
+	{
+		RT_SSAO.Bind();
+		GL(glDisable(GL_DEPTH_TEST));
+		GL(glClearColor(1.f, 1.f, 1.f, 1.f));
+		params.model = glm::mat4(1.f);
+		screenQuad.setMaterial(&ssaoMaterial);
+		screenQuad.draw(params);
+		RT_SSAO.Unbind();
+	}
 
 	if (enableBlurPass)	//TODO_#CUSTOMIZE_RENDER_PASS: For the love of god improve this
 	{
@@ -285,9 +314,13 @@ void Renderer::Render()
 	}
 
 	// Final pass
-	finalPassMaterial.addTextureToSlot(enableBlurPass ? ssaoBlurTexture : ssaoResultTexture, 1);	//TODO_#CUSTOMIZE_RENDER_PASS: For the love of god improve this
-	screenQuad.setMaterial(&finalPassMaterial);
-	screenQuad.draw(params);
+	{
+		RT_Final.Bind();
+		finalPassMaterial.addTextureToSlot(enableBlurPass ? ssaoBlurTexture : ssaoResultTexture, 1);	//TODO_#CUSTOMIZE_RENDER_PASS: For the love of god improve this
+		screenQuad.setMaterial(&finalPassMaterial);
+		screenQuad.draw(params);
+		RT_Final.Unbind();
+	}
 }
 
 void Renderer::Flush()

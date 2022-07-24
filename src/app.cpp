@@ -41,7 +41,7 @@ void App::Init()
 	g_shaderResourceManager.init();
 	renderer.initializeRenderResources(appWidth, appHeight);
 
-	GUI::Init(&renderer);
+	GUI::init(&renderer);
 
 	isRunning = true;
 }
@@ -51,7 +51,7 @@ void App::PollEvents(double dt)
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
 	{
-		GUI::ProcessSDLEvent(&event);
+		GUI::processSDLEvent(&event);
 		if (event.type == SDL_KEYDOWN)
 		{
 			SDL_Keysym key = event.key.keysym;
@@ -136,7 +136,7 @@ void App::PollEvents(double dt)
 			{
 				uint32_t newWidth = event.window.data1;
 				uint32_t newHeight = event.window.data2;
-				renderer.OnResize(newWidth, newHeight);
+				//renderer.OnResize(newWidth, newHeight);	// TODO_RESIZE: Renderer shouldn't be resizing (default 1080p). What has to resize is the gui window w/ final texture.
 			}
 		}
 		else if (event.type == SDL_QUIT)
@@ -148,17 +148,17 @@ void App::PollEvents(double dt)
 
 void App::DisplayGUI()
 {
-	GUI::BeginFrame();
+	GUI::beginFrame();
 	{
 		// Test GUI code
-		GUI::BeginWindow("Debug", 320, 150, 0, 0);
+		GUI::beginWindow("Debug", 320, 150, 0, 0);
 		char fps_str[64];
 		sprintf(fps_str, "FPS: %.1lf", Time::fps);
-		GUI::Text(fps_str);
-		GUI::Checkbox("Enable Blur", &renderer.enableBlurPass);
+		GUI::text(fps_str);
+		GUI::checkbox("Enable Blur", &renderer.enableBlurPass);
 
 		int oldSsaoKernelSize = renderer.ssaoData.ssaoKernelSize;
-		GUI::Slider_int("Kernel size", &renderer.ssaoData.ssaoKernelSize, 0, MAX_SSAO_KERNEL_SIZE);
+		GUI::slider_int("Kernel size", &renderer.ssaoData.ssaoKernelSize, 0, MAX_SSAO_KERNEL_SIZE);
 		if (oldSsaoKernelSize != renderer.ssaoData.ssaoKernelSize)
 		{
 			renderer.ssaoData.GenerateKernel();
@@ -166,7 +166,7 @@ void App::DisplayGUI()
 		}
 
 		int oldSsaoKernelDimension = renderer.ssaoData.ssaoNoiseDimension;
-		GUI::Slider_int("Noise dimension", &renderer.ssaoData.ssaoNoiseDimension, 0, MAX_SSAO_NOISE_DIMENSION);
+		GUI::slider_int("Noise dimension", &renderer.ssaoData.ssaoNoiseDimension, 0, MAX_SSAO_NOISE_DIMENSION);
 		if (oldSsaoKernelDimension != renderer.ssaoData.ssaoNoiseDimension)
 		{
 			renderer.ssaoData.GenerateNoise();
@@ -174,15 +174,27 @@ void App::DisplayGUI()
 		}
 
 		int oldRadius = renderer.ssaoData.ssaoRadius;
-		GUI::Slider_float("Radius", &renderer.ssaoData.ssaoRadius, 0, MAX_SSAO_RADIUS);
+		GUI::slider_float("Radius", &renderer.ssaoData.ssaoRadius, 0, MAX_SSAO_RADIUS);
 		if (oldRadius != renderer.ssaoData.ssaoRadius)
 		{
 			renderer.ssaoData.bindRadius(renderer.ssaoMaterial.shaderPipeline);
 		}
 
-		GUI::EndWindow();
+		GUI::endWindow();
 	}
-	GUI::EndFrame();
+
+	// Main window (game view)
+	{
+		uint32_t w = MAIN_WINDOW_DEFAULT_WIDTH;
+		uint32_t h = MAIN_WINDOW_DEFAULT_HEIGHT;
+		GUI::beginWindow("Game", w, h, APP_DEFAULT_WIDTH / 2 - w / 2, APP_DEFAULT_HEIGHT / 2 - h / 2);
+
+		GUI::image(renderer.finalPassTexture, w, h);
+		
+		GUI::endWindow();
+	}
+
+	GUI::endFrame();
 }
 
 void App::Run()
