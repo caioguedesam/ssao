@@ -139,8 +139,8 @@ void GUI::endFrame()
 
 void GUI::beginWindow(const char* title, const uint32_t& w, const uint32_t& h, const uint32_t& x, const uint32_t& y)
 {
-    ImGui::SetNextWindowPos(ImVec2(x, y));
-    ImGui::SetNextWindowSize(ImVec2(w, h));
+    ImGui::SetNextWindowPos(ImVec2(x, y), ImGuiCond_FirstUseEver);      // TODO_GUI: Calling this continuously makes windows always reset size and position, so support for moving/resizing windows is broken.
+    ImGui::SetNextWindowSize(ImVec2(w, h), ImGuiCond_FirstUseEver);
     ImGui::Begin(title);
 }
 
