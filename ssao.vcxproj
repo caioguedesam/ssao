@@ -192,6 +192,7 @@
     <ClCompile Include="src\display\window.cpp" />
     <ClCompile Include="src\file\file_reader.cpp" />
     <ClCompile Include="src\globals.cpp" />
+    <ClCompile Include="src\gui\fps_window.cpp" />
     <ClCompile Include="src\gui\gui.cpp" />
     <ClCompile Include="src\input\input.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -244,6 +245,7 @@
     <ClInclude Include="include\display\window.h" />
     <ClInclude Include="include\file\file_reader.h" />
     <ClInclude Include="include\globals.h" />
+    <ClInclude Include="include\gui\fps_window.h" />
     <ClInclude Include="include\gui\gui.h" />
     <ClInclude Include="include\input\input.h" />
     <ClInclude Include="include\math\math.h" />
