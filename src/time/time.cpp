@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "time/time.h"
 
-#define MAX_FRAMES_TO_TRACK 10
+#define FRAMES_TO_TRACK 120
 
 std::chrono::time_point<std::chrono::high_resolution_clock> Time::lastTimePoint;
 double Time::time;
@@ -9,17 +9,17 @@ double Time::deltaTime;
 uint64_t Time::frameCount;
 double Time::fps;
 
-double lastFrameTimes[MAX_FRAMES_TO_TRACK];
+double lastFrameTimes[FRAMES_TO_TRACK];
 int lastFrameTimePointer = 0;
 
-double GetFPSFromLastFrameTimes()
+double GetFPSFromLastFrameTimes(int limit)
 {
 	double sum = 0.;
-	for (int i = 0; i < MAX_FRAMES_TO_TRACK; i++)
+	for (int i = 0; i < limit; i++)
 	{
 		sum += lastFrameTimes[i];
 	}
-	sum /= MAX_FRAMES_TO_TRACK;
+	sum /= limit;
 	return 1. / sum;
 }
 
@@ -30,7 +30,7 @@ void Time::Init()
 	deltaTime = 0.;
 	frameCount = 0;
 	fps = 0.;
-	for (int i = 0; i < MAX_FRAMES_TO_TRACK; i++)
+	for (int i = 0; i < FRAMES_TO_TRACK; i++)
 	{
 		lastFrameTimes[i] = 0.;
 	}
@@ -48,6 +48,16 @@ void Time::UpdateTime()
 	frameCount++;
 	lastFrameTimes[lastFrameTimePointer] = deltaTime;
 	lastFrameTimePointer++;
-	if (lastFrameTimePointer == MAX_FRAMES_TO_TRACK) lastFrameTimePointer = 0;
-	fps = GetFPSFromLastFrameTimes();
+	if (lastFrameTimePointer == FRAMES_TO_TRACK) lastFrameTimePointer = 0;
+	fps = GetFPSFromLastFrameTimes(FRAMES_TO_TRACK);
+}
+
+double* Time::getLastFrameTimes()
+{
+	return lastFrameTimes;
+}
+
+int Time::getLastTrackedFrame()
+{
+	return lastFrameTimePointer;
 }

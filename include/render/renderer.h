@@ -10,6 +10,7 @@
 #include "render/camera.h"
 #include "render/renderable.h"
 #include "render/render_target.h"
+#include "gui/fps_window.h"
 
 #define MAX_SSAO_KERNEL_SIZE 256
 #define MAX_SSAO_NOISE_DIMENSION 64
@@ -77,6 +78,10 @@ public:
 	Material ssaoBlurMaterial;
 	bool enableBlurPass = true;
 
+	// GUI pass
+	RenderTarget RT_FpsGraph;
+	FPSGraph fpsGraph;
+
 	// Final pass
 	RenderTarget RT_Final;
 
@@ -93,6 +98,7 @@ public:
 
 	void setViewport();
 	void setViewport(uint32_t w, uint32_t h, uint32_t x, uint32_t y);
+	void setViewport(RenderViewport viewport);
 
 	void SetCamera(float x, float y, float z, float fov, float aspect);
 

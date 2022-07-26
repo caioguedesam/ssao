@@ -135,6 +135,12 @@ void Renderer::setViewport(uint32_t w, uint32_t h, uint32_t x, uint32_t y)
 	renderViewport.set();
 }
 
+void Renderer::setViewport(RenderViewport viewport)
+{
+	renderViewport = viewport;
+	setViewport();
+}
+
 void Renderer::SetCamera(float x, float y, float z, float fov, float aspect)
 {
 	camera.Init(x, y, z, fov, aspect);
@@ -231,6 +237,12 @@ void Renderer::initializeRenderResources(uint32_t windowWidth, uint32_t windowHe
 		ssaoBlurMaterial.addTextureToSlot(ssaoResultTexture, 0);
 	}
 
+	// GUI pass resources
+	{
+		fpsGraph.init();
+		RT_FpsGraph.Init(FPS_WINDOW_WIDTH, FPS_WINDOW_HEIGHT, fpsGraph.fpsGraphTexture);
+	}
+
 	// Final pass resources
 	{
 		finalPassTexture = g_textureResourceManager.createTexture({ windowWidth, windowHeight, TextureFormat::R8_G8_B8_A8_UNORM }, nullptr);
@@ -302,7 +314,7 @@ void Renderer::Render()
 		RT_SSAO.Unbind();
 	}
 
-	if (enableBlurPass)	//TODO_#CUSTOMIZE_RENDER_PASS: For the love of god improve this
+	if (enableBlurPass)	//TODO_RENDER: Improve render pass architecture
 	{
 		RT_Blur.Bind();
 		GL(glDisable(GL_DEPTH_TEST));
@@ -311,6 +323,30 @@ void Renderer::Render()
 		screenQuad.setMaterial(&ssaoBlurMaterial);
 		screenQuad.draw(params);
 		RT_Blur.Unbind();
+	}
+
+	// GUI pass
+	{
+		RT_FpsGraph.Bind();
+		clear();
+		RenderViewport temp = renderViewport;
+		RenderViewport fpsGraphViewport(FPS_WINDOW_WIDTH, FPS_WINDOW_HEIGHT, 0, 0);
+		setViewport(fpsGraphViewport);
+		fpsGraph.update();
+		params.model = glm::mat4(1.f);
+
+		auto& pipeline = fpsGraph.fpsGraphRenderable.material->shaderPipeline;
+		pipeline.bind();
+		char uName[32];
+		for (int i = 0; i < FRAMES_TO_TRACK * 3; i++)
+		{
+			sprintf(uName, "frameColors[%d]", i);
+			pipeline.setUniform(uName, fpsGraph.frameColors[i]);
+		}
+
+		fpsGraph.fpsGraphRenderable.draw(params);
+		RT_FpsGraph.Unbind();
+		setViewport(temp);
 	}
 
 	// Final pass

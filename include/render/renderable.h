@@ -22,7 +22,7 @@ public:
 	Material* material;
 	glm::mat4 uModel;
 
-	void setVertexData(ResourceHandle<Buffer> vertexBuffer, ResourceHandle<Buffer> indexBuffer);
+	void setVertexData(ResourceHandle<Buffer> vertexBuffer, ResourceHandle<Buffer> indexBuffer, bool onlyPositions = false);
 	void setMaterial(Material* mat);
 
 	void draw(const RenderParams& params);

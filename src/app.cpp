@@ -194,6 +194,15 @@ void App::DisplayGUI()
 		GUI::endWindow();
 	}
 
+	// FPS graph window
+	{
+		uint32_t w = FPS_WINDOW_WIDTH;
+		uint32_t h = FPS_WINDOW_HEIGHT;
+		GUI::beginWindow("FPS", w, h, APP_DEFAULT_WIDTH - w, APP_DEFAULT_HEIGHT - h);
+		GUI::image(renderer.fpsGraph.fpsGraphTexture, w, h);
+		GUI::endWindow();
+	}
+
 	GUI::endFrame();
 }
 
@@ -230,6 +239,8 @@ void App::Run()
 		renderer.camera.Update(Time::deltaTime);
 
 		// TODO: update logic here
+		renderer.fpsGraph.setFrameData(Time::getLastFrameTimes(), Time::getLastTrackedFrame());
+
 		renderer.Render();
 
 		DisplayGUI();

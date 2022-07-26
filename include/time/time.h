@@ -15,4 +15,6 @@ public:
 
 	static void Init();
 	static void UpdateTime();
+	static double* getLastFrameTimes();
+	static int getLastTrackedFrame();
 };

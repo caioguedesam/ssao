@@ -1,29 +1,30 @@
 #pragma once
 #include "stdafx.h"
-#include "resource/buffer_resource_manager.h"
+#include "render/buffer.h"
+#include "render/texture.h"
+#include "render/renderable.h"
 
 #define FRAMES_TO_TRACK 120
-#define MIN_TOP_FRAME_TIME 33.3333 // 30FPS
+#define MIN_TOP_FRAME_TIME 0.0333333 // 30FPS
 #define FPS_WINDOW_WIDTH 800
 #define FPS_WINDOW_HEIGHT 200
 
-struct FPSTimer
+struct FPSGraph
 {
 	double framesTracked[FRAMES_TO_TRACK];
 	float quadVertices[FRAMES_TO_TRACK * 4 * 3];	// Each frame quad has 4 vertices (x, y, z)
 	uint32_t quadIndices[FRAMES_TO_TRACK * 6];		// Each frame quad has 2 tris (6 indices)
+	float frameColors[FRAMES_TO_TRACK * 3];
+	int frameCursor = 0;
 
 	ResourceHandle<Buffer> fpsGraphVertexBuffer;
 	ResourceHandle<Buffer> fpsGraphIndexBuffer;
+	ResourceHandle<Texture> fpsGraphTexture;
+
+	Material fpsGraphMaterial;
+	Renderable fpsGraphRenderable;
 
 	void init();
+	void setFrameData(double* frameData, int frameCursor);
 	void update();
-	void draw();
-
-	float getHeightForFrame(const double& frameTime);
-	float getFrameWidth();
-
-	// TODO_GUI: My idea: change fps vertex/index data every frame, big buffer
-	// with all bars, with normalized height from 0 to 1 and bar width. Index buffer will have sequential triangle indices.
-	// After that, update vertex data for graph renderable.
 };

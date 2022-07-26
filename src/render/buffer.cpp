@@ -12,14 +12,18 @@ void Buffer::init(BufferDesc desc, void* pData)
 
 	this->desc = desc;
 	setData(pData);
-	bind();
-	GL(glBufferData(getBindTarget(), getSize(), pData, GL_STATIC_DRAW));	// TODO_GL, TODO_BUFFER: Discriminate between static, dynamic and stream buffers
+	//bind();
+	//GL(glBufferData(getBindTarget(), getSize(), pData, GL_STATIC_DRAW));	// TODO_GL, TODO_BUFFER: Discriminate between static, dynamic and stream buffers.
 }
 
 void Buffer::setData(void* pData)
 {
 	ASSERT(apiHandle != HANDLE_INVALID, "Trying to set data of invalid buffer resource.");
 	this->pData = pData;
+	bind();
+	// TODO_GL, TODO_BUFFER: Discriminate between static, dynamic and stream buffers.
+	// TODO_GL, TODO_BUFFER: Subbuffer data to avoid buffer reallocation.
+	GL(glBufferData(getBindTarget(), getSize(), pData, GL_STATIC_DRAW));	
 }
 
 uint32_t Buffer::getStride()
