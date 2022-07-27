@@ -68,8 +68,8 @@ void FPSGraph::init()
 			TextureParams::TEXPARAMS_NONE
 		}, nullptr);
 
-	ResourceHandle<Shader> fpsGraphVS = g_shaderResourceManager.getFromFile(SHADERS_PATH"color_quad_vs.vert");
-	ResourceHandle<Shader> fpsGraphPS = g_shaderResourceManager.getFromFile(SHADERS_PATH"color_quad_ps.frag");
+	ResourceHandle<Shader> fpsGraphVS = g_shaderResourceManager.getFromFile(SHADERS_PATH"fps_graph_vs.vert");
+	ResourceHandle<Shader> fpsGraphPS = g_shaderResourceManager.getFromFile(SHADERS_PATH"fps_graph_ps.frag");
 	ShaderPipeline fpsGraphShaderPipeline = g_shaderResourceManager.createLinkedShaderPipeline(fpsGraphVS, fpsGraphPS);
 	fpsGraphMaterial.init(fpsGraphShaderPipeline);
 
@@ -113,7 +113,7 @@ void FPSGraph::update()
 	for (uint32_t f = 0; f < FRAMES_TO_TRACK; f++)
 	{
 		int i = f * 3;
-		frameColors[i + 1] -= 0.05 * frameColors[i + 1];
+		frameColors[i + 1] -= 0.01 * frameColors[i + 1];
 		if (frameColors[i + 1] < 0) frameColors[i + 1] = 0.f;
 	}
 
