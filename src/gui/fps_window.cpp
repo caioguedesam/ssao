@@ -113,7 +113,7 @@ void FPSGraph::update()
 	for (uint32_t f = 0; f < FRAMES_TO_TRACK; f++)
 	{
 		int i = f * 3;
-		frameColors[i + 1] -= 0.01 * frameColors[i + 1];
+		frameColors[i + 1] -= 0.005 * frameColors[i + 1];
 		if (frameColors[i + 1] < 0) frameColors[i + 1] = 0.f;
 	}
 
