@@ -12,6 +12,7 @@
 struct FPSGraph
 {
 	double framesTracked[FRAMES_TO_TRACK];
+	float frameColors[FRAMES_TO_TRACK * 3];	// rgb
 	int frameCursor = 0;
 
 	ResourceHandle<Texture> fpsGraphTexture;

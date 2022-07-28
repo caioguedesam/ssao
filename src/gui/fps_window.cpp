@@ -7,6 +7,7 @@
 void FPSGraph::init()
 {
 	memset(framesTracked, 0, sizeof(framesTracked));
+	memset(frameColors, 0, sizeof(frameColors));
 	fpsGraphTexture = g_textureResourceManager.createTexture(
 		{
 			FPS_WINDOW_WIDTH,
@@ -36,6 +37,11 @@ void FPSGraph::update()
 		if (framesTracked[i] > top) top = framesTracked[i];
 	}
 
+	// Update color array
+	frameColors[frameCursor * 3]	= 0.f;
+	frameColors[frameCursor * 3+1]	= 1.f;
+	frameColors[frameCursor * 3+2]	= 0.f;
+
 	// Add a new quad for each frame
 	fpsGraphImmRenderable.clear();
 	float quad_w = FPS_WINDOW_WIDTH / (float)FRAMES_TO_TRACK;
@@ -46,6 +52,11 @@ void FPSGraph::update()
 		float quad_h = relativeFrametime * FPS_WINDOW_HEIGHT;
 		float quad_x = quad_w * f;
 		float quad_y = 0.f;
-		fpsGraphImmRenderable.addQuad(quad_w, quad_h, quad_x, quad_y, 0.f, 1.f, 0.f);	// TODO_GUI: Readd color fade
+
+		frameColors[f * 3]		-= 0.05f * frameColors[f];
+		frameColors[f * 3+1]	-= 0.05f * frameColors[f+1];
+		frameColors[f * 3+2]	-= 0.05f * frameColors[f+2];
+
+		fpsGraphImmRenderable.addQuad(quad_w, quad_h, quad_x, quad_y, frameColors[f], frameColors[f + 1], frameColors[f + 2]);	// TODO_GUI: Figure out color fade again...
 	}
 }
