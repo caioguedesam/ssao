@@ -42,8 +42,12 @@ struct ImmediateRenderable : Renderable
 	uint32_t indexData[MAX_IMMEDIATE_RENDERABLE_TRIS * 3];
 	uint32_t indexCursor = 0;
 
+	uint32_t viewportWidth = 0;
+	uint32_t viewportHeight = 0;
+
 	void init(uint32_t viewportWidth, uint32_t viewportHeight);
-	void addQuad(uint32_t w, uint32_t h, uint32_t x, uint32_t y, float r, float g, float b);
+	void clear();
+	void addQuad(float w, float h, float x, float y, float r, float g, float b);
 	// TODO_RENDER: Add more shapes later
 
 	void setVertexData(ResourceHandle<Buffer> vertexBuffer, ResourceHandle<Buffer> indexBuffer) override;

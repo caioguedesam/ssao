@@ -332,19 +332,10 @@ void Renderer::Render()
 		RenderViewport temp = renderViewport;
 		RenderViewport fpsGraphViewport(FPS_WINDOW_WIDTH, FPS_WINDOW_HEIGHT, 0, 0);
 		setViewport(fpsGraphViewport);
+
 		fpsGraph.update();
-		params.model = glm::mat4(1.f);
+		fpsGraph.fpsGraphImmRenderable.draw(params);
 
-		auto& pipeline = fpsGraph.fpsGraphRenderable.material->shaderPipeline;
-		pipeline.bind();
-		char uName[32];
-		for (int i = 0; i < FRAMES_TO_TRACK * 3; i++)
-		{
-			sprintf(uName, "frameColors[%d]", i);
-			pipeline.setUniform(uName, fpsGraph.frameColors[i]);
-		}
-
-		fpsGraph.fpsGraphRenderable.draw(params);
 		RT_FpsGraph.Unbind();
 		setViewport(temp);
 	}

@@ -78,14 +78,14 @@ void ImmediateRenderable::init(uint32_t viewportWidth, uint32_t viewportHeight)
 	uint32_t attrSize = sizeof(ImmediateVertexAttr) / sizeof(float);
 	uint32_t vertexCount = MAX_IMMEDIATE_RENDERABLE_TRIS * 3;
 	uint32_t indexCount = MAX_IMMEDIATE_RENDERABLE_TRIS * 3;
-	g_bufferResourceManager.createBuffer(
+	vertexBuffer = g_bufferResourceManager.createBuffer(
 		{
 			BufferType::VERTEX_BUFFER,
 			BufferFormat::R32_FLOAT,
 			vertexCount * attrSize
 		}, vertexData
 	);
-	g_bufferResourceManager.createBuffer(
+	indexBuffer = g_bufferResourceManager.createBuffer(
 		{
 			BufferType::INDEX_BUFFER,
 			BufferFormat::R32_UINT,
@@ -94,27 +94,37 @@ void ImmediateRenderable::init(uint32_t viewportWidth, uint32_t viewportHeight)
 	);
 
 	// Initialize default material and shader pipeline
-	material = new Material();
+	setMaterial(new Material());
 	ResourceHandle<Shader> vs = g_shaderResourceManager.getFromFile(SHADERS_PATH"immediate_vs.vert");
 	ResourceHandle<Shader> ps = g_shaderResourceManager.getFromFile(SHADERS_PATH"immediate_ps.frag");
 	material->init(g_shaderResourceManager.createLinkedShaderPipeline(vs, ps));
-	material->shaderPipeline.setUniform("viewportWidth", (int)viewportWidth);
-	material->shaderPipeline.setUniform("viewportHeight", (int)viewportHeight);
+
+	this->viewportWidth = viewportWidth;
+	this->viewportHeight = viewportHeight;
 }
 
-void ImmediateRenderable::addQuad(uint32_t w, uint32_t h, uint32_t x, uint32_t y, float r, float g, float b)
+void ImmediateRenderable::clear()
 {
-	vertexData[vertexCursor++] = { (float)x,		(float)y,			0.f, r, g, b };
-	vertexData[vertexCursor++] = { (float)x,		(float)(y + h),		0.f, r, g, b };
-	vertexData[vertexCursor++] = { (float)(x + w),	(float)(y + h),		0.f, r, g, b };
-	vertexData[vertexCursor++] = { (float)(x + w),	(float)y,			0.f, r, g, b };
+	memset(vertexData, 0, sizeof(vertexData));
+	memset(indexData, 0, sizeof(indexData));
+	vertexCursor = 0;
+	indexCursor = 0;
+}
 
-	indexData[indexCursor++] = 0;
-	indexData[indexCursor++] = 2;
-	indexData[indexCursor++] = 1;
-	indexData[indexCursor++] = 0;
-	indexData[indexCursor++] = 3;
-	indexData[indexCursor++] = 2;
+void ImmediateRenderable::addQuad(float w, float h, float x, float y, float r, float g, float b)
+{
+	uint32_t base = vertexCursor;
+	vertexData[vertexCursor++] = { x,		y,			0.f, r, g, b };
+	vertexData[vertexCursor++] = { x,		(y + h),	0.f, r, g, b };
+	vertexData[vertexCursor++] = { (x + w),	(y + h),	0.f, r, g, b };
+	vertexData[vertexCursor++] = { (x + w),	y,			0.f, r, g, b };
+
+	indexData[indexCursor++] = base + 0;
+	indexData[indexCursor++] = base + 2;
+	indexData[indexCursor++] = base + 1;
+	indexData[indexCursor++] = base + 0;
+	indexData[indexCursor++] = base + 3;
+	indexData[indexCursor++] = base + 2;
 }
 
 void ImmediateRenderable::setVertexData(ResourceHandle<Buffer> vertexBuffer, ResourceHandle<Buffer> indexBuffer)
@@ -154,13 +164,9 @@ void ImmediateRenderable::draw(const RenderParams& params)
 	// Draw
 	material->bind();
 	// TODO_SHADER: Figure out how to deal with matrix pipeline on immediate renderable
-	bindStandardUniforms(material->shaderPipeline, params);
+	//bindStandardUniforms(material->shaderPipeline, params);
+	material->shaderPipeline.setUniform("viewportWidth", (int)viewportWidth);
+	material->shaderPipeline.setUniform("viewportHeight", (int)viewportHeight);
 	GL(glBindVertexArray(vaoHandle));
 	GL(glDrawElements(GL_TRIANGLES, indexCursor, GL_UNSIGNED_INT, 0));
-
-	// Clear vertex data for next draw
-	memset(vertexData, 0, sizeof(vertexData));
-	memset(indexData, 0, sizeof(indexData));
-	vertexCursor = 0;
-	indexCursor = 0;
 }
