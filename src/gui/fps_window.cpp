@@ -53,10 +53,16 @@ void FPSGraph::update()
 		float quad_x = quad_w * f;
 		float quad_y = 0.f;
 
-		frameColors[f * 3]		-= 0.05f * frameColors[f];
-		frameColors[f * 3+1]	-= 0.05f * frameColors[f+1];
-		frameColors[f * 3+2]	-= 0.05f * frameColors[f+2];
+		frameColors[f * 3]		-= 0.005f * frameColors[f * 3];
+		frameColors[f * 3+1]	-= 0.005f * frameColors[f * 3+1];
+		frameColors[f * 3+2]	-= 0.005f * frameColors[f * 3+2];
 
-		fpsGraphImmRenderable.addQuad(quad_w, quad_h, quad_x, quad_y, frameColors[f], frameColors[f + 1], frameColors[f + 2]);	// TODO_GUI: Figure out color fade again...
+		fpsGraphImmRenderable.addQuad(quad_w, quad_h, quad_x, quad_y, frameColors[f * 3], frameColors[f * 3 + 1], frameColors[f * 3 + 2]);
 	}
+
+	// Add standard frame time marks (60fps, 120fps)
+	float relativeFrametime_60 = static_cast<float>(0.016666 / top);
+	float relativeFrametime_120 = static_cast<float>(0.008333 / top);
+	fpsGraphImmRenderable.addQuad(FPS_WINDOW_WIDTH, 1.f, 0.f, relativeFrametime_60 * FPS_WINDOW_HEIGHT, 1.f, 1.f, 1.f);
+	fpsGraphImmRenderable.addQuad(FPS_WINDOW_WIDTH, 1.f, 0.f, relativeFrametime_120 * FPS_WINDOW_HEIGHT, 1.f, 1.f, 1.f);	// TODO_GUI: Support for alpha
 }
