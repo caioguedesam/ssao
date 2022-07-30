@@ -12,8 +12,6 @@ void Buffer::init(BufferDesc desc, void* pData)
 
 	this->desc = desc;
 	setData(pData);
-	//bind();
-	//GL(glBufferData(getBindTarget(), getSize(), pData, GL_STATIC_DRAW));	// TODO_GL, TODO_BUFFER: Discriminate between static, dynamic and stream buffers.
 }
 
 void Buffer::setData(void* pData)

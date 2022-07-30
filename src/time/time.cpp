@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "time/time.h"
 
-#define FRAMES_TO_TRACK 120
+#define FRAMES_TO_TRACK 240
 
 std::chrono::time_point<std::chrono::high_resolution_clock> Time::lastTimePoint;
 double Time::time;

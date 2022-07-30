@@ -4,6 +4,8 @@
 #include "render/buffer.h"
 #include "render/material.h"
 
+#define MAX_IMMEDIATE_RENDERABLE_TRIS 500
+
 struct RenderParams
 {
 	glm::mat4 model;
@@ -11,9 +13,8 @@ struct RenderParams
 	glm::mat4 proj;
 };
 
-class Renderable
+struct Renderable
 {
-public:
 	uint32_t vaoHandle = HANDLE_INVALID;
 	
 	ResourceHandle<Buffer> vertexBuffer;
@@ -22,8 +23,33 @@ public:
 	Material* material;
 	glm::mat4 uModel;
 
-	void setVertexData(ResourceHandle<Buffer> vertexBuffer, ResourceHandle<Buffer> indexBuffer, bool onlyPositions = false);
+	virtual void setVertexData(ResourceHandle<Buffer> vertexBuffer, ResourceHandle<Buffer> indexBuffer);
 	void setMaterial(Material* mat);
 
-	void draw(const RenderParams& params);
+	virtual void draw(const RenderParams& params);
+};
+
+struct ImmediateVertexAttr
+{
+	float x, y, z;
+	float r, g, b, a;
+};
+
+struct ImmediateRenderable : Renderable
+{
+	ImmediateVertexAttr vertexData[MAX_IMMEDIATE_RENDERABLE_TRIS * 3];
+	uint32_t vertexCursor = 0;
+	uint32_t indexData[MAX_IMMEDIATE_RENDERABLE_TRIS * 3];
+	uint32_t indexCursor = 0;
+
+	uint32_t viewportWidth = 0;
+	uint32_t viewportHeight = 0;
+
+	void init(uint32_t viewportWidth, uint32_t viewportHeight);
+	void clear();
+	void addQuad(float w, float h, float x, float y, float r = 1.f, float g = 1.f, float b = 1.f, float a = 1.f);
+	// TODO_RENDER: Add more shapes later
+
+	void setVertexData(ResourceHandle<Buffer> vertexBuffer, ResourceHandle<Buffer> indexBuffer) override;
+	void draw(const RenderParams& params) override;
 };
