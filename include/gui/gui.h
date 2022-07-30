@@ -6,6 +6,13 @@
 
 class App;
 
+struct GUIState
+{
+	bool show_fps_graph = false;
+};
+
+extern GUIState g_guiState;
+
 class GUI
 {
 public:

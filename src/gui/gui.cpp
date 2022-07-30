@@ -5,6 +5,7 @@
 #include "app.h"
 #include "time/time.h"
 
+GUIState g_guiState;
 
 void GUI::init(App* app)
 {
@@ -119,6 +120,15 @@ void GUI::init(App* app)
 void GUI::processEvent(SDL_Event* event)
 {
     ImGui_ImplSDL2_ProcessEvent(event);
+
+    if (event->type == SDL_KEYDOWN)
+    {
+        SDL_Keysym key = event->key.keysym;
+        if (key.sym == SDLK_f)
+        {
+            g_guiState.show_fps_graph = !g_guiState.show_fps_graph;     // TODO_INPUT, TODO_RENDER: This should trigger something in Renderer to disable fps graph rendering. Also should use remade input system.
+        }
+    }
 }
 
 void GUI::destroy()
@@ -235,6 +245,7 @@ void GUI::display(App* app)
     }
 
     // FPS graph
+    if(g_guiState.show_fps_graph)
     {
 		uint32_t w = FPS_WINDOW_WIDTH;
 		uint32_t h = FPS_WINDOW_HEIGHT;
