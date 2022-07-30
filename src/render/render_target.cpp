@@ -1,66 +1,69 @@
 #include "stdafx.h"
 #include "render/render_target.h"
+#include <glad/glad.h>
 #include "debugging/gl.h"
 
-#define MAX_TEXTURE_SLOTS 16	// Change this in the future if needed
-
-RenderTarget::RenderTarget()
+void RenderTarget::bind()
 {
-
+	GL(glBindFramebuffer(GL_FRAMEBUFFER, apiHandle));
 }
 
-void RenderTarget::Bind()
-{
-	GL(glBindFramebuffer(GL_FRAMEBUFFER, handle));
-}
-
-void RenderTarget::Unbind()
+void RenderTarget::unbind()
 {
 	GL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 }
 
-void RenderTarget::SetOutputTexture(ResourceHandle<Texture> textureHandle, uint32_t slot)
+void RenderTarget::init(uint32_t w, uint32_t h)
 {
-	Bind();
-	textures[slot] = textureHandle;
+	if (apiHandle == HANDLE_INVALID)
+	{
+		GL(glGenFramebuffers(1, &apiHandle));
+	}
+
+	bind();
+
+	// Create depth buffer
+	GL(glGenRenderbuffers(1, &depthBufferApiHandle));
+	GL(glBindRenderbuffer(GL_RENDERBUFFER, depthBufferApiHandle));
+	GL(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, w, h));
+	GL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBufferApiHandle));
+
+	unbind();
+}
+
+void RenderTarget::setOutput(ResourceHandle<Texture> textureHandle, uint32_t slot)
+{
+	ASSERT(textureHandle.isValid(), "Trying to set invalid texture to render target output.");
+	ASSERT(slot < MAX_RENDER_OUTPUTS, "Trying to set texture to output over maximum render target outputs.");
+
+	bind();
+	targetOutputs[slot] = textureHandle;
 	g_textureResourceManager.bindTexture(textureHandle, slot);
 	GL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + slot, GL_TEXTURE_2D, g_textureResourceManager.get(textureHandle)->apiHandle, 0));
-	UpdateDrawTargets();
+	updateOutputs();
+	unbind();
 }
 
-void RenderTarget::UpdateDrawTargets()
+void RenderTarget::updateOutputs()
 {
-	std::vector<GLenum> drawTargets;
-	for (int i = 0; i < MAX_TEXTURE_SLOTS; i++)
+	static GLenum colorBuffers[MAX_RENDER_OUTPUTS];
+	memset(colorBuffers, 0, sizeof(colorBuffers));
+	int count = 0;
+	for (int i = 0; i < MAX_RENDER_OUTPUTS; i++)
 	{
-		if (textures[i].isValid())
+		if (targetOutputs[i].isValid())
 		{
-			drawTargets.push_back(GL_COLOR_ATTACHMENT0 + i);
+			colorBuffers[count] = GL_COLOR_ATTACHMENT0 + i;
+			count++;
 		}
 	}
-	GL(glDrawBuffers(drawTargets.size(), &drawTargets[0]));
+	GL(glDrawBuffers(count, colorBuffers));
 }
 
-void RenderTarget::Init(uint32_t w, uint32_t h, ResourceHandle<Texture> firstTextureHandle)
+bool RenderTarget::isReady()
 {
-	if (handle == HANDLE_INVALID)
-	{
-		GL(glGenFramebuffers(1, &handle));
-		textures = std::vector<ResourceHandle<Texture>>(MAX_TEXTURE_SLOTS);
-	}
-
-	Bind();
-
-	// Create color texture and attach
-	SetOutputTexture(firstTextureHandle, 0);
-
-	// Create depth buffer and attach
-	GL(glGenRenderbuffers(1, &depthBuffer));
-	GL(glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer));
-	GL(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, w, h));
-	GL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer));
-
-	ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer status error on initialization");
-	
-	Unbind();
+	bind();
+	int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	unbind();
+	return status == GL_FRAMEBUFFER_COMPLETE;
 }

@@ -1,24 +1,21 @@
 #pragma once
 
 #include "stdafx.h"
-#include <glad/glad.h>
-
 #include "resource/texture_resource_manager.h"
 
-// TODO: Free resource
-class RenderTarget
+#define MAX_RENDER_OUTPUTS 8
+
+struct RenderTarget
 {
-public:
-	uint32_t handle = HANDLE_INVALID;
-	std::vector<ResourceHandle<Texture>> textures;
-	uint32_t depthBuffer;	// Should this be a proper resource?
+	uint32_t apiHandle = HANDLE_INVALID;
+	ResourceHandle<Texture> targetOutputs[MAX_RENDER_OUTPUTS];
+	uint32_t depthBufferApiHandle = HANDLE_INVALID;
 
-	RenderTarget();
+	void bind();
+	void unbind();
 
-	void Bind();
-	void Unbind();
-
-	void Init(uint32_t w, uint32_t h, ResourceHandle<Texture> firstTextureHandle);
-	void SetOutputTexture(ResourceHandle<Texture> textureHandle, uint32_t slot);
-	void UpdateDrawTargets();
+	void init(uint32_t w, uint32_t h);
+	void setOutput(ResourceHandle<Texture> textureHandle, uint32_t slot);
+	void updateOutputs();
+	bool isReady();
 };

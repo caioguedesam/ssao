@@ -16,6 +16,45 @@
 #define MAX_SSAO_NOISE_DIMENSION 64
 #define MAX_SSAO_RADIUS 5
 
+struct RenderPass
+{
+	bool enabled = true;
+	RenderTarget* rt = nullptr;
+	
+	virtual void init() = 0;
+	virtual void pass() = 0;
+};
+
+struct RenderPass_GBuffer : RenderPass
+{
+	void init() override;
+	void pass() override;
+};
+
+struct RenderPass_SSAO : RenderPass
+{
+	void init() override;
+	void pass() override;
+};
+
+struct RenderPass_SSAOBlur : RenderPass
+{
+	void init() override;
+	void pass() override;
+};
+
+struct RenderPass_SSAOBlur : RenderPass
+{
+	void init() override;
+	void pass() override;
+};
+
+struct RenderPass_Lighting : RenderPass
+{
+	void init() override;
+	void pass() override;
+};
+
 struct SSAOData
 {
 	glm::vec3 ssaoKernel[MAX_SSAO_KERNEL_SIZE];
@@ -104,9 +143,10 @@ public:
 
 	void InitPostProcessResources(uint32_t windowWidth, uint32_t windowHeight);
 
-	void Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t windowX, uint32_t windowY, const char* windowTitle,
+	/*void Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t windowX, uint32_t windowY, const char* windowTitle,
 		float cameraX, float cameraY, float cameraZ, float cameraFOV, float cameraAspect);
-	void initializeRenderResources(uint32_t windowWidth, uint32_t windowHeight);
+	void initializeRenderResources(uint32_t windowWidth, uint32_t windowHeight);*/
+	void init(uint32_t w, uint32_t h, uint32_t x, uint32_t y);
 
 	void Destroy();
 

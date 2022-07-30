@@ -4,6 +4,7 @@
 #include "random/random.h"
 #include "math/math.h"
 #include "resource/buffer_resource_manager.h"
+#include <glad/glad.h>
 
 std::vector<float> defaultQuadVertices =
 {
