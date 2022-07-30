@@ -4,7 +4,7 @@
 #include "render/buffer.h"
 #include "render/material.h"
 
-#define MAX_IMMEDIATE_RENDERABLE_TRIS 300
+#define MAX_IMMEDIATE_RENDERABLE_TRIS 500
 
 struct RenderParams
 {
@@ -32,7 +32,7 @@ struct Renderable
 struct ImmediateVertexAttr
 {
 	float x, y, z;
-	float r, g, b;
+	float r, g, b, a;
 };
 
 struct ImmediateRenderable : Renderable
@@ -47,7 +47,7 @@ struct ImmediateRenderable : Renderable
 
 	void init(uint32_t viewportWidth, uint32_t viewportHeight);
 	void clear();
-	void addQuad(float w, float h, float x, float y, float r, float g, float b);
+	void addQuad(float w, float h, float x, float y, float r = 1.f, float g = 1.f, float b = 1.f, float a = 1.f);
 	// TODO_RENDER: Add more shapes later
 
 	void setVertexData(ResourceHandle<Buffer> vertexBuffer, ResourceHandle<Buffer> indexBuffer) override;

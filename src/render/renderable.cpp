@@ -111,13 +111,13 @@ void ImmediateRenderable::clear()
 	indexCursor = 0;
 }
 
-void ImmediateRenderable::addQuad(float w, float h, float x, float y, float r, float g, float b)
+void ImmediateRenderable::addQuad(float w, float h, float x, float y, float r, float g, float b, float a)
 {
 	uint32_t base = vertexCursor;
-	vertexData[vertexCursor++] = { x,		y,			0.f, r, g, b };
-	vertexData[vertexCursor++] = { x,		(y + h),	0.f, r, g, b };
-	vertexData[vertexCursor++] = { (x + w),	(y + h),	0.f, r, g, b };
-	vertexData[vertexCursor++] = { (x + w),	y,			0.f, r, g, b };
+	vertexData[vertexCursor++] = { x,		y,			0.f, r, g, b, a };
+	vertexData[vertexCursor++] = { x,		(y + h),	0.f, r, g, b, a };
+	vertexData[vertexCursor++] = { (x + w),	(y + h),	0.f, r, g, b, a };
+	vertexData[vertexCursor++] = { (x + w),	y,			0.f, r, g, b, a };
 
 	indexData[indexCursor++] = base + 0;
 	indexData[indexCursor++] = base + 2;
@@ -143,11 +143,11 @@ void ImmediateRenderable::setVertexData(ResourceHandle<Buffer> vertexBuffer, Res
 	g_bufferResourceManager.bindBuffer(indexBuffer);
 
 	{
-		// For vertex buffers (immediate): vertex position (x, y, z) -> vertex colors (r, g, b)
+		// For vertex buffers (immediate): vertex position (x, y, z) -> vertex colors (r, g, b, a)
 		GL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(ImmediateVertexAttr), (void*)0));
 		GL(glEnableVertexAttribArray(0));
 
-		GL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(ImmediateVertexAttr), (void*)(3 * sizeof(float))));
+		GL(glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(ImmediateVertexAttr), (void*)(3 * sizeof(float))));
 		GL(glEnableVertexAttribArray(1));
 	}
 
