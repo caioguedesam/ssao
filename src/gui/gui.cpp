@@ -78,28 +78,29 @@ void GUI::init(Renderer* renderer)
     colors[ImGuiCol_ModalWindowDimBg] = ImVec4(1.00f, 0.00f, 0.00f, 0.35f);
 
     ImGuiStyle& style = ImGui::GetStyle();
-    style.WindowPadding = ImVec2(8.00f, 8.00f);
+    style.WindowPadding = ImVec2(0.00f, 0.00f);
     style.FramePadding = ImVec2(5.00f, 2.00f);
     style.CellPadding = ImVec2(6.00f, 6.00f);
     style.ItemSpacing = ImVec2(6.00f, 6.00f);
     style.ItemInnerSpacing = ImVec2(6.00f, 6.00f);
     style.TouchExtraPadding = ImVec2(0.00f, 0.00f);
     style.IndentSpacing = 25;
-    style.ScrollbarSize = 15;
+    style.ScrollbarSize = 5;
     style.GrabMinSize = 10;
     style.WindowBorderSize = 1;
     style.ChildBorderSize = 1;
     style.PopupBorderSize = 1;
     style.FrameBorderSize = 1;
     style.TabBorderSize = 1;
-    style.WindowRounding = 7;
-    style.ChildRounding = 4;
-    style.FrameRounding = 3;
-    style.PopupRounding = 4;
+    style.TabBorderSize = 0;
+    style.WindowRounding = 0;
+    style.ChildRounding = 0;
+    style.FrameRounding = 0;
+    style.PopupRounding = 0;
     style.ScrollbarRounding = 9;
     style.GrabRounding = 3;
     style.LogSliderDeadzone = 4;
-    style.TabRounding = 4;
+    style.TabRounding = 0;
 
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
     {
@@ -141,7 +142,7 @@ void GUI::beginWindow(const char* title, const uint32_t& w, const uint32_t& h, c
 {
     ImGui::SetNextWindowPos(ImVec2(x, y), ImGuiCond_Once);      // TODO_GUI: Calling this continuously makes windows always reset size and position, so support for moving/resizing windows is broken.
     ImGui::SetNextWindowSize(ImVec2(w, h), ImGuiCond_Once);
-    ImGui::Begin(title);
+    ImGui::Begin(title, 0, ImGuiWindowFlags_NoTitleBar);
 }
 
 void GUI::endWindow()
