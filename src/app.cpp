@@ -12,7 +12,7 @@
 #include "render/shader_compiler.h"
 #include "gui/gui.h"
 
-// TODO_#MULTIPLATFORM: Remove this SDL dependency and use platform api
+// TODO_MULTIPLATFORM: Remove this SDL dependency and use platform api
 void GetDisplayDimensions(uint32_t& w, uint32_t& h)
 {
 	ASSERT(SDL_WasInit(SDL_INIT_VIDEO), "Trying to get display dimensions without initializing SDL.");
@@ -41,7 +41,7 @@ void App::Init()
 	g_shaderResourceManager.init();
 	renderer.initializeRenderResources(appWidth, appHeight);
 
-	GUI::init(&renderer);
+	GUI::init(this);
 
 	isRunning = true;
 }
@@ -51,7 +51,7 @@ void App::PollEvents(double dt)
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
 	{
-		GUI::processSDLEvent(&event);
+		GUI::processEvent(&event);
 		if (event.type == SDL_KEYDOWN)
 		{
 			SDL_Keysym key = event.key.keysym;
@@ -146,66 +146,6 @@ void App::PollEvents(double dt)
 	}
 }
 
-void App::DisplayGUI()
-{
-	GUI::beginFrame();
-	{
-		// Test GUI code
-		GUI::beginWindow("Debug", 320, 150, 0, 0);
-		char fps_str[64];
-		sprintf(fps_str, "FPS: %.1lf", Time::fps);
-		GUI::text(fps_str);
-		GUI::checkbox("Enable Blur", &renderer.enableBlurPass);
-
-		int oldSsaoKernelSize = renderer.ssaoData.ssaoKernelSize;
-		GUI::slider_int("Kernel size", &renderer.ssaoData.ssaoKernelSize, 0, MAX_SSAO_KERNEL_SIZE);
-		if (oldSsaoKernelSize != renderer.ssaoData.ssaoKernelSize)
-		{
-			renderer.ssaoData.GenerateKernel();
-			renderer.ssaoData.bindKernel(renderer.ssaoMaterial.shaderPipeline);
-		}
-
-		int oldSsaoKernelDimension = renderer.ssaoData.ssaoNoiseDimension;
-		GUI::slider_int("Noise dimension", &renderer.ssaoData.ssaoNoiseDimension, 0, MAX_SSAO_NOISE_DIMENSION);
-		if (oldSsaoKernelDimension != renderer.ssaoData.ssaoNoiseDimension)
-		{
-			renderer.ssaoData.GenerateNoise();
-			renderer.ssaoData.bindNoiseTexture(renderer.ssaoMaterial.shaderPipeline, renderer.ssaoNoiseTexture);
-		}
-
-		int oldRadius = renderer.ssaoData.ssaoRadius;
-		GUI::slider_float("Radius", &renderer.ssaoData.ssaoRadius, 0, MAX_SSAO_RADIUS);
-		if (oldRadius != renderer.ssaoData.ssaoRadius)
-		{
-			renderer.ssaoData.bindRadius(renderer.ssaoMaterial.shaderPipeline);
-		}
-
-		GUI::endWindow();
-	}
-
-	// Main window (game view)
-	{
-		uint32_t w = MAIN_WINDOW_DEFAULT_WIDTH;
-		uint32_t h = MAIN_WINDOW_DEFAULT_HEIGHT;
-		GUI::beginWindow("Game", w, h, APP_DEFAULT_WIDTH / 2 - w / 2, APP_DEFAULT_HEIGHT / 2 - h / 2);
-
-		GUI::image(renderer.finalPassTexture, w, h);
-		
-		GUI::endWindow();
-	}
-
-	// FPS graph window
-	{
-		uint32_t w = FPS_WINDOW_WIDTH;
-		uint32_t h = FPS_WINDOW_HEIGHT;
-		GUI::beginWindow("FPS", w, h, APP_DEFAULT_WIDTH - w, APP_DEFAULT_HEIGHT - h);
-		GUI::image(renderer.fpsGraph.fpsGraphTexture, w, h);
-		GUI::endWindow();
-	}
-
-	GUI::endFrame();
-}
-
 void App::Run()
 {
 	Model sponza;
@@ -243,7 +183,7 @@ void App::Run()
 
 		renderer.Render();
 
-		DisplayGUI();
+		GUI::display(this);
 
 		renderer.Flush();
 	}

@@ -2,16 +2,17 @@
 #include "gui/gui.h"
 #include "backends/imgui_impl_sdl.h"
 #include "backends/imgui_impl_opengl3.h"
+#include "app.h"
+#include "time/time.h"
 
-#include "render/renderer.h"
 
-void GUI::init(Renderer* renderer)
+void GUI::init(App* app)
 {
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
-    // TODO_#GUI: Support docking and multiple viewports (look at sdl_gl3 example on imgui, it has what you need)
+    // TODO_GUI: Support docking and multiple viewports (look at sdl_gl3 example on imgui, it has what you need)
     //io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
     //io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
 
@@ -109,11 +110,13 @@ void GUI::init(Renderer* renderer)
     }
 
     // Setup Platform/Renderer backends
-    ImGui_ImplSDL2_InitForOpenGL(renderer->pWindow->handle, renderer->pGlContextHandle);
+    SDL_Window* sdl_window = app->renderer.pWindow->handle;
+    SDL_GLContext sdl_context = app->renderer.pGlContextHandle;
+    ImGui_ImplSDL2_InitForOpenGL(sdl_window, sdl_context);
     ImGui_ImplOpenGL3_Init("#version 330");
 }
 
-void GUI::processSDLEvent(SDL_Event* event)
+void GUI::processEvent(SDL_Event* event)
 {
     ImGui_ImplSDL2_ProcessEvent(event);
 }
@@ -138,41 +141,16 @@ void GUI::endFrame()
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void GUI::beginWindow(const char* title, const uint32_t& w, const uint32_t& h, const uint32_t& x, const uint32_t& y)
+void GUI::beginWindow(const char* title, const uint32_t& w, const uint32_t& h, const uint32_t& x, const uint32_t& y, ImGuiWindowFlags windowFlags)
 {
     ImGui::SetNextWindowPos(ImVec2(x, y), ImGuiCond_Once);      // TODO_GUI: Calling this continuously makes windows always reset size and position, so support for moving/resizing windows is broken.
     ImGui::SetNextWindowSize(ImVec2(w, h), ImGuiCond_Once);
-    ImGui::Begin(title, 0, ImGuiWindowFlags_NoTitleBar);
+    ImGui::Begin(title, 0, windowFlags);
 }
 
 void GUI::endWindow()
 {
     ImGui::End();
-}
-
-void GUI::text(const char* text)
-{
-    ImGui::Text(text);
-}
-
-bool GUI::button(const char* label)
-{
-    return ImGui::Button(label);
-}
-
-void GUI::checkbox(const char* label, bool* value)
-{
-    ImGui::Checkbox(label, value);
-}
-
-void GUI::slider_int(const char* label, int* value, const uint32_t& minValue, const uint32_t& maxValue)
-{
-    ImGui::SliderInt(label, value, minValue, maxValue);
-}
-
-void GUI::slider_float(const char* label, float* value, const float& minValue, const float& maxValue)
-{
-    ImGui::SliderFloat(label, value, minValue, maxValue);
 }
 
 void GUI::image(ResourceHandle<Texture> textureHandle, uint32_t w, uint32_t h)
@@ -182,4 +160,88 @@ void GUI::image(ResourceHandle<Texture> textureHandle, uint32_t w, uint32_t h)
         ImVec2(w, h),
         ImVec2(0, 1), ImVec2(1, 0)  // OpenGL maps textures down to up left to right, so invert v coordinate.
     );
+}
+
+void GUI::display(App* app)
+{
+    beginFrame();
+
+    Renderer& renderer = app->renderer;
+    // Sidebar
+    {
+        beginWindow("Properties", 320, APP_DEFAULT_HEIGHT, 0, 0);   // TODO_RESIZE, TODO_GUI: Change this to resize when window changes size
+        
+        ImGui::Text("FPS: %.1lf", Time::fps);
+        ImGui::Checkbox("Blur pass", &renderer.enableBlurPass);
+
+        struct ssao_parameters
+        {
+            int kernelSize;
+            int noiseDimension;
+            float radius;
+        };
+        static ssao_parameters lastSsaoParams;
+        lastSsaoParams =
+        {
+            renderer.ssaoData.ssaoKernelSize,
+            renderer.ssaoData.ssaoNoiseDimension,
+            renderer.ssaoData.ssaoRadius
+        };
+        ssao_parameters newSsaoParams = lastSsaoParams;
+        ImGui::SliderInt("Kernel size", &newSsaoParams.kernelSize, 0, MAX_SSAO_KERNEL_SIZE);
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("How many points will be pseudo-randomly sampled for each screen pixel in the SSAO pass.");
+        }
+        ImGui::SliderInt("Noise dimension", &newSsaoParams.noiseDimension, 0, MAX_SSAO_NOISE_DIMENSION);
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("The dimension of the square noise texture used for pseudo-random kernel rotations in the SSAO pass.");
+        }
+        ImGui::SliderFloat("Radius", &newSsaoParams.radius, 0, MAX_SSAO_RADIUS);
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("The maximum radius that the samples will be projected to, in view space.");
+        }
+        if (lastSsaoParams.kernelSize != newSsaoParams.kernelSize)
+        {
+            renderer.ssaoData.ssaoKernelSize = newSsaoParams.kernelSize;
+			renderer.ssaoData.GenerateKernel();
+			renderer.ssaoData.bindKernel(renderer.ssaoMaterial.shaderPipeline);
+        }
+        if (lastSsaoParams.noiseDimension != newSsaoParams.noiseDimension)
+        {
+            renderer.ssaoData.ssaoNoiseDimension = newSsaoParams.noiseDimension;
+            renderer.ssaoData.GenerateNoise();
+            renderer.ssaoData.bindNoiseTexture(renderer.ssaoMaterial.shaderPipeline, renderer.ssaoNoiseTexture);
+        }
+        if (lastSsaoParams.radius != newSsaoParams.radius)
+        {
+            renderer.ssaoData.ssaoRadius = newSsaoParams.radius;
+            renderer.ssaoData.bindRadius(renderer.ssaoMaterial.shaderPipeline);
+        }
+        lastSsaoParams = newSsaoParams;
+
+        endWindow();
+    }
+
+    // Main game window
+    {
+		uint32_t w = MAIN_WINDOW_DEFAULT_WIDTH;
+		uint32_t h = MAIN_WINDOW_DEFAULT_HEIGHT;
+        beginWindow("Game", w, h, APP_DEFAULT_WIDTH / 2 - w / 2, APP_DEFAULT_HEIGHT / 2 - h / 2, ImGuiWindowFlags_NoTitleBar);
+        image(renderer.finalPassTexture, w, h);
+		endWindow();
+    }
+
+    // FPS graph
+    {
+		uint32_t w = FPS_WINDOW_WIDTH;
+		uint32_t h = FPS_WINDOW_HEIGHT;
+		beginWindow("FPS", w, h, APP_DEFAULT_WIDTH - w, APP_DEFAULT_HEIGHT - h, ImGuiWindowFlags_NoTitleBar);
+		image(renderer.fpsGraph.fpsGraphTexture, w, h);
+		endWindow();
+    }
+
+    endFrame();
 }

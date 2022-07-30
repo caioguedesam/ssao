@@ -13,7 +13,6 @@ public:
 	void Init();
 
 	void PollEvents(double dt);
-	void DisplayGUI();
 
 	void Run();
 };
