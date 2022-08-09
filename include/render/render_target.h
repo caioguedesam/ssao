@@ -15,6 +15,7 @@ struct RenderTarget
 	void unbind();
 
 	void init(uint32_t w, uint32_t h);
+	void clear(const float& r = 0.0f, const float& g = 0.0f, const float& b = 0.0f, const float& a = 0.0f);
 	void setOutput(ResourceHandle<Texture> textureHandle, uint32_t slot);
 	void updateOutputs();
 	bool isReady();

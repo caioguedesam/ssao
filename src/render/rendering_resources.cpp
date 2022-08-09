@@ -26,10 +26,10 @@ ResourceHandle<Buffer> g_defaultQuadIndexBuffer;
 
 Renderable g_renderableScreenQuad;
 
-RenderTarget g_rtGeometry;
+RenderTarget g_rtGBuffer;
 RenderTarget g_rtSSAO;
-RenderTarget g_rtSSAOBlur;
-RenderTarget g_rtDebugFPS;
+RenderTarget g_rtBlur;
+RenderTarget g_rtUI;
 RenderTarget g_rtLighting;
 
 void initGlobalRenderResources()
@@ -59,9 +59,9 @@ void initGlobalRenderResources()
 	g_gBuffer.normal = g_textureResourceManager.createTexture({ GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, TextureFormat::R16_G16_B16_A16_FLOAT }, nullptr);
 
 	// Render targets
-	g_rtGeometry.init(GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT);
+	g_rtGBuffer.init(GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT);
 	g_rtSSAO.init(GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT);
-	g_rtSSAOBlur.init(GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT);
-	g_rtDebugFPS.init(DEBUG_FPS_WIDTH, DEBUG_FPS_HEIGHT);
+	g_rtBlur.init(GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT);
+	g_rtUI.init(DEBUG_FPS_WIDTH, DEBUG_FPS_HEIGHT);
 	g_rtLighting.init(GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT);
 }

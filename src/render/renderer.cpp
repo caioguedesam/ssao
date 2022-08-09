@@ -270,11 +270,11 @@ void Renderer::AddRenderable(Renderable* renderable)
 	renderables.push_back(renderable);
 }
 
-void Renderer::clear(const float& r, const float& g, const float& b, const float& a)
-{
-	GL(glClearColor(r, g, b, a));
-	GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-}
+//void Renderer::clear(const float& r, const float& g, const float& b, const float& a)
+//{
+//	GL(glClearColor(r, g, b, a));
+//	GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+//}
 
 void Renderer::Render()
 {
@@ -351,8 +351,8 @@ void Renderer::Render()
 	}
 }
 
-void Renderer::Flush()
-{
-	// Swap buffers
-	SDL_GL_SwapWindow(pWindow->handle);
-}
+//void Renderer::Flush()
+//{
+//	// Swap buffers
+//	SDL_GL_SwapWindow(pWindow->handle);
+//}

@@ -5,6 +5,7 @@
 #include "resource/shader_resource_manager.h"
 #include "render/render_target.h"
 #include "render/renderable.h"
+#include "render/camera.h"
 
 struct GBuffer
 {
@@ -19,10 +20,10 @@ extern ResourceHandle<Buffer> g_defaultQuadIndexBuffer;
 
 extern Renderable g_renderableScreenQuad;
 
-extern RenderTarget g_rtGeometry;
+extern RenderTarget g_rtGBuffer;
 extern RenderTarget g_rtSSAO;
-extern RenderTarget g_rtSSAOBlur;
-extern RenderTarget g_rtDebugFPS;
+extern RenderTarget g_rtBlur;
+extern RenderTarget g_rtUI;
 extern RenderTarget g_rtLighting;
 
 void initGlobalRenderResources();

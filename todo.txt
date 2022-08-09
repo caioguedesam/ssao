@@ -1,10 +1,35 @@
-REQUIRED:
-> Performance diagnostics*
-> Final report
-
-OPTIONAL:
+TYPHEUS TODO
+===================================================
+> Separate into new project + solutions
+> Remove dependencies
+> Resizing window support
+> Binary model file loading + gltf
+> Improve render pass architecture*
+> Improve memory allocation/tracking system
+> Namespace code
+> Shader uniforms (viewport w/h as uniforms, uniform buffers, etc)
+> Improve OpenGL upload efficiency (how?)
 > Lighting
-	> Dynamically set SSAO power
+> Improve FPS counter with actual frame time (OpenGL queries)
+> Improve input system (key down, key up, events...)
+> Reenable shader hot reload w/ new resource system
+> Change materials to use ResourceSystem?
 
-> Improve customized render pass pipeline
-> Optimize to send less stuff every frame to gpu
+Current task: IMPROVING RENDER PASS ARCHITECTURE
+
+> rendering_init.cpp
+	> all render targets, general resources are global
+	> all local resources belong to each render pass
+	> renderer now is a collection of render passes that can be enabled or disabled
+	> ssaoPass object responsible for ssaoData and rebind methods
+
+> rendering restructure
+	> separation between rendering_init, rendering_resources and rendering_render**
+	> properly initialize and chain all render passes**
+	> implement pass() for all render passes (CONTINUE FROM HERE)**
+	> move every function from renderer.cpp outside of it*
+	> clean up and ensure that everything still works
+	> ping-pong render targets (for ssao and other post processing, probably more uses)
+		> Deal with this in renderer::render()
+
+> Matrix pipelines? Render states for view and projection? depth, blend, etc?

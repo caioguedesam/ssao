@@ -31,6 +31,14 @@ void RenderTarget::init(uint32_t w, uint32_t h)
 	unbind();
 }
 
+void RenderTarget::clear(const float& r, const float& g, const float& b, const float& a)
+{
+	bind();
+	GL(glClearColor(r, g, b, a));
+	GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+	unbind();
+}
+
 void RenderTarget::setOutput(ResourceHandle<Texture> textureHandle, uint32_t slot)
 {
 	ASSERT(textureHandle.isValid(), "Trying to set invalid texture to render target output.");
