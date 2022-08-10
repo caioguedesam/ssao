@@ -28,7 +28,7 @@ void RenderTarget::init(uint32_t w, uint32_t h)
 	GL(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, w, h));
 	GL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBufferApiHandle));
 
-	unbind();
+	//unbind();
 }
 
 void RenderTarget::clear(const float& r, const float& g, const float& b, const float& a)
@@ -36,7 +36,7 @@ void RenderTarget::clear(const float& r, const float& g, const float& b, const f
 	bind();
 	GL(glClearColor(r, g, b, a));
 	GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-	unbind();
+	//unbind();
 }
 
 void RenderTarget::setOutput(ResourceHandle<Texture> textureHandle, uint32_t slot)
@@ -49,7 +49,7 @@ void RenderTarget::setOutput(ResourceHandle<Texture> textureHandle, uint32_t slo
 	g_textureResourceManager.bindTexture(textureHandle, slot);
 	GL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + slot, GL_TEXTURE_2D, g_textureResourceManager.get(textureHandle)->apiHandle, 0));
 	updateOutputs();
-	unbind();
+	//unbind();
 }
 
 void RenderTarget::updateOutputs()
@@ -72,6 +72,6 @@ bool RenderTarget::isReady()
 {
 	bind();
 	int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-	unbind();
+	//unbind();
 	return status == GL_FRAMEBUFFER_COMPLETE;
 }

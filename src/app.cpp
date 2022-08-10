@@ -33,13 +33,12 @@ void App::Init()
 	Input::Init();
 
 	// Rendering system initialization
-	renderer.Init(appWidth, appHeight, (g_screenWidth - appWidth) / 2, (g_screenHeight - appHeight) / 2, "SSAO",
-		0, 0, 3.f, 45.f, static_cast<float>(appWidth) / static_cast<float>(appHeight));
+	renderer.init(appWidth, appHeight, (g_screenWidth - appWidth) / 2, (g_screenHeight - appHeight) / 2);
 
 	// Resource system initialization
 	g_textureResourceManager.init();
 	g_shaderResourceManager.init();
-	renderer.initializeRenderResources(appWidth, appHeight);
+	/*renderer.initializeRenderResources(appWidth, appHeight);*/
 
 	GUI::init(this);
 
@@ -168,7 +167,8 @@ void App::Run()
 
 	obj.setMaterial(&objMat);
 
-	renderer.AddRenderable(&obj);
+	//renderer.AddRenderable(&obj);
+	renderer.pass_gBuffer.addRenderable(&obj);
 
 	while (isRunning)
 	{
@@ -179,12 +179,13 @@ void App::Run()
 		renderer.camera.Update(Time::deltaTime);
 
 		// TODO: update logic here
-		renderer.fpsGraph.setFrameData(Time::getLastFrameTimes(), Time::getLastTrackedFrame());
+		//renderer.fpsGraph.setFrameData(Time::getLastFrameTimes(), Time::getLastTrackedFrame());
+		renderer.pass_ui.ui_fpsGraph.setFrameData(Time::getLastFrameTimes(), Time::getLastTrackedFrame());	// TODO_DEBUG, TODO_UI: Change this when making better FPS profiling (CPU/GPU split)
 
-		renderer.Render();
+		renderer.render();
 
 		GUI::display(this);
 
-		renderer.Flush();
+		renderer.flush();
 	}
 }

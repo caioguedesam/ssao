@@ -23,12 +23,6 @@ struct SSAOData
 	glm::vec3 ssaoNoise[MAX_SSAO_NOISE_DIMENSION * MAX_SSAO_NOISE_DIMENSION];
 	int ssaoNoiseDimension = 4;
 	float ssaoRadius = 0.5f;
-
-	void GenerateKernel();
-	void bindKernel(ShaderPipeline& shaderPipeline);
-	void GenerateNoise();
-	void bindNoiseTexture(ShaderPipeline& shaderPipeline, ResourceHandle<Texture> noiseTextureHandle);
-	void bindRadius(ShaderPipeline& shaderPipeline);
 };
 
 class Renderer;
@@ -61,6 +55,12 @@ struct RenderPass_SSAO : RenderPass
 
 	void init(RenderTarget* rt) override;
 	void pass(Renderer* renderer) override;
+
+	void generateKernel();
+	void bindKernel();
+	void generateNoise();
+	void bindNoiseTexture();
+	void bindRadius();
 };
 
 struct RenderPass_Blur : RenderPass
@@ -86,6 +86,7 @@ struct RenderPass_UI : RenderPass
 struct RenderPass_Lighting : RenderPass
 {
 	Material				lighting_material;
+	ResourceHandle<Texture> lighting_inputTexture;
 	ResourceHandle<Texture> lighting_outputTexture;
 
 	void init(RenderTarget* rt) override;
@@ -161,18 +162,14 @@ public:
 
 	~Renderer();
 
-	void CreateNewWindow(uint32_t width, uint32_t height, uint32_t x, uint32_t y, const char* title);
-
-	void CreateNewRenderContext();
-
-	void RetrieveAPIFunctionLocations();
+	void createNewWindow(uint32_t width, uint32_t height, uint32_t x, uint32_t y, const char* title);
+	void createNewRenderContext();
+	void retrieveAPIFunctionLocations();
 
 	void setViewport();
 	void setViewport(uint32_t w, uint32_t h, uint32_t x, uint32_t y);
 	void setViewport(RenderViewport viewport);
-
-	void SetCamera(float x, float y, float z, float fov, float aspect);
-
+	void setCamera(float x, float y, float z, float fov, float aspect);
 
 	void init(uint32_t w, uint32_t h, uint32_t x, uint32_t y);
 	void destroy();

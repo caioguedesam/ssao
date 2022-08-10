@@ -2,6 +2,8 @@
 #include "render/renderer.h"
 #include "render/rendering_resources.h"
 #include <glad/glad.h>
+#include "math/math.h"
+#include "random/random.h"
 #include "debugging/gl.h"
 
 // TODO_RENDER: Implement all pass methods for custom render passes (CONTINUE FROM HERE)
@@ -28,10 +30,76 @@ void RenderPass_GBuffer::pass(Renderer* renderer)
 	rt->unbind();
 }
 
+void RenderPass_SSAO::generateKernel()
+{
+	for (int i = 0; i < ssao_data.ssaoKernelSize; i++)	// 64 points for kernel
+	{
+		glm::vec3 sample(
+			Random::UniformDistribution(-1.f, 1.f),
+			Random::UniformDistribution(-1.f, 1.f),
+			Random::UniformDistribution(0.f, 1.f)
+		);
+		sample = glm::normalize(sample);
+		sample *= Random::UniformDistribution();
+		// Push sample towards center
+		float scale = float(i) / 64.f;
+		scale = Math::Lerp(0.1f, 1.f, scale * scale);
+		sample *= scale;
+
+		//ssaoKernel.push_back(sample);
+		ssao_data.ssaoKernel[i] = sample;
+	}
+}
+
+void RenderPass_SSAO::bindKernel()
+{
+	ssao_material.shaderPipeline.bind();
+	char ssaoKernelName[32];
+	for (int i = 0; i < ssao_data.ssaoKernelSize; i++)
+	{
+		sprintf(ssaoKernelName, "samples[%d]", i);
+		ssao_material.shaderPipeline.setUniform(ssaoKernelName, ssao_data.ssaoKernel[i]);
+	}
+	ssao_material.shaderPipeline.setUniform("kernelSize", ssao_data.ssaoKernelSize);
+}
+
+void RenderPass_SSAO::generateNoise()
+{
+	for (int i = 0; i < ssao_data.ssaoNoiseDimension * ssao_data.ssaoNoiseDimension; i++)
+	{
+		glm::vec3 noise(
+			Random::UniformDistribution(-1.f, 1.f),
+			Random::UniformDistribution(-1.f, 1.f),
+			0.f
+		);
+		ssao_data.ssaoNoise[i] = noise;
+	}
+}
+
+void RenderPass_SSAO::bindNoiseTexture()
+{
+	ssao_material.shaderPipeline.bind();
+	ssao_material.shaderPipeline.setUniform("noiseDimension", ssao_data.ssaoNoiseDimension);
+	g_textureResourceManager.updateTexture(ssao_noiseTexture,
+		{
+			static_cast<uint32_t>(ssao_data.ssaoNoiseDimension),
+			static_cast<uint32_t>(ssao_data.ssaoNoiseDimension),
+			TextureFormat::R32_G32_B32_FLOAT
+		},
+		&ssao_data.ssaoNoise[0]);
+}
+
+void RenderPass_SSAO::bindRadius()
+{
+	ssao_material.shaderPipeline.bind();
+	ssao_material.shaderPipeline.setUniform("radius", ssao_data.ssaoRadius);
+}
+
 void RenderPass_SSAO::pass(Renderer* renderer)
 {
 	rt->bind();
-	rt->clear(1, 1, 1, 1);
+	GL(glDisable(GL_DEPTH_TEST));
+	//rt->clear(1, 1, 1, 1);
 	RenderParams params;
 	params.model = glm::mat4(1.f);
 	params.view = renderer->camera.GetViewMatrix();
@@ -46,7 +114,8 @@ void RenderPass_SSAO::pass(Renderer* renderer)
 void RenderPass_Blur::pass(Renderer* renderer)
 {
 	rt->bind();
-	rt->clear(1, 1, 1, 1);
+	GL(glDisable(GL_DEPTH_TEST));
+	//rt->clear(1, 1, 1, 1);
 	RenderParams params;
 	params.model = glm::mat4(1.f);
 	params.view = renderer->camera.GetViewMatrix();
@@ -80,7 +149,7 @@ void RenderPass_UI::pass(Renderer* renderer)
 void RenderPass_Lighting::pass(Renderer* renderer)
 {
 	rt->bind();
-	rt->clear();
+	//rt->clear();
 	RenderParams params;
 	params.model = glm::mat4(1.f);
 	params.view = renderer->camera.GetViewMatrix();

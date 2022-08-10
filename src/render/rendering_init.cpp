@@ -2,6 +2,8 @@
 #include "render/rendering_resources.h"
 #include "render/renderer.h"
 #include <glad/glad.h>
+#include "math/math.h"
+#include "random/random.h"
 #include "debugging/gl.h"
 
 void RenderPass_GBuffer::init(RenderTarget* rt)
@@ -17,8 +19,8 @@ void RenderPass_SSAO::init(RenderTarget* rt)
 {
 	this->rt = rt;
 
-	ssao_data.GenerateKernel();
-	ssao_data.GenerateNoise();
+	generateKernel();
+	generateNoise();
 
 	ssao_noiseTexture = g_textureResourceManager.createTexture({ 4, 4, TextureFormat::R32_G32_B32_FLOAT }, &ssao_data.ssaoNoise[0]);
 	ssao_outputTexture = g_textureResourceManager.createTexture({ GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, TextureFormat::R8_FLOAT }, nullptr);
@@ -28,9 +30,9 @@ void RenderPass_SSAO::init(RenderTarget* rt)
 	ShaderPipeline ssao_shaderPipeline = g_shaderResourceManager.createLinkedShaderPipeline(ssao_vs, ssao_ps);
 	ssao_material.init(ssao_shaderPipeline);
 
-	ssao_data.bindKernel(ssao_material.shaderPipeline);
-	ssao_data.bindNoiseTexture(ssao_material.shaderPipeline, ssao_noiseTexture);
-	ssao_data.bindRadius(ssao_material.shaderPipeline);
+	bindKernel();
+	bindNoiseTexture();
+	bindRadius();
 	ssao_material.addTextureToSlot(g_gBuffer.position,	0);
 	ssao_material.addTextureToSlot(g_gBuffer.normal,	1);
 	ssao_material.addTextureToSlot(ssao_noiseTexture,	2);
@@ -83,6 +85,58 @@ void RenderPass_Lighting::init(RenderTarget* rt)
 	rt->setOutput(lighting_outputTexture, 0);
 }
 
+void RenderPass_Lighting::setInputTexture(ResourceHandle<Texture> inputTexture)
+{
+	if (lighting_inputTexture != inputTexture)
+	{
+		lighting_inputTexture = inputTexture;
+		lighting_material.addTextureToSlot(inputTexture, 0);
+	}
+}
+
+void Renderer::createNewWindow(uint32_t width, uint32_t height, uint32_t x, uint32_t y, const char* title)
+{
+	pWindow = new Window();
+	pWindow->Init(width, height, x, y, title);
+}
+
+void Renderer::createNewRenderContext()
+{
+	ASSERT(!pGlContextHandle, "Trying to create new OpenGL context when renderer already has one.");
+	ASSERT(pWindow, "Trying to create new OpenGL context without window associated to renderer.");
+	pGlContextHandle = SDL_GL_CreateContext(pWindow->handle);
+	ASSERT(pGlContextHandle, "Failed to create new OpenGL context.");
+	SDL_GL_MakeCurrent(pWindow->handle, pGlContextHandle);
+}
+
+void Renderer::retrieveAPIFunctionLocations()
+{
+	bool result = gladLoadGLLoader(SDL_GL_GetProcAddress);
+	ASSERT(result, "Failed to retrieve OpenGL API function locations using GLAD.");
+}
+
+void Renderer::setViewport()
+{
+	renderViewport.set();
+}
+
+void Renderer::setViewport(uint32_t w, uint32_t h, uint32_t x, uint32_t y)
+{
+	renderViewport = RenderViewport(w, h, x, y);
+	renderViewport.set();
+}
+
+void Renderer::setViewport(RenderViewport viewport)
+{
+	renderViewport = viewport;
+	setViewport();
+}
+
+void Renderer::setCamera(float x, float y, float z, float fov, float aspect)
+{
+	camera.Init(x, y, z, fov, aspect);
+}
+
 void Renderer::init(uint32_t w, uint32_t h, uint32_t x, uint32_t y)
 {
 	// Initializing API
@@ -98,9 +152,9 @@ void Renderer::init(uint32_t w, uint32_t h, uint32_t x, uint32_t y)
 	}
 
 	// Initializing window and context
-	CreateNewWindow(w, h, x, y, APP_TITLE);
-	CreateNewRenderContext();
-	RetrieveAPIFunctionLocations();
+	createNewWindow(w, h, x, y, APP_TITLE);
+	createNewRenderContext();
+	retrieveAPIFunctionLocations();
 
 	// Initializing render resource managers
 	g_bufferResourceManager.init();
@@ -109,7 +163,7 @@ void Renderer::init(uint32_t w, uint32_t h, uint32_t x, uint32_t y)
 
 	// Initializing camera
 	float camera_aspect = (float)w / (float)h;
-	SetCamera(DEFAULT_CAMERA_X, DEFAULT_CAMERA_Y, DEFAULT_CAMERA_Z, DEFAULT_CAMERA_FOV, camera_aspect);
+	setCamera(DEFAULT_CAMERA_X, DEFAULT_CAMERA_Y, DEFAULT_CAMERA_Z, DEFAULT_CAMERA_FOV, camera_aspect);
 
 	// Initializing other state
 	GL(glEnable(GL_DEPTH_TEST));
