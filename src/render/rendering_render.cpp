@@ -6,8 +6,6 @@
 #include "random/random.h"
 #include "debugging/gl.h"
 
-// TODO_RENDER: Implement all pass methods for custom render passes (CONTINUE FROM HERE)
-
 void RenderPass_GBuffer::addRenderable(Renderable* renderable)
 {
 	ASSERT(renderable, "Trying to add null renderable to gbuffer pass.");
@@ -46,7 +44,6 @@ void RenderPass_SSAO::generateKernel()
 		scale = Math::Lerp(0.1f, 1.f, scale * scale);
 		sample *= scale;
 
-		//ssaoKernel.push_back(sample);
 		ssao_data.ssaoKernel[i] = sample;
 	}
 }
@@ -99,7 +96,6 @@ void RenderPass_SSAO::pass(Renderer* renderer)
 {
 	rt->bind();
 	GL(glDisable(GL_DEPTH_TEST));
-	//rt->clear(1, 1, 1, 1);
 	RenderParams params;
 	params.model = glm::mat4(1.f);
 	params.view = renderer->camera.GetViewMatrix();
@@ -115,7 +111,6 @@ void RenderPass_Blur::pass(Renderer* renderer)
 {
 	rt->bind();
 	GL(glDisable(GL_DEPTH_TEST));
-	//rt->clear(1, 1, 1, 1);
 	RenderParams params;
 	params.model = glm::mat4(1.f);
 	params.view = renderer->camera.GetViewMatrix();
@@ -131,8 +126,6 @@ void RenderPass_UI::pass(Renderer* renderer)
 {
 	rt->bind();
 	rt->clear();
-	/*RenderViewport temp = renderer->renderViewport;
-	RenderViewport fpsGraphViewport(FPS_WINDOW_WIDTH, FPS_WINDOW_HEIGHT, 0, 0);*/
 	Math::Primitives::u32_rect viewport_old = renderer->renderViewport;
 	renderer->setViewport({ FPS_WINDOW_WIDTH, FPS_WINDOW_HEIGHT, 0, 0 });
 	RenderParams params;
@@ -150,7 +143,6 @@ void RenderPass_UI::pass(Renderer* renderer)
 void RenderPass_Lighting::pass(Renderer* renderer)
 {
 	rt->bind();
-	//rt->clear();
 	RenderParams params;
 	params.model = glm::mat4(1.f);
 	params.view = renderer->camera.GetViewMatrix();
@@ -175,7 +167,6 @@ void Renderer::render()
 	// Pre render configuration
 
 	Math::Primitives::u32_rect defaultViewport = renderViewport;
-	//setViewport();
 	GL(glEnable(GL_DEPTH_TEST));
 	clear(0.169f, 0.169f, 0.169f, 1.f);		// This clears background
 	

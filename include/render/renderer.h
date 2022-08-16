@@ -96,63 +96,13 @@ struct RenderPass_Lighting : RenderPass
 	void setInputTexture(ResourceHandle<Texture> inputTexture);
 };
 
-//struct RenderViewport
-//{
-//	uint32_t width = 0;
-//	uint32_t height = 0;
-//	uint32_t x = 0;
-//	uint32_t y = 0;
-//
-//	RenderViewport();
-//	RenderViewport(const uint32_t& width, const uint32_t& height, const uint32_t& x, const uint32_t& y);
-//	void set();
-//};
-
 class Renderer
 {
 public:
 	Window* pWindow;
 	SDL_GLContext pGlContextHandle;
-	//RenderViewport renderViewport;
 	Math::Primitives::u32_rect renderViewport;
 	Camera camera;
-
-	//std::vector<Renderable*> renderables;
-
-	//// Default render resources
-	//ResourceHandle<Buffer> defaultQuadVertexBuffer;
-	//ResourceHandle<Buffer> defaultQuadIndexBuffer;
-	//Renderable screenQuad;
-
-	//// G-Buffer Pass
-	//RenderTarget RT_Geometry;
-
-	//ResourceHandle<Texture> gPositionTexture;
-	//ResourceHandle<Texture> gNormalTexture;
-	//ResourceHandle<Texture> gDiffuseTexture;
-
-	//// Post-processing pass (SSAO)
-	//RenderTarget RT_SSAO;
-	//RenderTarget RT_Blur;
-
-	//SSAOData ssaoData;
-	//ResourceHandle<Texture> ssaoNoiseTexture;			// Random rotation texture to introduce randomness when using SSAO kernel
-
-	//ResourceHandle<Texture> ssaoResultTexture;
-	//ResourceHandle<Texture> ssaoBlurTexture;
-	//Material ssaoMaterial;
-	//Material ssaoBlurMaterial;
-	//bool enableBlurPass = true;
-
-	//// GUI pass
-	//RenderTarget RT_FpsGraph;
-	//FPSGraph fpsGraph;
-
-	//// Final pass
-	//RenderTarget RT_Final;
-
-	//ResourceHandle<Texture> finalPassTexture;
-	//Material finalPassMaterial;
 
 	// Render passes
 	RenderPass_GBuffer		pass_gBuffer;
@@ -161,14 +111,10 @@ public:
 	RenderPass_UI			pass_ui;
 	RenderPass_Lighting		pass_lighting;
 
-
-	~Renderer();
-
 	void createNewWindow(uint32_t width, uint32_t height, uint32_t x, uint32_t y, const char* title);
 	void createNewRenderContext();
 	void retrieveAPIFunctionLocations();
 
-	//void setViewport();
 	void setViewport(Math::Primitives::u32_rect viewportRect);
 	void setCamera(float x, float y, float z, float fov, float aspect);
 
@@ -178,17 +124,4 @@ public:
 	void clear(const float& r = 0.0f, const float& g = 0.0f, const float& b = 0.0f, const float& a = 0.0f);
 	void render();
 	void flush();
-
-
-	//void InitPostProcessResources(uint32_t windowWidth, uint32_t windowHeight);
-
-	/*void Init(uint32_t windowWidth, uint32_t windowHeight, uint32_t windowX, uint32_t windowY, const char* windowTitle,
-		float cameraX, float cameraY, float cameraZ, float cameraFOV, float cameraAspect);
-	void initializeRenderResources(uint32_t windowWidth, uint32_t windowHeight);*/
-
-	//void AddRenderable(Renderable* renderable);
-	//void Destroy();
-	//void OnResize(uint32_t newWidth, uint32_t newHeight);		//TODO_RESIZE: Disabled until I figure out resizing again.
-	/*void Render();
-	void Flush();*/
 };

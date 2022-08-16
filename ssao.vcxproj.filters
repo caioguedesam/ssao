@@ -48,9 +48,6 @@
     <ClCompile Include="src\render\renderable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\render\renderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\render\buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

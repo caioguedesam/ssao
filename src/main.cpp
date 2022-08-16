@@ -25,10 +25,11 @@ int main(int argc, char* argv[])
 {
 	InitSDL();
 	App app;
-	app.Init();
+	app.init();
 
-	app.Run();
+	app.run();
 
+	app.destroy();
 	DestroySDL();
 	return 0;
 }

@@ -202,7 +202,6 @@
     <ClCompile Include="src\render\camera.cpp" />
     <ClCompile Include="src\render\material.cpp" />
     <ClCompile Include="src\render\renderable.cpp" />
-    <ClCompile Include="src\render\renderer.cpp" />
     <ClCompile Include="src\render\rendering_init.cpp" />
     <ClCompile Include="src\render\rendering_render.cpp" />
     <ClCompile Include="src\render\rendering_resources.cpp" />

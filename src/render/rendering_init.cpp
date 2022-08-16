@@ -115,17 +115,6 @@ void Renderer::retrieveAPIFunctionLocations()
 	ASSERT(result, "Failed to retrieve OpenGL API function locations using GLAD.");
 }
 
-//void Renderer::setViewport()
-//{
-//	renderViewport.set();
-//}
-
-//void Renderer::setViewport(uint32_t w, uint32_t h, uint32_t x, uint32_t y)
-//{
-//	renderViewport = RenderViewport(w, h, x, y);
-//	renderViewport.set();
-//}
-
 void Renderer::setViewport(Math::Primitives::u32_rect viewportRect)
 {
 	renderViewport = viewportRect;
@@ -183,5 +172,12 @@ void Renderer::init(uint32_t w, uint32_t h, uint32_t x, uint32_t y)
 	pass_lighting.init(&g_rtLighting);
 }
 
-void Renderer::destroy() {}
+void Renderer::destroy() 
+{
+	if (pGlContextHandle)
+	{
+		SDL_GL_DeleteContext(pGlContextHandle);
+	}
+	if (pWindow) delete pWindow;
+}
 

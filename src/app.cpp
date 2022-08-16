@@ -22,7 +22,7 @@ void GetDisplayDimensions(uint32_t& w, uint32_t& h)
 	h = DM.h;
 }
 
-void App::Init()
+void App::init()
 {
 	uint32_t appWidth = APP_DEFAULT_WIDTH;
 	uint32_t appHeight = APP_DEFAULT_HEIGHT;
@@ -45,7 +45,7 @@ void App::Init()
 	isRunning = true;
 }
 
-void App::PollEvents(double dt)
+void App::pollEvents(double dt)
 {
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
@@ -145,7 +145,7 @@ void App::PollEvents(double dt)
 	}
 }
 
-void App::Run()
+void App::run()
 {
 	Model sponza;
 	ResourceLoader::LoadModel(sponza, MODELS_PATH"sponza.obj");
@@ -173,7 +173,7 @@ void App::Run()
 	while (isRunning)
 	{
 		Time::UpdateTime();
-		PollEvents(Time::deltaTime);
+		pollEvents(Time::deltaTime);
 
 		Input::Update();
 		renderer.camera.Update(Time::deltaTime);
@@ -188,4 +188,9 @@ void App::Run()
 
 		renderer.flush();
 	}
+}
+
+void App::destroy()
+{
+	renderer.destroy();
 }

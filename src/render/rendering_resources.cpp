@@ -17,8 +17,6 @@ uint32_t defaultQuadIndexData[] =
 	0, 3, 2,
 };
 
-// TODO_RENDER: Default cube data
-
 GBuffer g_gBuffer;
 
 ResourceHandle<Buffer> g_defaultQuadVertexBuffer;
