@@ -21,14 +21,14 @@ std::vector<uint32_t> defaultQuadIndices =
 	0, 3, 2,
 };
 
-RenderViewport::RenderViewport() {}
-RenderViewport::RenderViewport(const uint32_t& width, const uint32_t& height, const uint32_t& x, const uint32_t& y)
-	: width(width), height(height), x(x), y(y) {}
-
-void RenderViewport::set()
-{
-	GL(glViewport(x, y, width, height));
-}
+//RenderViewport::RenderViewport() {}
+//RenderViewport::RenderViewport(const uint32_t& width, const uint32_t& height, const uint32_t& x, const uint32_t& y)
+//	: width(width), height(height), x(x), y(y) {}
+//
+//void RenderViewport::set()
+//{
+//	GL(glViewport(x, y, width, height));
+//}
 
 Renderer::~Renderer()
 {

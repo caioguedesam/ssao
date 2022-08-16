@@ -11,6 +11,7 @@
 #include "render/renderable.h"
 #include "render/render_target.h"
 #include "gui/fps_window.h"
+#include "math/math.h"
 
 #define MAX_SSAO_KERNEL_SIZE 256
 #define MAX_SSAO_NOISE_DIMENSION 64
@@ -95,24 +96,25 @@ struct RenderPass_Lighting : RenderPass
 	void setInputTexture(ResourceHandle<Texture> inputTexture);
 };
 
-struct RenderViewport
-{
-	uint32_t width = 0;
-	uint32_t height = 0;
-	uint32_t x = 0;
-	uint32_t y = 0;
-
-	RenderViewport();
-	RenderViewport(const uint32_t& width, const uint32_t& height, const uint32_t& x, const uint32_t& y);
-	void set();
-};
+//struct RenderViewport
+//{
+//	uint32_t width = 0;
+//	uint32_t height = 0;
+//	uint32_t x = 0;
+//	uint32_t y = 0;
+//
+//	RenderViewport();
+//	RenderViewport(const uint32_t& width, const uint32_t& height, const uint32_t& x, const uint32_t& y);
+//	void set();
+//};
 
 class Renderer
 {
 public:
 	Window* pWindow;
 	SDL_GLContext pGlContextHandle;
-	RenderViewport renderViewport;
+	//RenderViewport renderViewport;
+	Math::Primitives::u32_rect renderViewport;
 	Camera camera;
 
 	//std::vector<Renderable*> renderables;
@@ -166,9 +168,8 @@ public:
 	void createNewRenderContext();
 	void retrieveAPIFunctionLocations();
 
-	void setViewport();
-	void setViewport(uint32_t w, uint32_t h, uint32_t x, uint32_t y);
-	void setViewport(RenderViewport viewport);
+	//void setViewport();
+	void setViewport(Math::Primitives::u32_rect viewportRect);
 	void setCamera(float x, float y, float z, float fov, float aspect);
 
 	void init(uint32_t w, uint32_t h, uint32_t x, uint32_t y);

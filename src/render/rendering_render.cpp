@@ -131,9 +131,10 @@ void RenderPass_UI::pass(Renderer* renderer)
 {
 	rt->bind();
 	rt->clear();
-	RenderViewport temp = renderer->renderViewport;
-	RenderViewport fpsGraphViewport(FPS_WINDOW_WIDTH, FPS_WINDOW_HEIGHT, 0, 0);
-	renderer->setViewport(fpsGraphViewport);
+	/*RenderViewport temp = renderer->renderViewport;
+	RenderViewport fpsGraphViewport(FPS_WINDOW_WIDTH, FPS_WINDOW_HEIGHT, 0, 0);*/
+	Math::Primitives::u32_rect viewport_old = renderer->renderViewport;
+	renderer->setViewport({ FPS_WINDOW_WIDTH, FPS_WINDOW_HEIGHT, 0, 0 });
 	RenderParams params;
 	params.model = glm::mat4(1.f);
 	params.view = renderer->camera.GetViewMatrix();
@@ -142,7 +143,7 @@ void RenderPass_UI::pass(Renderer* renderer)
 	ui_fpsGraph.update();
 	ui_fpsGraph.fpsGraphImmRenderable.draw(params);
 
-	renderer->setViewport(temp);
+	renderer->setViewport(viewport_old);
 	rt->unbind();
 }
 
@@ -172,14 +173,16 @@ void Renderer::clear(const float& r, const float& g, const float& b, const float
 void Renderer::render()
 {
 	// Pre render configuration
-	{
-		setViewport();
-		GL(glEnable(GL_DEPTH_TEST));
-		clear(0.169f, 0.169f, 0.169f, 1.f);		// This clears background
-	}
+
+	Math::Primitives::u32_rect defaultViewport = renderViewport;
+	//setViewport();
+	GL(glEnable(GL_DEPTH_TEST));
+	clear(0.169f, 0.169f, 0.169f, 1.f);		// This clears background
+	
 
 	// Render passes (customize order as needed)
 	{
+		setViewport({GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 0, 0});
 		// G-BUFFER
 		pass_gBuffer.pass(this);
 
@@ -207,6 +210,9 @@ void Renderer::render()
 		}
 		pass_lighting.pass(this);
 	}
+
+	// Post render configuration
+	setViewport(defaultViewport);
 }
 
 void Renderer::flush()

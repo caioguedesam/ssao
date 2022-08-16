@@ -115,21 +115,21 @@ void Renderer::retrieveAPIFunctionLocations()
 	ASSERT(result, "Failed to retrieve OpenGL API function locations using GLAD.");
 }
 
-void Renderer::setViewport()
-{
-	renderViewport.set();
-}
+//void Renderer::setViewport()
+//{
+//	renderViewport.set();
+//}
 
-void Renderer::setViewport(uint32_t w, uint32_t h, uint32_t x, uint32_t y)
-{
-	renderViewport = RenderViewport(w, h, x, y);
-	renderViewport.set();
-}
+//void Renderer::setViewport(uint32_t w, uint32_t h, uint32_t x, uint32_t y)
+//{
+//	renderViewport = RenderViewport(w, h, x, y);
+//	renderViewport.set();
+//}
 
-void Renderer::setViewport(RenderViewport viewport)
+void Renderer::setViewport(Math::Primitives::u32_rect viewportRect)
 {
-	renderViewport = viewport;
-	setViewport();
+	renderViewport = viewportRect;
+	GL(glViewport(renderViewport.x, renderViewport.y, renderViewport.w, renderViewport.h));
 }
 
 void Renderer::setCamera(float x, float y, float z, float fov, float aspect)
@@ -170,7 +170,7 @@ void Renderer::init(uint32_t w, uint32_t h, uint32_t x, uint32_t y)
 	GL(glEnable(GL_CULL_FACE));
 	GL(glFrontFace(GL_CCW));
 
-	setViewport(w, h, 0, 0);
+	setViewport({ w, h, 0, 0 });
 
 	// Global rendering resources
 	initGlobalRenderResources();
