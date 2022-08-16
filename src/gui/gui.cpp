@@ -182,8 +182,9 @@ void GUI::display(App* app)
         beginWindow("Properties", 320, APP_DEFAULT_HEIGHT, 0, 0);   // TODO_RESIZE, TODO_GUI: Change this to resize when window changes size
         
         ImGui::Text("FPS: %.1lf", Time::fps);
-        ImGui::Checkbox("Blur pass", &renderer.enableBlurPass);
+        ImGui::Checkbox("Blur pass", &renderer.pass_blur.enabled);
 
+        RenderPass_SSAO& pass_ssao = renderer.pass_ssao;
         struct ssao_parameters
         {
             int kernelSize;
@@ -193,9 +194,9 @@ void GUI::display(App* app)
         static ssao_parameters lastSsaoParams;
         lastSsaoParams =
         {
-            renderer.ssaoData.ssaoKernelSize,
-            renderer.ssaoData.ssaoNoiseDimension,
-            renderer.ssaoData.ssaoRadius
+            pass_ssao.ssao_data.ssaoKernelSize,
+            pass_ssao.ssao_data.ssaoNoiseDimension,
+            pass_ssao.ssao_data.ssaoRadius
         };
         ssao_parameters newSsaoParams = lastSsaoParams;
         ImGui::SliderInt("Kernel size", &newSsaoParams.kernelSize, 0, MAX_SSAO_KERNEL_SIZE);
@@ -215,20 +216,20 @@ void GUI::display(App* app)
         }
         if (lastSsaoParams.kernelSize != newSsaoParams.kernelSize)
         {
-            renderer.ssaoData.ssaoKernelSize = newSsaoParams.kernelSize;
-			renderer.ssaoData.GenerateKernel();
-			renderer.ssaoData.bindKernel(renderer.ssaoMaterial.shaderPipeline);
+            pass_ssao.ssao_data.ssaoKernelSize = newSsaoParams.kernelSize;
+            pass_ssao.generateKernel();
+            pass_ssao.bindKernel();
         }
         if (lastSsaoParams.noiseDimension != newSsaoParams.noiseDimension)
         {
-            renderer.ssaoData.ssaoNoiseDimension = newSsaoParams.noiseDimension;
-            renderer.ssaoData.GenerateNoise();
-            renderer.ssaoData.bindNoiseTexture(renderer.ssaoMaterial.shaderPipeline, renderer.ssaoNoiseTexture);
+            pass_ssao.ssao_data.ssaoNoiseDimension = newSsaoParams.noiseDimension;
+            pass_ssao.generateNoise();
+            pass_ssao.bindNoiseTexture();
         }
         if (lastSsaoParams.radius != newSsaoParams.radius)
         {
-            renderer.ssaoData.ssaoRadius = newSsaoParams.radius;
-            renderer.ssaoData.bindRadius(renderer.ssaoMaterial.shaderPipeline);
+            pass_ssao.ssao_data.ssaoRadius = newSsaoParams.radius;
+            pass_ssao.bindRadius();
         }
         lastSsaoParams = newSsaoParams;
 
@@ -240,7 +241,7 @@ void GUI::display(App* app)
 		uint32_t w = MAIN_WINDOW_DEFAULT_WIDTH;
 		uint32_t h = MAIN_WINDOW_DEFAULT_HEIGHT;
         beginWindow("Game", w, h, APP_DEFAULT_WIDTH / 2 - w / 2, APP_DEFAULT_HEIGHT / 2 - h / 2, ImGuiWindowFlags_NoTitleBar);
-        image(renderer.finalPassTexture, w, h);
+        image(renderer.pass_lighting.lighting_outputTexture, w, h);
 		endWindow();
     }
 
@@ -250,7 +251,7 @@ void GUI::display(App* app)
 		uint32_t w = FPS_WINDOW_WIDTH;
 		uint32_t h = FPS_WINDOW_HEIGHT;
 		beginWindow("FPS", w, h, APP_DEFAULT_WIDTH - w, APP_DEFAULT_HEIGHT - h, ImGuiWindowFlags_NoTitleBar);
-		image(renderer.fpsGraph.fpsGraphTexture, w, h);
+		image(renderer.pass_ui.ui_fpsGraph.fpsGraphTexture, w, h);
 		endWindow();
     }
 

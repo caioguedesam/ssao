@@ -48,9 +48,6 @@
     <ClCompile Include="src\render\renderable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\render\renderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\render\buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -124,6 +121,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\gui\fps_window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\render\rendering_resources.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\render\rendering_init.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\render\rendering_render.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -267,6 +273,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\gui\fps_window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\render\rendering_resources.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

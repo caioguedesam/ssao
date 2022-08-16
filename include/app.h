@@ -10,9 +10,9 @@ public:
 
 	Renderer renderer;
 
-	void Init();
+	void init();
+	void destroy();
 
-	void PollEvents(double dt);
-
-	void Run();
+	void pollEvents(double dt);
+	void run();
 };

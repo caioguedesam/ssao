@@ -17,6 +17,7 @@ struct ResourceHandle
 	}
 
 	inline bool operator==(const ResourceHandle<T>& rhs) const { return base == rhs.base; }
+	inline bool operator!=(const ResourceHandle<T>& rhs) const { return base != rhs.base; }
 	inline bool isValid() const { return base != HANDLE_INVALID; }
 };
 

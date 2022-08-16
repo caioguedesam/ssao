@@ -202,7 +202,9 @@
     <ClCompile Include="src\render\camera.cpp" />
     <ClCompile Include="src\render\material.cpp" />
     <ClCompile Include="src\render\renderable.cpp" />
-    <ClCompile Include="src\render\renderer.cpp" />
+    <ClCompile Include="src\render\rendering_init.cpp" />
+    <ClCompile Include="src\render\rendering_render.cpp" />
+    <ClCompile Include="src\render\rendering_resources.cpp" />
     <ClCompile Include="src\render\render_target.cpp" />
     <ClCompile Include="src\render\shader.cpp" />
     <ClCompile Include="src\render\shader_compiler.cpp" />
@@ -256,6 +258,7 @@
     <ClInclude Include="include\render\material.h" />
     <ClInclude Include="include\render\renderable.h" />
     <ClInclude Include="include\render\renderer.h" />
+    <ClInclude Include="include\render\rendering_resources.h" />
     <ClInclude Include="include\render\render_target.h" />
     <ClInclude Include="include\render\shader.h" />
     <ClInclude Include="include\render\shader_compiler.h" />

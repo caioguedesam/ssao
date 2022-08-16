@@ -22,7 +22,7 @@ void GetDisplayDimensions(uint32_t& w, uint32_t& h)
 	h = DM.h;
 }
 
-void App::Init()
+void App::init()
 {
 	uint32_t appWidth = APP_DEFAULT_WIDTH;
 	uint32_t appHeight = APP_DEFAULT_HEIGHT;
@@ -33,20 +33,19 @@ void App::Init()
 	Input::Init();
 
 	// Rendering system initialization
-	renderer.Init(appWidth, appHeight, (g_screenWidth - appWidth) / 2, (g_screenHeight - appHeight) / 2, "SSAO",
-		0, 0, 3.f, 45.f, static_cast<float>(appWidth) / static_cast<float>(appHeight));
+	renderer.init(appWidth, appHeight, (g_screenWidth - appWidth) / 2, (g_screenHeight - appHeight) / 2);
 
 	// Resource system initialization
 	g_textureResourceManager.init();
 	g_shaderResourceManager.init();
-	renderer.initializeRenderResources(appWidth, appHeight);
+	/*renderer.initializeRenderResources(appWidth, appHeight);*/
 
 	GUI::init(this);
 
 	isRunning = true;
 }
 
-void App::PollEvents(double dt)
+void App::pollEvents(double dt)
 {
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
@@ -146,7 +145,7 @@ void App::PollEvents(double dt)
 	}
 }
 
-void App::Run()
+void App::run()
 {
 	Model sponza;
 	ResourceLoader::LoadModel(sponza, MODELS_PATH"sponza.obj");
@@ -168,23 +167,30 @@ void App::Run()
 
 	obj.setMaterial(&objMat);
 
-	renderer.AddRenderable(&obj);
+	//renderer.AddRenderable(&obj);
+	renderer.pass_gBuffer.addRenderable(&obj);
 
 	while (isRunning)
 	{
 		Time::UpdateTime();
-		PollEvents(Time::deltaTime);
+		pollEvents(Time::deltaTime);
 
 		Input::Update();
 		renderer.camera.Update(Time::deltaTime);
 
 		// TODO: update logic here
-		renderer.fpsGraph.setFrameData(Time::getLastFrameTimes(), Time::getLastTrackedFrame());
+		//renderer.fpsGraph.setFrameData(Time::getLastFrameTimes(), Time::getLastTrackedFrame());
+		renderer.pass_ui.ui_fpsGraph.setFrameData(Time::getLastFrameTimes(), Time::getLastTrackedFrame());	// TODO_DEBUG, TODO_UI: Change this when making better FPS profiling (CPU/GPU split)
 
-		renderer.Render();
+		renderer.render();
 
 		GUI::display(this);
 
-		renderer.Flush();
+		renderer.flush();
 	}
+}
+
+void App::destroy()
+{
+	renderer.destroy();
 }
