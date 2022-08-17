@@ -3,11 +3,10 @@
 #include "gui/fps_window.h"
 #include "resource/buffer_resource_manager.h"
 #include "resource/shader_resource_manager.h"
+#include "time/time.h"
 
 void FPSGraph::init()
 {
-	memset(framesTracked, 0, sizeof(framesTracked));
-	memset(frameColors, 0, sizeof(frameColors));
 	fpsGraphTexture = g_textureResourceManager.createTexture(
 		{
 			FPS_WINDOW_WIDTH,
@@ -19,52 +18,40 @@ void FPSGraph::init()
 	fpsGraphImmRenderable.init(FPS_WINDOW_WIDTH, FPS_WINDOW_HEIGHT);
 }
 
-void FPSGraph::setFrameData(double* frameData, int frameCursor)
-{
-	for (int i = 0; i < FRAMES_TO_TRACK; i++)
-	{
-		framesTracked[i] = frameData[i];
-	}
-	this->frameCursor = frameCursor;
-}
-
-void FPSGraph::update()
+void FPSGraph::update()		// TODO_RENDER: Move calls to this from render logic to update logic
 {
 	// Get max frame time
 	double top = MIN_TOP_FRAME_TIME;
+	double* cpu_times = Time::FrameTracking::get_cpu_times();
+	double* gpu_times = Time::FrameTracking::get_gpu_times();
 	for (int i = 0; i < FRAMES_TO_TRACK; i++)
 	{
-		if (framesTracked[i] > top) top = framesTracked[i];
+		double frame_time = cpu_times[i] + gpu_times[i];
+		top = max(top, frame_time);
 	}
-
-	// Update color array
-	frameColors[frameCursor * 4]	= 0.f;
-	frameColors[frameCursor * 4+1]	= 1.f;
-	frameColors[frameCursor * 4+2]	= 0.f;
-	frameColors[frameCursor * 4+3]	= 1.f;
 
 	// Add a new quad for each frame
 	fpsGraphImmRenderable.clear();
 	float quad_w = FPS_WINDOW_WIDTH / (float)FRAMES_TO_TRACK;
 	for (uint32_t f = 0; f < FRAMES_TO_TRACK; f++)
 	{
-		double frametime = framesTracked[f];
-		float relativeFrametime = static_cast<float>(frametime / top);
-		float quad_h = relativeFrametime * FPS_WINDOW_HEIGHT;
+		double cpu_time = cpu_times[f];
+		double gpu_time = gpu_times[f];
+		float cpu_relative_time = static_cast<float>(cpu_time / top);
+		float gpu_relative_time = static_cast<float>(gpu_time / top);
+		float cpu_quad_h = cpu_relative_time * FPS_WINDOW_HEIGHT;
+		float gpu_quad_h = gpu_relative_time * FPS_WINDOW_HEIGHT;
 		float quad_x = quad_w * f;
-		float quad_y = 0.f;
+		float cpu_quad_y = 0.f;
+		float gpu_quad_y = cpu_quad_h;
 
-		frameColors[f * 4]		-= 0.005f * frameColors[f * 4];
-		frameColors[f * 4+1]	-= 0.005f * frameColors[f * 4+1];
-		frameColors[f * 4+2]	-= 0.005f * frameColors[f * 4+2];
-		frameColors[f * 4+3]	-= 0.005f * frameColors[f * 4+3];
-
-		fpsGraphImmRenderable.addQuad(quad_w, quad_h, quad_x, quad_y, frameColors[f * 4], frameColors[f * 4 + 1], frameColors[f * 4 + 2], frameColors[f * 4 + 3]);
+		fpsGraphImmRenderable.addQuad(quad_w, cpu_quad_h, quad_x, cpu_quad_y, 0, 0, 1, 1);
+		fpsGraphImmRenderable.addQuad(quad_w, gpu_quad_h, quad_x, gpu_quad_y, 0, 1, 0, 1);
 	}
 
 	// Add standard frame time marks (60fps, 120fps)
-	float relativeFrametime_60 = static_cast<float>(0.016666 / top);
-	float relativeFrametime_120 = static_cast<float>(0.008333 / top);
+	float relativeFrametime_60 = static_cast<float>(16.666 / top);
+	float relativeFrametime_120 = static_cast<float>(8.333 / top);
 	fpsGraphImmRenderable.addQuad(FPS_WINDOW_WIDTH, 1.f, 0.f, relativeFrametime_60 * FPS_WINDOW_HEIGHT, 1.f, 1.f, 1.f, 0.5f);
 	fpsGraphImmRenderable.addQuad(FPS_WINDOW_WIDTH, 1.f, 0.f, relativeFrametime_120 * FPS_WINDOW_HEIGHT, 1.f, 1.f, 1.f, 0.5f);
 }

@@ -181,7 +181,7 @@ void GUI::display(App* app)
     {
         beginWindow("Properties", 320, APP_DEFAULT_HEIGHT, 0, 0);   // TODO_RESIZE, TODO_GUI: Change this to resize when window changes size
         
-        ImGui::Text("FPS: %.1lf", Time::fps);
+        ImGui::Text("FPS: %.1lf", Time::fps());
         ImGui::Checkbox("Blur pass", &renderer.pass_blur.enabled);
 
         RenderPass_SSAO& pass_ssao = renderer.pass_ssao;

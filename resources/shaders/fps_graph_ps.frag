@@ -1,6 +1,6 @@
 #version 330 core
 
-#define FRAMES_TO_TRACK 120
+#define FRAMES_TO_TRACK 240
 
 in vec3 vPos;
 layout (location = 0) out vec4 outDiffuse;

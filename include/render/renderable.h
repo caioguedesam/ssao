@@ -4,7 +4,7 @@
 #include "render/buffer.h"
 #include "render/material.h"
 
-#define MAX_IMMEDIATE_RENDERABLE_TRIS 500
+#define MAX_IMMEDIATE_RENDERABLE_TRIS 2048
 
 struct RenderParams
 {
@@ -35,7 +35,7 @@ struct ImmediateVertexAttr
 	float r, g, b, a;
 };
 
-struct ImmediateRenderable : Renderable
+struct ImmediateRenderable : Renderable		// TODO_RENDER: Use GPU instancing here to save memory and performance
 {
 	ImmediateVertexAttr vertexData[MAX_IMMEDIATE_RENDERABLE_TRIS * 3];
 	uint32_t vertexCursor = 0;

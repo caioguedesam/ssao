@@ -101,6 +101,9 @@ void ImmediateRenderable::init(uint32_t viewportWidth, uint32_t viewportHeight)
 
 	this->viewportWidth = viewportWidth;
 	this->viewportHeight = viewportHeight;
+
+	printf("VertexData size: %lld\n", sizeof(vertexData));
+	printf("IndexData size: %lld\n", sizeof(indexData));
 }
 
 void ImmediateRenderable::clear()

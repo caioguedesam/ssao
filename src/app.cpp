@@ -29,7 +29,8 @@ void App::init()
 	GetDisplayDimensions(g_screenWidth, g_screenHeight);
 
 	// Core engine systems initialization
-	Time::Init();
+	//Time::Init();
+	Time::init();
 	Input::Init();
 
 	// Rendering system initialization
@@ -172,19 +173,22 @@ void App::run()
 
 	while (isRunning)
 	{
-		Time::UpdateTime();
-		pollEvents(Time::deltaTime);
+		Time::FrameTracking::cpu_frametracking_start();
+		Time::FrameTracking::gpu_frametracking_start();
+		Time::update();
+		pollEvents(Time::deltaTime());
 
 		Input::Update();
-		renderer.camera.Update(Time::deltaTime);
+		renderer.camera.Update(Time::deltaTime());
 
-		// TODO: update logic here
-		//renderer.fpsGraph.setFrameData(Time::getLastFrameTimes(), Time::getLastTrackedFrame());
-		renderer.pass_ui.ui_fpsGraph.setFrameData(Time::getLastFrameTimes(), Time::getLastTrackedFrame());	// TODO_DEBUG, TODO_UI: Change this when making better FPS profiling (CPU/GPU split)
+		// TODO: update logic here		
 
 		renderer.render();
 
 		GUI::display(this);
+
+		Time::FrameTracking::cpu_frametracking_end();
+		Time::FrameTracking::gpu_frametracking_end();
 
 		renderer.flush();
 	}

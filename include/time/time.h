@@ -1,20 +1,39 @@
 #pragma once
-#include <chrono>
+#include "stdafx.h"
 
-class Time
+namespace Time
 {
-public:
-	static std::chrono::high_resolution_clock::time_point lastTimePoint;
+	struct Timer
+	{
+		uint64_t start_ticks	= 0;
+		uint64_t end_ticks		= 0;
 
-	// Times in seconds
-	static double time;
-	static double deltaTime;
+		void start();
+		void end();
 
-	static uint64_t frameCount;
-	static double fps;
+		uint64_t elapsed_ticks();
+		double elapsed_ns();
+		double elapsed_ms();
+		double elapsed_secs();
+	};
 
-	static void Init();
-	static void UpdateTime();
-	static double* getLastFrameTimes();
-	static int getLastTrackedFrame();
-};
+	void init();
+	void update();
+
+	uint64_t currentFrame();
+	double elapsedTime();
+	double deltaTime();
+	double fps();
+
+	namespace FrameTracking
+	{
+		void init();
+		void cpu_frametracking_start();
+		void cpu_frametracking_end();
+		void gpu_frametracking_start();
+		void gpu_frametracking_end();
+
+		double* get_cpu_times();
+		double* get_gpu_times();
+	}
+}
