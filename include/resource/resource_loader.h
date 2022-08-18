@@ -4,10 +4,16 @@
 #include "model/model.h"
 #include "render/texture.h"
 
-class ResourceLoader
+namespace Ty
 {
-public:
-	static tinyobj::ObjReader meshReader;
+	namespace AssetSystem
+	{
+		class ResourceLoader
+		{
+		public:
+			static tinyobj::ObjReader meshReader;
 
-	static void LoadModel(Model& targetModel, const char* path);
-};
+			static void LoadModel(Model& targetModel, const char* path);
+		};
+	}
+}

@@ -4,28 +4,34 @@
 
 #include "globals.h"
 
-struct MouseData
+namespace Ty
 {
-	glm::ivec2 position = glm::ivec2(0);
-	glm::ivec2 offset = glm::vec2(0);
-};
-
-class Input
-{
-public:
-	enum class State : uint32_t
+	namespace Input
 	{
-		APP = 0,
-		GUI
-	};
+		struct MouseData
+		{
+			glm::ivec2 position = glm::ivec2(0);
+			glm::ivec2 offset = glm::vec2(0);
+		};
 
-	static State currentState;
-	static MouseData mouseData;
-	static bool gotMouseData;
+		class InputManager
+		{
+		public:
+			enum class State : uint32_t
+			{
+				APP = 0,
+				GUI
+			};
 
-	static void Init();
+			static State currentState;
+			static MouseData mouseData;
+			static bool gotMouseData;
 
-	static void UpdateMouseData(SDL_Event& e);
-	static void Update();
-	static void ChangeInputMode(State state);
-};
+			static void init();
+
+			static void updateMouseData(SDL_Event& e);
+			static void update();
+			static void changeInputMode(State state);
+		};
+	}
+}

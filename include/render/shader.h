@@ -3,34 +3,40 @@
 #include "stdafx.h"
 #include "resource/resource_manager.h"
 
-enum ShaderType : uint32_t
+namespace Ty
 {
-	INVALID_SHADER = 0,
-	VERTEX,
-	PIXEL
-};
+	namespace Graphics
+	{
+		enum ShaderType : uint32_t
+		{
+			INVALID_SHADER = 0,
+			VERTEX,
+			PIXEL
+		};
 
-struct Shader
-{
-	uint32_t apiHandle = HANDLE_INVALID;
-	ShaderType type;
-	size_t timestamp = 0;
-};
+		struct Shader
+		{
+			uint32_t apiHandle = HANDLE_INVALID;
+			ShaderType type;
+			size_t timestamp = 0;
+		};
 
-struct ShaderPipeline
-{
-	uint32_t apiHandle = HANDLE_INVALID;
+		struct ShaderPipeline
+		{
+			uint32_t apiHandle = HANDLE_INVALID;
 
-	ResourceHandle<Shader> vs;
-	ResourceHandle<Shader> ps;
-	// TODO_SHADER: Other shader stages? (geometry, hull...)
+			ResourceHandle<Shader> vs;
+			ResourceHandle<Shader> ps;
+			// TODO_SHADER: Other shader stages? (geometry, hull...)
 
-	ShaderPipeline();
-	ShaderPipeline(ResourceHandle<Shader> vs, ResourceHandle<Shader> ps);
+			ShaderPipeline();
+			ShaderPipeline(ResourceHandle<Shader> vs, ResourceHandle<Shader> ps);
 
-	void bind();
-	void setUniform(const char* uName, const glm::mat4& uValue);
-	void setUniform(const char* uName, const int& uValue);
-	void setUniform(const char* uName, const float& uValue);
-	void setUniform(const char* uName, const glm::vec3& uValue);
-};
+			void bind();
+			void setUniform(const char* uName, const glm::mat4& uValue);
+			void setUniform(const char* uName, const int& uValue);
+			void setUniform(const char* uName, const float& uValue);
+			void setUniform(const char* uName, const glm::vec3& uValue);
+		};
+	}
+}

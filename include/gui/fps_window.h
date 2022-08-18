@@ -9,11 +9,17 @@
 #define FPS_WINDOW_WIDTH 800
 #define FPS_WINDOW_HEIGHT 200
 
-struct FPSGraph
+namespace Ty
 {
-	ResourceHandle<Texture> fpsGraphTexture;
-	ImmediateRenderable fpsGraphImmRenderable;
+	namespace Profile
+	{
+		struct FPSGraph
+		{
+			Graphics::ResourceHandle<Graphics::Texture> fpsGraphTexture;
+			Graphics::ImmediateRenderable fpsGraphImmRenderable;
 
-	void init();
-	void update();
-};
+			void init();
+			void update();
+		};
+	}
+}

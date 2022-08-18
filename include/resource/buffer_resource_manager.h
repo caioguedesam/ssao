@@ -4,16 +4,22 @@
 #include "render/buffer.h"
 #include "core/hash.h"
 
-struct BufferResourceManager : ResourceManager<Buffer>
+namespace Ty
 {
-	void init();
-	void destroy();
+	namespace Graphics
+	{
+		struct BufferResourceManager : ResourceManager<Buffer>
+		{
+			void init();
+			void destroy();
 
-	ResourceHandle<Buffer> createBuffer(BufferDesc desc, void* pData);
-	void setBufferData(ResourceHandle<Buffer> bufferHandle, void* pData);
-	void bindBuffer(ResourceHandle<Buffer> bufferHandle);
+			ResourceHandle<Buffer> createBuffer(BufferDesc desc, void* pData);
+			void setBufferData(ResourceHandle<Buffer> bufferHandle, void* pData);
+			void bindBuffer(ResourceHandle<Buffer> bufferHandle);
 
-	// TODO_MEMORY, TODO_BUFFER: Buffer freeing (on demand/destruction)
-};
+			// TODO_MEMORY, TODO_BUFFER: Buffer freeing (on demand/destruction)
+		};
 
-extern BufferResourceManager g_bufferResourceManager;
+		extern BufferResourceManager g_bufferResourceManager;
+	}
+}

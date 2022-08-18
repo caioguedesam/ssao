@@ -196,8 +196,6 @@
     <ClCompile Include="src\gui\gui.cpp" />
     <ClCompile Include="src\input\input.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\model\model.cpp" />
-    <ClCompile Include="src\random\random.cpp" />
     <ClCompile Include="src\render\buffer.cpp" />
     <ClCompile Include="src\render\camera.cpp" />
     <ClCompile Include="src\render\material.cpp" />
@@ -207,7 +205,6 @@
     <ClCompile Include="src\render\rendering_resources.cpp" />
     <ClCompile Include="src\render\render_target.cpp" />
     <ClCompile Include="src\render\shader.cpp" />
-    <ClCompile Include="src\render\shader_compiler.cpp" />
     <ClCompile Include="src\render\texture.cpp" />
     <ClCompile Include="src\resource\buffer_resource_manager.cpp" />
     <ClCompile Include="src\resource\resource_loader.cpp" />
@@ -261,7 +258,6 @@
     <ClInclude Include="include\render\rendering_resources.h" />
     <ClInclude Include="include\render\render_target.h" />
     <ClInclude Include="include\render\shader.h" />
-    <ClInclude Include="include\render\shader_compiler.h" />
     <ClInclude Include="include\render\texture.h" />
     <ClInclude Include="include\resource\buffer_resource_manager.h" />
     <ClInclude Include="include\resource\resource_loader.h" />

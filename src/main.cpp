@@ -24,7 +24,7 @@ void DestroySDL()
 int main(int argc, char* argv[])
 {
 	InitSDL();
-	App app;
+	Ty::App app;
 	app.init();
 
 	app.run();

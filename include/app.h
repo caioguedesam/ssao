@@ -3,16 +3,19 @@
 #include "globals.h"
 #include "render/renderer.h"
 
-class App
+namespace Ty
 {
-public:
-	bool isRunning;
+	class App
+	{
+	public:
+		bool isRunning;
 
-	Renderer renderer;
+		Graphics::Renderer renderer;
 
-	void init();
-	void destroy();
+		void init();
+		void destroy();
 
-	void pollEvents(double dt);
-	void run();
-};
+		void pollEvents(double dt);
+		void run();
+	};
+}

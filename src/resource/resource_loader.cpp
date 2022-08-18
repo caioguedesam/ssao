@@ -3,72 +3,78 @@
 
 #include "resource/resource_loader.h"
 
-tinyobj::ObjReader ResourceLoader::meshReader;
-
-void ResourceLoader::LoadModel(Model& targetModel, const char* path)
+namespace Ty
 {
-	targetModel.vertices.clear();
-	targetModel.indices.clear();
-
-	tinyobj::ObjReaderConfig readConfig;
-	readConfig.triangulate = true;
-
-	meshReader.ParseFromFile(path, readConfig);
-	ASSERT(meshReader.Error().empty(), "Error reading mesh from given path.");
-
-	auto& shapes = meshReader.GetShapes();
-	auto& attrib = meshReader.GetAttrib();
-
-	uint32_t currentIndex = 0;
-	for (size_t s = 0; s < shapes.size(); s++)
+	namespace AssetSystem
 	{
-		size_t indexOffset = 0;
-		// For every face (faces are always assumed to be tris)
-		for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++)
+		tinyobj::ObjReader ResourceLoader::meshReader;
+
+		void ResourceLoader::LoadModel(Model& targetModel, const char* path)
 		{
-			// For every vertex in face
-			for (size_t v = 0; v < 3; v++)
+			targetModel.vertices.clear();
+			targetModel.indices.clear();
+
+			tinyobj::ObjReaderConfig readConfig;
+			readConfig.triangulate = true;
+
+			meshReader.ParseFromFile(path, readConfig);
+			ASSERT(meshReader.Error().empty(), "Error reading mesh from given path.");
+
+			auto& shapes = meshReader.GetShapes();
+			auto& attrib = meshReader.GetAttrib();
+
+			uint32_t currentIndex = 0;
+			for (size_t s = 0; s < shapes.size(); s++)
 			{
-				tinyobj::index_t idx = shapes[s].mesh.indices[indexOffset + v];
-
-				tinyobj::real_t vx = attrib.vertices[3 * size_t(idx.vertex_index) + 0];
-				tinyobj::real_t vy = attrib.vertices[3 * size_t(idx.vertex_index) + 1];
-				tinyobj::real_t vz = attrib.vertices[3 * size_t(idx.vertex_index) + 2];
-
-				targetModel.vertices.push_back(vx);
-				targetModel.vertices.push_back(vy);
-				targetModel.vertices.push_back(vz);
-
-				if (idx.normal_index >= 0)
+				size_t indexOffset = 0;
+				// For every face (faces are always assumed to be tris)
+				for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++)
 				{
-					tinyobj::real_t nx = attrib.normals[3 * size_t(idx.normal_index) + 0];
-					tinyobj::real_t ny = attrib.normals[3 * size_t(idx.normal_index) + 1];
-					tinyobj::real_t nz = attrib.normals[3 * size_t(idx.normal_index) + 2];
+					// For every vertex in face
+					for (size_t v = 0; v < 3; v++)
+					{
+						tinyobj::index_t idx = shapes[s].mesh.indices[indexOffset + v];
 
-					targetModel.vertices.push_back(nx);
-					targetModel.vertices.push_back(ny);
-					targetModel.vertices.push_back(nz);
-				}
-				else
-				{
-					ASSERT(0, "No normals data in obj model");
-				}
+						tinyobj::real_t vx = attrib.vertices[3 * size_t(idx.vertex_index) + 0];
+						tinyobj::real_t vy = attrib.vertices[3 * size_t(idx.vertex_index) + 1];
+						tinyobj::real_t vz = attrib.vertices[3 * size_t(idx.vertex_index) + 2];
 
-				if (idx.texcoord_index >= 0) {
-					tinyobj::real_t tx = attrib.texcoords[2 * size_t(idx.texcoord_index) + 0];
-					tinyobj::real_t ty = attrib.texcoords[2 * size_t(idx.texcoord_index) + 1];
+						targetModel.vertices.push_back(vx);
+						targetModel.vertices.push_back(vy);
+						targetModel.vertices.push_back(vz);
 
-					targetModel.vertices.push_back(tx);
-					targetModel.vertices.push_back(ty);
-				}
-				else
-				{
-					ASSERT(0, "No UV data in obj model");
-				}
+						if (idx.normal_index >= 0)
+						{
+							tinyobj::real_t nx = attrib.normals[3 * size_t(idx.normal_index) + 0];
+							tinyobj::real_t ny = attrib.normals[3 * size_t(idx.normal_index) + 1];
+							tinyobj::real_t nz = attrib.normals[3 * size_t(idx.normal_index) + 2];
 
-				targetModel.indices.push_back(currentIndex++);
+							targetModel.vertices.push_back(nx);
+							targetModel.vertices.push_back(ny);
+							targetModel.vertices.push_back(nz);
+						}
+						else
+						{
+							ASSERT(0, "No normals data in obj model");
+						}
+
+						if (idx.texcoord_index >= 0) {
+							tinyobj::real_t tx = attrib.texcoords[2 * size_t(idx.texcoord_index) + 0];
+							tinyobj::real_t ty = attrib.texcoords[2 * size_t(idx.texcoord_index) + 1];
+
+							targetModel.vertices.push_back(tx);
+							targetModel.vertices.push_back(ty);
+						}
+						else
+						{
+							ASSERT(0, "No UV data in obj model");
+						}
+
+						targetModel.indices.push_back(currentIndex++);
+					}
+					indexOffset += 3;
+				}
 			}
-			indexOffset += 3;
 		}
 	}
 }

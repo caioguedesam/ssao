@@ -7,24 +7,29 @@
 #include "render/renderable.h"
 #include "render/camera.h"
 
-struct GBuffer
+namespace Ty
 {
-	ResourceHandle<Texture> diffuse;
-	ResourceHandle<Texture> position;
-	ResourceHandle<Texture> normal;
-};
-extern GBuffer g_gBuffer;
+	namespace Graphics
+	{
+		struct GBuffer
+		{
+			ResourceHandle<Texture> diffuse;
+			ResourceHandle<Texture> position;
+			ResourceHandle<Texture> normal;
+		};
+		extern GBuffer g_gBuffer;
 
-extern ResourceHandle<Buffer> g_defaultQuadVertexBuffer;
-extern ResourceHandle<Buffer> g_defaultQuadIndexBuffer;
+		extern ResourceHandle<Buffer> g_defaultQuadVertexBuffer;
+		extern ResourceHandle<Buffer> g_defaultQuadIndexBuffer;
 
-extern Renderable g_renderableScreenQuad;
+		extern Renderable g_renderableScreenQuad;
 
-extern RenderTarget g_rtGBuffer;
-extern RenderTarget g_rtSSAO;
-extern RenderTarget g_rtBlur;
-extern RenderTarget g_rtUI;
-extern RenderTarget g_rtLighting;
+		extern RenderTarget g_rtGBuffer;
+		extern RenderTarget g_rtSSAO;
+		extern RenderTarget g_rtBlur;
+		extern RenderTarget g_rtUI;
+		extern RenderTarget g_rtLighting;
 
-void initGlobalRenderResources();
-
+		void initGlobalRenderResources();
+	}
+}

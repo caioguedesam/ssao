@@ -6,76 +6,82 @@
 #include "render/texture.h"
 #include "stb_image.h"
 
-TextureResourceManager g_textureResourceManager;
-
-ResourceHandle<Texture> TextureResourceManager::loadFromFile(const char* filepath)
+namespace Ty
 {
-	FilePath path(filepath);
-	if (handleList.count(path))
+	namespace Graphics
 	{
-		return handleList[path];
+		TextureResourceManager g_textureResourceManager;
+
+		ResourceHandle<Texture> TextureResourceManager::loadFromFile(const char* filepath)
+		{
+			FileSystem::FilePath path(filepath);
+			if (handleList.count(path))
+			{
+				return handleList[path];
+			}
+
+			int w, h, nC;
+			// TODO_TEXTURE: Currently this only loads textures with 8-bit components per pixel. Add support later for other formats
+			// such as 16-bit floats.
+			unsigned char* imgData = stbi_load(filepath, &w, &h, &nC, 0);
+			TextureFormat imgFormat;
+			switch (nC)
+			{
+			case 3:
+				imgFormat = TextureFormat::R8_G8_B8_UNORM;
+				break;
+			case 4:
+				imgFormat = TextureFormat::R8_G8_B8_A8_UNORM;
+				break;
+			default:
+				imgFormat = TextureFormat::R8_G8_B8_A8_UNORM;
+				break;
+			}
+
+			TextureDesc desc;
+			desc.width = w;
+			desc.height = h;
+			desc.format = imgFormat;
+
+			ResourceHandle<Texture> handle = createTexture(desc, imgData);
+			handleList[path] = handle;
+			return handle;
+		}
+
+		void TextureResourceManager::init()
+		{
+
+		}
+
+		void TextureResourceManager::destroy()
+		{
+
+		}
+
+		ResourceHandle<Texture> TextureResourceManager::createTexture(TextureDesc desc, void* pData)
+		{
+			Texture* texture = new Texture();	// TODO_MEMORY, TODO_TEXTURE: Custom resource allocations
+
+			texture->init(desc, pData);
+			ResourceHandle<Texture> handle = add(texture);
+			return handle;
+		}
+
+		void TextureResourceManager::updateTexture(ResourceHandle<Texture> handle, TextureDesc desc, void* pData)
+		{
+			Texture* texture = get(handle);
+			texture->init(desc, pData);
+		}
+
+		void TextureResourceManager::setTextureData(ResourceHandle<Texture> handle, void* pData)
+		{
+			Texture* texture = get(handle);
+			texture->setData(pData);
+		}
+
+		void TextureResourceManager::bindTexture(ResourceHandle<Texture>& handle, const uint32_t& slot)
+		{
+			get(handle)->bind(slot);
+		}
 	}
-
-	int w, h, nC;
-	// TODO_TEXTURE: Currently this only loads textures with 8-bit components per pixel. Add support later for other formats
-	// such as 16-bit floats.
-	unsigned char* imgData = stbi_load(filepath, &w, &h, &nC, 0);
-	TextureFormat imgFormat;
-	switch (nC)
-	{
-	case 3:
-		imgFormat = TextureFormat::R8_G8_B8_UNORM;
-		break;
-	case 4:
-		imgFormat = TextureFormat::R8_G8_B8_A8_UNORM;
-		break;
-	default:
-		imgFormat = TextureFormat::R8_G8_B8_A8_UNORM;
-		break;
-	}
-
-	TextureDesc desc;
-	desc.width = w;
-	desc.height = h;
-	desc.format = imgFormat;
-
-	ResourceHandle<Texture> handle = createTexture(desc, imgData);
-	handleList[path] = handle;
-	return handle;
-}
-
-void TextureResourceManager::init()
-{
-	
-}
-
-void TextureResourceManager::destroy()
-{
-	
-}
-
-ResourceHandle<Texture> TextureResourceManager::createTexture(TextureDesc desc, void* pData)
-{
-	Texture* texture = new Texture();	// TODO_MEMORY, TODO_TEXTURE: Custom resource allocations
-	
-	texture->init(desc, pData);
-	ResourceHandle<Texture> handle = add(texture);
-	return handle;
-}
-
-void TextureResourceManager::updateTexture(ResourceHandle<Texture> handle, TextureDesc desc, void* pData)
-{
-	Texture* texture = get(handle);
-	texture->init(desc, pData);
-}
-
-void TextureResourceManager::setTextureData(ResourceHandle<Texture> handle, void* pData)
-{
-	Texture* texture = get(handle);
-	texture->setData(pData);
-}
-
-void TextureResourceManager::bindTexture(ResourceHandle<Texture>& handle, const uint32_t& slot)
-{
-	get(handle)->bind(slot);
 }

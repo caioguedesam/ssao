@@ -5,21 +5,28 @@
 #include "render/shader.h"
 #include "core/hash.h"
 
-struct ShaderResourceManager : ResourceManager<Shader>
+namespace Ty
 {
-	std::unordered_map<FilePath, ResourceHandle<Shader>, HashFunction_FilePath> handleList;
+	namespace Graphics
+	{
+		struct ShaderResourceManager : ResourceManager<Shader>
+		{
+			std::unordered_map<FileSystem::FilePath, ResourceHandle<Shader>, FileSystem::HashFunction_FilePath> handleList;
 
-	void init();
-	void destroy();
+			void init();
+			void destroy();
 
-	ResourceHandle<Shader> compileShader(const char* filePath);
-	ResourceHandle<Shader> getFromFile(const char* filePath);
-	
-	ShaderPipeline createLinkedShaderPipeline(ResourceHandle<Shader> vs, ResourceHandle<Shader> ps);
-	void linkShaders(ShaderPipeline& shaderPipeline);
-	void bindShaderPipeline(ShaderPipeline& shaderPipeline);
+			ResourceHandle<Shader> compileShader(const char* filePath);
+			ResourceHandle<Shader> getFromFile(const char* filePath);
 
-	// TODO_MEMORY, TODO_SHADER: Shader freeing (on demand/destruction)
-};
+			ShaderPipeline createLinkedShaderPipeline(ResourceHandle<Shader> vs, ResourceHandle<Shader> ps);
+			void linkShaders(ShaderPipeline& shaderPipeline);
+			void bindShaderPipeline(ShaderPipeline& shaderPipeline);
 
-extern ShaderResourceManager g_shaderResourceManager;
+			// TODO_MEMORY, TODO_SHADER: Shader freeing (on demand/destruction)
+		};
+
+		extern ShaderResourceManager g_shaderResourceManager;
+
+	}
+}
