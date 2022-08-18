@@ -9,6 +9,18 @@ namespace Ty
 {
 	namespace Graphics
 	{
+		struct ShaderPipelineResourceManager : ResourceManager<ShaderPipeline>
+		{
+			std::unordered_map<
+				std::tuple<ResourceHandle<Shader>, ResourceHandle<Shader>>,
+				ResourceHandle<ShaderPipeline>
+			> pipelinesPerShader;
+
+			void getLinkedShaderPipeline(ResourceHandle<Shader> vs, ResourceHandle<Shader> ps, bool link = true);
+			void linkPipeline(ResourceHandle<ShaderPipeline> shader_pipeline_handle);
+			void bindPipeline(ResourceHandle<ShaderPipeline> shader_pipeline_handle);
+		};
+
 		struct ShaderResourceManager : ResourceManager<Shader>
 		{
 			std::unordered_map<FileSystem::FilePath, ResourceHandle<Shader>, FileSystem::HashFunction_FilePath> handleList;

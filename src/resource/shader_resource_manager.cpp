@@ -13,6 +13,28 @@ namespace Ty
 	{
 		ShaderResourceManager g_shaderResourceManager;
 
+		ResourceHandle<ShaderPipeline> ShaderPipelineResourceManager::getLinkedShaderPipeline(ResourceHandle<Shader> vs, ResourceHandle<Shader> ps, bool link)
+		{
+			auto key = std::tuple<ResourceHandle<Shader>, ResourceHandle<Shader>>(vs, ps);
+			ResourceHandle<ShaderPipeline> handle;
+			if (pipelinesPerShader.count(key))
+			{
+				handle = pipelinesPerShader[key];
+			}
+			else
+			{
+				ShaderPipeline* pipeline = new ShaderPipeline(vs, ps);
+				add(pipeline);
+			}
+			if (link)
+			{
+				linkPipeline(handle);
+			}
+
+			pipelinesPerShader[key] = handle;
+			return handle;
+		}
+
 		void ShaderResourceManager::init()
 		{
 			// Fetch and compile all shaders
@@ -142,6 +164,5 @@ namespace Ty
 		{
 			shaderPipeline.bind();
 		}
-
 	}
 }
