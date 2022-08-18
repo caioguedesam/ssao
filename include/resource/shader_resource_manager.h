@@ -16,7 +16,7 @@ namespace Ty
 				ResourceHandle<ShaderPipeline>
 			> pipelinesPerShader;
 
-			void getLinkedShaderPipeline(ResourceHandle<Shader> vs, ResourceHandle<Shader> ps, bool link = true);
+			ResourceHandle<ShaderPipeline> getLinkedShaderPipeline(ResourceHandle<Shader> vs, ResourceHandle<Shader> ps, bool link = true);
 			void linkPipeline(ResourceHandle<ShaderPipeline> shader_pipeline_handle);
 			void bindPipeline(ResourceHandle<ShaderPipeline> shader_pipeline_handle);
 		};
