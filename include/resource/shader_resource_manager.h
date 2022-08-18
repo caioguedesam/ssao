@@ -18,6 +18,7 @@ namespace Ty
 
 			ResourceHandle<Shader> compileShader(const char* filePath);
 			ResourceHandle<Shader> getFromFile(const char* filePath);
+			void reloadShaders();
 
 			ShaderPipeline createLinkedShaderPipeline(ResourceHandle<Shader> vs, ResourceHandle<Shader> ps);
 			void linkShaders(ShaderPipeline& shaderPipeline);

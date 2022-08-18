@@ -33,6 +33,7 @@ namespace Ty
 
 			static Result ReadFile(const char* path, char* buffer);
 			static std::vector<FilePath> getFileNamesFromPath(const char* path);
+			static uint64_t getFileLastWriteTimestamp(const char* path);
 		};
 	}
 }

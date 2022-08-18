@@ -103,7 +103,33 @@ namespace Ty
 
 			return result;
 #endif
-			// TODO_#MULTIPLATFORM: Implement.
+			// TODO_MULTIPLATFORM, TODO_FILE: Implement.
+		}
+
+		uint64_t FileReader::getFileLastWriteTimestamp(const char* path)
+		{
+#if _WIN32
+			WIN32_FIND_DATAA findData;
+			char query[MAX_PATH];
+			strcpy(query, path);
+			HANDLE fHandle = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+			
+			FILETIME filetime_last_write;
+			if (!GetFileTime(fHandle, NULL, NULL, &filetime_last_write))
+			{
+				ASSERT(0, "[ERROR:FILESYSTEM] GetFileTime failed.");
+				return -1;
+			}
+			CloseHandle(fHandle);
+
+			ULARGE_INTEGER t;
+			t.HighPart = filetime_last_write.dwHighDateTime;
+			t.LowPart = filetime_last_write.dwLowDateTime;
+			uint64_t result = t.QuadPart;
+
+			return result;
+#endif
+			// TODO_MULTIPLATFORM, TODO_FILE: Implement.
 		}
 	}
 }

@@ -84,6 +84,10 @@ namespace Ty
 				{
 					renderer.camera.moveAmounts.x = 1;
 				} break;
+				case SDLK_b:
+				{
+					Graphics::g_shaderResourceManager.reloadShaders();
+				} break;
 				case SDLK_UP:
 				{
 					renderer.camera.rotateAmounts.x = 1;

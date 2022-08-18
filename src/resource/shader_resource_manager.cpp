@@ -63,7 +63,7 @@ namespace Ty
 			}
 
 			char shaderSource[SHADER_SOURCE_MAX_SIZE];
-			FileSystem::FileReader::ReadFile(filePath, shaderSource);	// TODO_SHADER: Keep going from here: filePath should include resources/shaders/
+			FileSystem::FileReader::ReadFile(filePath, shaderSource);
 			const char* shaderSource_cstr = shaderSource;
 
 			GL(glShaderSource(apiHandle, 1, &shaderSource_cstr, NULL));
@@ -82,6 +82,7 @@ namespace Ty
 
 			get(handle)->apiHandle = apiHandle;
 			get(handle)->type = type;
+			get(handle)->timestamp = FileSystem::FileReader::getFileLastWriteTimestamp(filePath);
 			handleList[FileSystem::FilePath(filePath)] = handle;
 			return handle;
 		}
@@ -91,6 +92,19 @@ namespace Ty
 			FileSystem::FilePath path(filePath);
 			ASSERT(handleList.count(path), "Trying to get shader from file that was not compiled yet.");
 			return handleList[path];
+		}
+
+		void ShaderResourceManager::reloadShaders()
+		{
+			for (const auto& entry : handleList)
+			{
+				ResourceHandle<Shader> handle = entry.second;
+				uint64_t current_timestamp = FileSystem::FileReader::getFileLastWriteTimestamp(entry.first.path);
+				if (current_timestamp > get(handle)->timestamp)
+				{
+					compileShader(entry.first.path);
+				}
+			}
 		}
 
 		ShaderPipeline ShaderResourceManager::createLinkedShaderPipeline(ResourceHandle<Shader> vs, ResourceHandle<Shader> ps)

@@ -18,7 +18,7 @@ namespace Ty
 		{
 			uint32_t apiHandle = HANDLE_INVALID;
 			ShaderType type;
-			size_t timestamp = 0;
+			uint64_t timestamp = 0;
 		};
 
 		struct ShaderPipeline
