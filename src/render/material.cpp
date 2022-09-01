@@ -7,26 +7,26 @@ namespace Ty
 {
 	namespace Graphics
 	{
-		void Material::init(ShaderPipeline shaderPipeline)
+		void Material::init(ShaderPipeline shader_pipeline)
 		{
-			this->shaderPipeline = shaderPipeline;
+			this->shader_pipeline = shader_pipeline;
 			textures = std::vector<ResourceHandle<Texture>>(MAX_TEXTURE_SLOTS);
 		}
 
-		void Material::addTextureToSlot(ResourceHandle<Texture> textureHandle, uint32_t slot)
+		void Material::add_texture_to_slot(ResourceHandle<Texture> texture_handle, uint32_t slot)
 		{
-			textures[slot] = textureHandle;
+			textures[slot] = texture_handle;
 		}
 
 		void Material::bind()
 		{
-			shaderPipeline.bind();
+			shader_pipeline.bind();
 			for (uint32_t i = 0; i < MAX_TEXTURE_SLOTS; i++)
 			{
-				if (textures[i].isValid())
+				if (textures[i].is_valid())
 				{
 					// TODO_TEXTURE: Support multiple texture dimensions
-					g_textureResourceManager.bindTexture(textures[i], i);
+					texture_resource_manager.bind_texture(textures[i], i);
 				}
 			}
 		}

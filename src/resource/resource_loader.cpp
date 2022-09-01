@@ -7,41 +7,41 @@ namespace Ty
 {
 	namespace AssetSystem
 	{
-		tinyobj::ObjReader ResourceLoader::meshReader;
+		tinyobj::ObjReader ResourceLoader::mesh_reader;
 
-		void ResourceLoader::LoadModel(Model& targetModel, const char* path)
+		void ResourceLoader::load_model(Model& target_model, const char* path)
 		{
-			targetModel.vertices.clear();
-			targetModel.indices.clear();
+			target_model.vertices.clear();
+			target_model.indices.clear();
 
-			tinyobj::ObjReaderConfig readConfig;
-			readConfig.triangulate = true;
+			tinyobj::ObjReaderConfig read_config;
+			read_config.triangulate = true;
 
-			meshReader.ParseFromFile(path, readConfig);
-			ASSERT(meshReader.Error().empty(), "Error reading mesh from given path.");
+			mesh_reader.ParseFromFile(path, read_config);
+			ASSERT(mesh_reader.Error().empty(), "Error reading mesh from given path.");
 
-			auto& shapes = meshReader.GetShapes();
-			auto& attrib = meshReader.GetAttrib();
+			auto& shapes = mesh_reader.GetShapes();
+			auto& attrib = mesh_reader.GetAttrib();
 
-			uint32_t currentIndex = 0;
+			uint32_t index = 0;
 			for (size_t s = 0; s < shapes.size(); s++)
 			{
-				size_t indexOffset = 0;
+				size_t index_offset = 0;
 				// For every face (faces are always assumed to be tris)
 				for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++)
 				{
 					// For every vertex in face
 					for (size_t v = 0; v < 3; v++)
 					{
-						tinyobj::index_t idx = shapes[s].mesh.indices[indexOffset + v];
+						tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
 
 						tinyobj::real_t vx = attrib.vertices[3 * size_t(idx.vertex_index) + 0];
 						tinyobj::real_t vy = attrib.vertices[3 * size_t(idx.vertex_index) + 1];
 						tinyobj::real_t vz = attrib.vertices[3 * size_t(idx.vertex_index) + 2];
 
-						targetModel.vertices.push_back(vx);
-						targetModel.vertices.push_back(vy);
-						targetModel.vertices.push_back(vz);
+						target_model.vertices.push_back(vx);
+						target_model.vertices.push_back(vy);
+						target_model.vertices.push_back(vz);
 
 						if (idx.normal_index >= 0)
 						{
@@ -49,9 +49,9 @@ namespace Ty
 							tinyobj::real_t ny = attrib.normals[3 * size_t(idx.normal_index) + 1];
 							tinyobj::real_t nz = attrib.normals[3 * size_t(idx.normal_index) + 2];
 
-							targetModel.vertices.push_back(nx);
-							targetModel.vertices.push_back(ny);
-							targetModel.vertices.push_back(nz);
+							target_model.vertices.push_back(nx);
+							target_model.vertices.push_back(ny);
+							target_model.vertices.push_back(nz);
 						}
 						else
 						{
@@ -62,17 +62,17 @@ namespace Ty
 							tinyobj::real_t tx = attrib.texcoords[2 * size_t(idx.texcoord_index) + 0];
 							tinyobj::real_t ty = attrib.texcoords[2 * size_t(idx.texcoord_index) + 1];
 
-							targetModel.vertices.push_back(tx);
-							targetModel.vertices.push_back(ty);
+							target_model.vertices.push_back(tx);
+							target_model.vertices.push_back(ty);
 						}
 						else
 						{
 							ASSERT(0, "No UV data in obj model");
 						}
 
-						targetModel.indices.push_back(currentIndex++);
+						target_model.indices.push_back(index++);
 					}
-					indexOffset += 3;
+					index_offset += 3;
 				}
 			}
 		}

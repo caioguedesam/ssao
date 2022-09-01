@@ -15,22 +15,22 @@ namespace Ty
 			bool show_fps_graph = false;
 		};
 
-		extern GUIState g_guiState;
+		extern GUIState g_gui_state;
 
 		class GUI
 		{
 		public:
 			static void init(App* app);
-			static void processEvent(SDL_Event* event);
+			static void process_event(SDL_Event* event);
 			static void display(App* app);
 			static void destroy();
 
 		private:
-			static void beginFrame();
-			static void endFrame();
-			static void beginWindow(const char* title, const uint32_t& w, const uint32_t& h, const uint32_t& x, const uint32_t& y, ImGuiWindowFlags windowFlags = 0);
-			static void endWindow();
-			static void image(Graphics::ResourceHandle<Graphics::Texture> textureHandle, uint32_t w, uint32_t h);
+			static void begin_frame();
+			static void end_frame();
+			static void begin_window(const char* title, const uint32_t& w, const uint32_t& h, const uint32_t& x, const uint32_t& y, ImGuiWindowFlags window_flags = 0);
+			static void end_window();
+			static void image(Graphics::ResourceHandle<Graphics::Texture> texture_handle, uint32_t w, uint32_t h);
 		};
 	}
 }

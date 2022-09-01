@@ -10,41 +10,41 @@ namespace Ty
 {
 	namespace Graphics
 	{
-		TextureResourceManager g_textureResourceManager;
+		TextureResourceManager texture_resource_manager;
 
-		ResourceHandle<Texture> TextureResourceManager::loadFromFile(const char* filepath)
+		ResourceHandle<Texture> TextureResourceManager::load_from_file(const char* file_path)
 		{
-			FileSystem::FilePath path(filepath);
-			if (handleList.count(path))
+			FileSystem::FilePath path(file_path);
+			if (handle_list.count(path))
 			{
-				return handleList[path];
+				return handle_list[path];
 			}
 
 			int w, h, nC;
 			// TODO_TEXTURE: Currently this only loads textures with 8-bit components per pixel. Add support later for other formats
 			// such as 16-bit floats.
-			unsigned char* imgData = stbi_load(filepath, &w, &h, &nC, 0);
-			TextureFormat imgFormat;
+			unsigned char* img_data = stbi_load(file_path, &w, &h, &nC, 0);
+			TextureFormat img_format;
 			switch (nC)
 			{
 			case 3:
-				imgFormat = TextureFormat::R8_G8_B8_UNORM;
+				img_format = TextureFormat::R8_G8_B8_UNORM;
 				break;
 			case 4:
-				imgFormat = TextureFormat::R8_G8_B8_A8_UNORM;
+				img_format = TextureFormat::R8_G8_B8_A8_UNORM;
 				break;
 			default:
-				imgFormat = TextureFormat::R8_G8_B8_A8_UNORM;
+				img_format = TextureFormat::R8_G8_B8_A8_UNORM;
 				break;
 			}
 
 			TextureDesc desc;
 			desc.width = w;
 			desc.height = h;
-			desc.format = imgFormat;
+			desc.format = img_format;
 
-			ResourceHandle<Texture> handle = createTexture(desc, imgData);
-			handleList[path] = handle;
+			ResourceHandle<Texture> handle = create_texture(desc, img_data);
+			handle_list[path] = handle;
 			return handle;
 		}
 
@@ -58,28 +58,28 @@ namespace Ty
 
 		}
 
-		ResourceHandle<Texture> TextureResourceManager::createTexture(TextureDesc desc, void* pData)
+		ResourceHandle<Texture> TextureResourceManager::create_texture(TextureDesc desc, void* data)
 		{
 			Texture* texture = new Texture();	// TODO_MEMORY, TODO_TEXTURE: Custom resource allocations
 
-			texture->init(desc, pData);
+			texture->init(desc, data);
 			ResourceHandle<Texture> handle = add(texture);
 			return handle;
 		}
 
-		void TextureResourceManager::updateTexture(ResourceHandle<Texture> handle, TextureDesc desc, void* pData)
+		void TextureResourceManager::update_texture(ResourceHandle<Texture> handle, TextureDesc desc, void* data)
 		{
 			Texture* texture = get(handle);
-			texture->init(desc, pData);
+			texture->init(desc, data);
 		}
 
-		void TextureResourceManager::setTextureData(ResourceHandle<Texture> handle, void* pData)
+		void TextureResourceManager::set_texture_data(ResourceHandle<Texture> handle, void* data)
 		{
 			Texture* texture = get(handle);
-			texture->setData(pData);
+			texture->set_data(data);
 		}
 
-		void TextureResourceManager::bindTexture(ResourceHandle<Texture>& handle, const uint32_t& slot)
+		void TextureResourceManager::bind_texture(ResourceHandle<Texture>& handle, const uint32_t& slot)
 		{
 			get(handle)->bind(slot);
 		}

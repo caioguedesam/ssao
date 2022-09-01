@@ -9,7 +9,7 @@ namespace Ty
 	{
 		void RenderTarget::bind()
 		{
-			GL(glBindFramebuffer(GL_FRAMEBUFFER, apiHandle));
+			GL(glBindFramebuffer(GL_FRAMEBUFFER, api_handle));
 		}
 
 		void RenderTarget::unbind()
@@ -19,18 +19,18 @@ namespace Ty
 
 		void RenderTarget::init(uint32_t w, uint32_t h)
 		{
-			if (apiHandle == HANDLE_INVALID)
+			if (api_handle == HANDLE_INVALID)
 			{
-				GL(glGenFramebuffers(1, &apiHandle));
+				GL(glGenFramebuffers(1, &api_handle));
 			}
 
 			bind();
 
 			// Create depth buffer
-			GL(glGenRenderbuffers(1, &depthBufferApiHandle));
-			GL(glBindRenderbuffer(GL_RENDERBUFFER, depthBufferApiHandle));
+			GL(glGenRenderbuffers(1, &depth_buffer_api_handle));
+			GL(glBindRenderbuffer(GL_RENDERBUFFER, depth_buffer_api_handle));
 			GL(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, w, h));
-			GL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBufferApiHandle));
+			GL(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_buffer_api_handle));
 
 			//unbind();
 		}
@@ -43,36 +43,36 @@ namespace Ty
 			//unbind();
 		}
 
-		void RenderTarget::setOutput(ResourceHandle<Texture> textureHandle, uint32_t slot)
+		void RenderTarget::set_output(ResourceHandle<Texture> texture_handle, uint32_t slot)
 		{
-			ASSERT(textureHandle.isValid(), "Trying to set invalid texture to render target output.");
+			ASSERT(texture_handle.is_valid(), "Trying to set invalid texture to render target output.");
 			ASSERT(slot < MAX_RENDER_OUTPUTS, "Trying to set texture to output over maximum render target outputs.");
 
 			bind();
-			targetOutputs[slot] = textureHandle;
-			g_textureResourceManager.bindTexture(textureHandle, slot);
-			GL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + slot, GL_TEXTURE_2D, g_textureResourceManager.get(textureHandle)->apiHandle, 0));
-			updateOutputs();
+			target_outputs[slot] = texture_handle;
+			texture_resource_manager.bind_texture(texture_handle, slot);
+			GL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + slot, GL_TEXTURE_2D, texture_resource_manager.get(texture_handle)->api_handle, 0));
+			update_outputs();
 			//unbind();
 		}
 
-		void RenderTarget::updateOutputs()
+		void RenderTarget::update_outputs()
 		{
-			static GLenum colorBuffers[MAX_RENDER_OUTPUTS];
-			memset(colorBuffers, 0, sizeof(colorBuffers));
+			static GLenum color_buffers[MAX_RENDER_OUTPUTS];
+			memset(color_buffers, 0, sizeof(color_buffers));
 			int count = 0;
 			for (int i = 0; i < MAX_RENDER_OUTPUTS; i++)
 			{
-				if (targetOutputs[i].isValid())
+				if (target_outputs[i].is_valid())
 				{
-					colorBuffers[count] = GL_COLOR_ATTACHMENT0 + i;
+					color_buffers[count] = GL_COLOR_ATTACHMENT0 + i;
 					count++;
 				}
 			}
-			GL(glDrawBuffers(count, colorBuffers));
+			GL(glDrawBuffers(count, color_buffers));
 		}
 
-		bool RenderTarget::isReady()
+		bool RenderTarget::is_ready()
 		{
 			bind();
 			int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);

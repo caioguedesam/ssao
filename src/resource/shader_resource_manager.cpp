@@ -11,18 +11,18 @@ namespace Ty
 {
 	namespace Graphics
 	{
-		ShaderResourceManager g_shaderResourceManager;
+		ShaderResourceManager shader_resource_manager;
 
 		void ShaderResourceManager::init()
 		{
 			// Fetch and compile all shaders
-			std::vector<FileSystem::FilePath> files = FileSystem::FileReader::getFileNamesFromPath(SHADERS_PATH);
+			std::vector<FileSystem::FilePath> files = FileSystem::FileReader::get_file_names_from_path(SHADERS_PATH);
 			for (int i = 0; i < files.size(); i++)
 			{
 				char path[MAX_PATH] = "";
 				strcat(path, SHADERS_PATH);
 				strcat(path, files[i].path);
-				compileShader(path);
+				compile_shader(path);
 			}
 
 			// TODO_SHADER: Set up shader hot reload again
@@ -30,12 +30,12 @@ namespace Ty
 
 		void ShaderResourceManager::destroy() {}
 
-		ResourceHandle<Shader> ShaderResourceManager::compileShader(const char* filePath)
+		ResourceHandle<Shader> ShaderResourceManager::compile_shader(const char* file_path)
 		{
 			ResourceHandle<Shader> handle;
-			if (handleList.count(filePath))
+			if (handle_list.count(file_path))
 			{
-				handle = handleList[filePath];
+				handle = handle_list[file_path];
 			}
 			else
 			{
@@ -44,87 +44,87 @@ namespace Ty
 			}
 
 			ShaderType type;
-			GLenum glType;
-			if (strstr(filePath, ".vert"))
+			GLenum gl_type;
+			if (strstr(file_path, ".vert"))
 			{
 				type = ShaderType::VERTEX;
-				glType = GL_VERTEX_SHADER;
+				gl_type = GL_VERTEX_SHADER;
 			}
-			else if (strstr(filePath, ".frag"))
+			else if (strstr(file_path, ".frag"))
 			{
 				type = ShaderType::PIXEL;
-				glType = GL_FRAGMENT_SHADER;
+				gl_type = GL_FRAGMENT_SHADER;
 			}
 
-			uint32_t apiHandle = get(handle)->apiHandle;
-			if (apiHandle == HANDLE_INVALID)
+			uint32_t api_handle = get(handle)->api_handle;
+			if (api_handle == HANDLE_INVALID)
 			{
-				GL(apiHandle = glCreateShader(glType));
+				GL(api_handle = glCreateShader(gl_type));
 			}
 
-			char shaderSource[SHADER_SOURCE_MAX_SIZE];
-			FileSystem::FileReader::ReadFile(filePath, shaderSource);	// TODO_SHADER: Keep going from here: filePath should include resources/shaders/
-			const char* shaderSource_cstr = shaderSource;
+			char file_buffer[SHADER_SOURCE_MAX_SIZE];
+			FileSystem::FileReader::read_file(file_path, file_buffer);	// TODO_SHADER: Keep going from here: filePath should include resources/shaders/
+			const char* source_str = file_buffer;
 
-			GL(glShaderSource(apiHandle, 1, &shaderSource_cstr, NULL));
-			GL(glCompileShader(apiHandle));
+			GL(glShaderSource(api_handle, 1, &source_str, NULL));
+			GL(glCompileShader(api_handle));
 
 			int ret = 0;
-			GL(glGetShaderiv(apiHandle, GL_COMPILE_STATUS, &ret));
+			GL(glGetShaderiv(api_handle, GL_COMPILE_STATUS, &ret));
 			if (!ret)
 			{
-				char infoLog[2048];
-				GL(glGetShaderInfoLog(apiHandle, 2048, NULL, infoLog));
+				char info_log[2048];
+				GL(glGetShaderInfoLog(api_handle, 2048, NULL, info_log));
 				ASSERT_FORMAT(ret, "Error compiling %s shader: %s",
 					type == ShaderType::VERTEX ? "vertex" : "pixel",
-					infoLog);
+					info_log);
 			}
 
-			get(handle)->apiHandle = apiHandle;
+			get(handle)->api_handle = api_handle;
 			get(handle)->type = type;
-			handleList[FileSystem::FilePath(filePath)] = handle;
+			handle_list[FileSystem::FilePath(file_path)] = handle;
 			return handle;
 		}
 
-		ResourceHandle<Shader> ShaderResourceManager::getFromFile(const char* filePath)
+		ResourceHandle<Shader> ShaderResourceManager::get_from_file(const char* filePath)
 		{
 			FileSystem::FilePath path(filePath);
-			ASSERT(handleList.count(path), "Trying to get shader from file that was not compiled yet.");
-			return handleList[path];
+			ASSERT(handle_list.count(path), "Trying to get shader from file that was not compiled yet.");
+			return handle_list[path];
 		}
 
-		ShaderPipeline ShaderResourceManager::createLinkedShaderPipeline(ResourceHandle<Shader> vs, ResourceHandle<Shader> ps)
+		ShaderPipeline ShaderResourceManager::create_linked_shader_pipeline(ResourceHandle<Shader> vs, ResourceHandle<Shader> ps)
 		{
-			ShaderPipeline shaderPipeline(vs, ps);
-			linkShaders(shaderPipeline);
-			return shaderPipeline;
+			ShaderPipeline shader_pipeline(vs, ps);
+			link_shaders(shader_pipeline);
+			return shader_pipeline;
 		}
 
-		void ShaderResourceManager::linkShaders(ShaderPipeline& shaderPipeline)
+		void ShaderResourceManager::link_shaders(ShaderPipeline& shader_pipeline)
 		{
-			if (shaderPipeline.apiHandle == HANDLE_INVALID)
+			if (shader_pipeline.api_handle == HANDLE_INVALID)
 			{
-				GL(shaderPipeline.apiHandle = glCreateProgram());
+				GL(shader_pipeline.api_handle = glCreateProgram());
 			}
 
-			uint32_t vsHandle = get(shaderPipeline.vs)->apiHandle;
-			uint32_t psHandle = get(shaderPipeline.ps)->apiHandle;
+			uint32_t vs_handle = get(shader_pipeline.vs)->api_handle;
+			uint32_t ps_handle = get(shader_pipeline.ps)->api_handle;
 
-			GL(glAttachShader(shaderPipeline.apiHandle, vsHandle));
-			GL(glAttachShader(shaderPipeline.apiHandle, psHandle));
-			GL(glLinkProgram(shaderPipeline.apiHandle));
+			GL(glAttachShader(shader_pipeline.api_handle, vs_handle));
+			GL(glAttachShader(shader_pipeline.api_handle, ps_handle));
+			GL(glLinkProgram(shader_pipeline.api_handle));
 			int ret = 0;
-			GL(glGetProgramiv(shaderPipeline.apiHandle, GL_LINK_STATUS, &ret));
+			GL(glGetProgramiv(shader_pipeline.api_handle, GL_LINK_STATUS, &ret));
 			if (!ret)
 			{
-				char infoLog[2048];
-				GL(glGetProgramInfoLog(shaderPipeline.apiHandle, 2048, NULL, infoLog));
+				char info_log[2048];
+				GL(glGetProgramInfoLog(shader_pipeline.api_handle, 2048, NULL, info_log));
 				ASSERT_FORMAT(ret, "Error linking shader program: %s",
-					infoLog);
+					info_log);
 			}
 		}
 
-		void ShaderResourceManager::bindShaderPipeline(ShaderPipeline& shaderPipeline)
+		void ShaderResourceManager::bind_shader_pipeline(ShaderPipeline& shaderPipeline)
 		{
 			shaderPipeline.bind();
 		}

@@ -13,13 +13,13 @@ namespace Ty
 			void init();
 			void destroy();
 
-			ResourceHandle<Buffer> createBuffer(BufferDesc desc, void* pData);
-			void setBufferData(ResourceHandle<Buffer> bufferHandle, void* pData);
-			void bindBuffer(ResourceHandle<Buffer> bufferHandle);
+			ResourceHandle<Buffer> create_buffer(BufferDesc desc, void* data);
+			void set_buffer_data(ResourceHandle<Buffer> buffer_handle, void* data);
+			void bind_buffer(ResourceHandle<Buffer> buffer_handle);
 
 			// TODO_MEMORY, TODO_BUFFER: Buffer freeing (on demand/destruction)
 		};
 
-		extern BufferResourceManager g_bufferResourceManager;
+		extern BufferResourceManager buffer_resource_manager;
 	}
 }

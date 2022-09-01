@@ -10,36 +10,36 @@ namespace Ty
 {
 	namespace Graphics
 	{
-		void ShaderPipeline::setUniform(const char* uName, const glm::mat4& uValue)
+		void ShaderPipeline::set_uniform(const char* bind_name, const glm::mat4& bind_value)
 		{
-			ASSERT(apiHandle != HANDLE_INVALID, "Trying to set uniform to invalid shader resource.");
+			ASSERT(api_handle != HANDLE_INVALID, "Trying to set uniform to invalid shader resource.");
 			GLint location;
-			GL(location = glGetUniformLocation(apiHandle, uName));	// TODO: Cache this
-			GL(glUniformMatrix4fv(location, 1, GL_FALSE, &uValue[0][0]));
+			GL(location = glGetUniformLocation(api_handle, bind_name));	// TODO: Cache this
+			GL(glUniformMatrix4fv(location, 1, GL_FALSE, &bind_value[0][0]));
 		}
 
-		void ShaderPipeline::setUniform(const char* uName, const int& uValue)
+		void ShaderPipeline::set_uniform(const char* bind_name, const int& bind_value)
 		{
-			ASSERT(apiHandle != HANDLE_INVALID, "Trying to set uniform to invalid shader resource.");
+			ASSERT(api_handle != HANDLE_INVALID, "Trying to set uniform to invalid shader resource.");
 			GLint location;
-			GL(location = glGetUniformLocation(apiHandle, uName));	// TODO: Cache this
-			GL(glUniform1i(location, uValue));
+			GL(location = glGetUniformLocation(api_handle, bind_name));	// TODO: Cache this
+			GL(glUniform1i(location, bind_value));
 		}
 
-		void ShaderPipeline::setUniform(const char* uName, const float& uValue)
+		void ShaderPipeline::set_uniform(const char* bind_name, const float& bind_value)
 		{
-			ASSERT(apiHandle != HANDLE_INVALID, "Trying to set uniform to invalid shader resource.");
+			ASSERT(api_handle != HANDLE_INVALID, "Trying to set uniform to invalid shader resource.");
 			GLint location;
-			GL(location = glGetUniformLocation(apiHandle, uName));	// TODO: Cache this
-			GL(glUniform1f(location, uValue));
+			GL(location = glGetUniformLocation(api_handle, bind_name));	// TODO: Cache this
+			GL(glUniform1f(location, bind_value));
 		}
 
-		void ShaderPipeline::setUniform(const char* uName, const glm::vec3& uValue)
+		void ShaderPipeline::set_uniform(const char* bind_name, const glm::vec3& bind_value)
 		{
-			ASSERT(apiHandle != HANDLE_INVALID, "Trying to set uniform to invalid shader resource.");
+			ASSERT(api_handle != HANDLE_INVALID, "Trying to set uniform to invalid shader resource.");
 			GLint location;
-			GL(location = glGetUniformLocation(apiHandle, uName));	// TODO: Cache this
-			GL(glUniform3fv(location, 1, &uValue[0]));
+			GL(location = glGetUniformLocation(api_handle, bind_name));	// TODO: Cache this
+			GL(glUniform3fv(location, 1, &bind_value[0]));
 		}
 
 		ShaderPipeline::ShaderPipeline() {}
@@ -52,8 +52,8 @@ namespace Ty
 
 		void ShaderPipeline::bind()
 		{
-			ASSERT(apiHandle != HANDLE_INVALID, "Trying to bind invalid shader pipeline.");
-			GL(glUseProgram(apiHandle));
+			ASSERT(api_handle != HANDLE_INVALID, "Trying to bind invalid shader pipeline.");
+			GL(glUseProgram(api_handle));
 		}
 	}
 }

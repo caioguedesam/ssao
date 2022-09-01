@@ -105,12 +105,12 @@ namespace Ty
 			return elapsed_time;
 		}
 
-		double deltaTime()
+		double get_delta_time()
 		{
 			return delta_time;
 		}
 
-		double fps()
+		double get_fps()
 		{
 			return 1. / delta_time;		// TODO_TIME: Stop using this for FPS metrics
 		}

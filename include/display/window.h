@@ -15,7 +15,7 @@ namespace Ty
 
 		~Window();
 
-		void Init(uint32_t width, uint32_t height, uint32_t x, uint32_t y, const char* title);
-		void OnResize(uint32_t newWidth, uint32_t newHeight);
+		void init(uint32_t width, uint32_t height, uint32_t x, uint32_t y, const char* title);
+		void on_resize(uint32_t new_w, uint32_t new_h);
 	};
 }

@@ -45,20 +45,20 @@ namespace Ty
 		{
 		public:
 			TextureDesc desc;
-			uint32_t apiHandle = HANDLE_INVALID;
+			uint32_t api_handle = HANDLE_INVALID;
 			void* pData;
 
-			void init(const TextureDesc desc, void* pData);
-			void setData(void* pData);
-			void bind(uint32_t texUnit);
+			void init(const TextureDesc desc, void* data);
+			void set_data(void* data);
+			void bind(uint32_t tex_slot);
 
 			// TODO_TEXTURE: Remove these API specific functions from here
-			static GLenum GLInternalFormat(TextureFormat texFormat);
-			static void GLFormatAndType(TextureFormat texFormat, GLenum& outFormat, GLenum& outType);
-			static GLenum GLMinFilter(TextureParams params);
-			static GLenum GLMagFilter(TextureParams params);
-			static GLenum GLWrapU(TextureParams params);
-			static GLenum GLWrapV(TextureParams params);
+			static GLenum gl_get_internal_format(TextureFormat tex_format);
+			static void gl_get_format_and_type(TextureFormat tex_format, GLenum& out_format, GLenum& out_type);
+			static GLenum gl_get_filter_min(TextureParams params);
+			static GLenum gl_get_filter_mag(TextureParams params);
+			static GLenum gl_get_wrap_u(TextureParams params);
+			static GLenum gl_get_wrap_v(TextureParams params);
 		};
 
 	}

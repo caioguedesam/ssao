@@ -27,5 +27,5 @@
 #define MODELS_PATH RESOURCES_PATH"models/"
 #define TEXTURES_PATH RESOURCES_PATH"textures/"
 
-extern uint32_t g_screenWidth;
-extern uint32_t g_screenHeight;
+extern uint32_t screen_w;
+extern uint32_t screen_h;

@@ -15,29 +15,29 @@ namespace Ty
 			glm::vec3 right = glm::vec3(0.f);
 
 			float speed = 10.f;
-			float anglePitch = 0.f;
-			float angleYaw = glm::radians(-90.f);
-			float rotationSpeed = glm::radians(20.f);
+			float angle_pitch = 0.f;
+			float angle_yaw = glm::radians(-90.f);
+			float rotation_speed = glm::radians(20.f);
 			float fov = 0.f;
-			float aspectRatio = 0.f;
+			float aspect_ratio = 0.f;
 
-			glm::ivec2 moveAmounts = glm::vec2(0);
-			glm::ivec2 rotateAmounts = glm::vec2(0);
+			glm::ivec2 move_amounts = glm::vec2(0);
+			glm::ivec2 rotate_amounts = glm::vec2(0);
 
-			void SetPosition(float x, float y, float z);
-			void SetFront(glm::vec3 f);
+			void set_position(float x, float y, float z);
+			void set_front(glm::vec3 f);
 
-			void Move(glm::vec3& dir, float dt);
-			void Rotate(float anglesPitch, float anglesYaw, float dt);
+			void move(glm::vec3& dir, float dt);
+			void rotate(float angles_pitch, float angles_yaw, float dt);
 
-			void SetPerspective(float newFov, float newAspect);
+			void set_perspective(float new_fov, float new_aspect);
 
-			void Init(float startX, float startY, float startZ, float startFov, float startAspect);
+			void init(float start_x, float start_y, float start_z, float start_fov, float start_aspect);
 
-			glm::mat4 GetViewMatrix();
-			glm::mat4 GetProjectionMatrix();
+			glm::mat4 get_view_matrix();
+			glm::mat4 get_projection_matrix();
 
-			void Update(float dt);
+			void update(float dt);
 		};
 	}
 }

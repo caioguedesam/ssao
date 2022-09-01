@@ -22,7 +22,7 @@ namespace Ty
 
 			inline bool operator==(const ResourceHandle<T>& rhs) const { return base == rhs.base; }
 			inline bool operator!=(const ResourceHandle<T>& rhs) const { return base != rhs.base; }
-			inline bool isValid() const { return base != HANDLE_INVALID; }
+			inline bool is_valid() const { return base != HANDLE_INVALID; }
 		};
 
 		struct HashFunction_ResourceHandle
@@ -30,45 +30,45 @@ namespace Ty
 			template<typename T>
 			size_t operator()(ResourceHandle<T> d) const
 			{
-				return Hash::HashUInt32(d.base);
+				return Hash::hash_u32(d.base);
 			}
 		};
 
 		template<typename T>
 		struct ResourceManager
 		{
-			std::unordered_map<ResourceHandle<T>, T*, HashFunction_ResourceHandle> resourceList;
-			uint32_t nextHandle = 0;
+			std::unordered_map<ResourceHandle<T>, T*, HashFunction_ResourceHandle> resource_list;
+			uint32_t next_handle = 0;
 
 			ResourceHandle<T> add(T* resource)
 			{
 				ASSERT(resource, "Trying to add null resource to resource list.");
 
-				ResourceHandle<T> handle(++nextHandle);
-				resourceList[handle] = resource;
+				ResourceHandle<T> handle(++next_handle);
+				resource_list[handle] = resource;
 				return handle;
 			}
 
 			T* remove(ResourceHandle<T> handle)
 			{
-				ASSERT(handle.isValid(), "Invalid resource handle removal attempt.");
+				ASSERT(handle.is_valid(), "Invalid resource handle removal attempt.");
 
-				T* resource = resourceList[handle];
+				T* resource = resource_list[handle];
 				if (resource)
 				{
-					resourceList.erase(handle);
+					resource_list.erase(handle);
 				}
 				return resource;
 			}
 
 			T* get(ResourceHandle<T> handle)
 			{
-				ASSERT(handle.isValid(), "Invalid resource handle access.");
+				ASSERT(handle.is_valid(), "Invalid resource handle access.");
 
-				T* resource = resourceList[handle];
+				T* resource = resource_list[handle];
 				ASSERT_FORMAT(resource, "Handle %u points to null resource.", handle.base);
 
-				return resourceList[handle];
+				return resource_list[handle];
 			}
 		};
 	}

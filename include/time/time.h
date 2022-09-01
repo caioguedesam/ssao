@@ -22,10 +22,10 @@ namespace Ty
 		void init();
 		void update();
 
-		uint64_t currentFrame();
-		double elapsedTime();
-		double deltaTime();
-		double fps();
+		uint64_t get_current_frame();
+		double get_elapsed_time();
+		double get_delta_time();
+		double get_fps();
 
 		namespace FrameTracking
 		{

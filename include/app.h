@@ -8,14 +8,14 @@ namespace Ty
 	class App
 	{
 	public:
-		bool isRunning;
+		bool is_running;
 
 		Graphics::Renderer renderer;
 
 		void init();
 		void destroy();
 
-		void pollEvents(double dt);
+		void poll_events(double dt);
 		void run();
 	};
 }

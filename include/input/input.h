@@ -23,15 +23,15 @@ namespace Ty
 				GUI
 			};
 
-			static State currentState;
-			static MouseData mouseData;
-			static bool gotMouseData;
+			static State current_state;
+			static MouseData mouse_data;
+			static bool got_mouse_data;
 
 			static void init();
 
-			static void updateMouseData(SDL_Event& e);
+			static void update_mouse_data(SDL_Event& e);
 			static void update();
-			static void changeInputMode(State state);
+			static void change_input_mode(State state);
 		};
 	}
 }

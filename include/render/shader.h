@@ -16,14 +16,14 @@ namespace Ty
 
 		struct Shader
 		{
-			uint32_t apiHandle = HANDLE_INVALID;
+			uint32_t api_handle = HANDLE_INVALID;
 			ShaderType type;
 			size_t timestamp = 0;
 		};
 
 		struct ShaderPipeline
 		{
-			uint32_t apiHandle = HANDLE_INVALID;
+			uint32_t api_handle = HANDLE_INVALID;
 
 			ResourceHandle<Shader> vs;
 			ResourceHandle<Shader> ps;
@@ -33,10 +33,10 @@ namespace Ty
 			ShaderPipeline(ResourceHandle<Shader> vs, ResourceHandle<Shader> ps);
 
 			void bind();
-			void setUniform(const char* uName, const glm::mat4& uValue);
-			void setUniform(const char* uName, const int& uValue);
-			void setUniform(const char* uName, const float& uValue);
-			void setUniform(const char* uName, const glm::vec3& uValue);
+			void set_uniform(const char* bind_name, const glm::mat4& bind_value);
+			void set_uniform(const char* bind_name, const int& bind_value);
+			void set_uniform(const char* bind_name, const float& bind_value);
+			void set_uniform(const char* bind_name, const glm::vec3& bind_value);
 		};
 	}
 }

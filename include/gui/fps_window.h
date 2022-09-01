@@ -15,8 +15,8 @@ namespace Ty
 	{
 		struct FPSGraph
 		{
-			Graphics::ResourceHandle<Graphics::Texture> fpsGraphTexture;
-			Graphics::ImmediateRenderable fpsGraphImmRenderable;
+			Graphics::ResourceHandle<Graphics::Texture> fps_graph_texture;
+			Graphics::ImmediateRenderable fps_graph_renderable;
 
 			void init();
 			void update();

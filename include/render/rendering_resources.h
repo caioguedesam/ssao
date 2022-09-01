@@ -17,19 +17,19 @@ namespace Ty
 			ResourceHandle<Texture> position;
 			ResourceHandle<Texture> normal;
 		};
-		extern GBuffer g_gBuffer;
+		extern GBuffer gbuffer;
 
-		extern ResourceHandle<Buffer> g_defaultQuadVertexBuffer;
-		extern ResourceHandle<Buffer> g_defaultQuadIndexBuffer;
+		extern ResourceHandle<Buffer> default_quad_vertex_buffer;
+		extern ResourceHandle<Buffer> default_quad_index_buffer;
 
-		extern Renderable g_renderableScreenQuad;
+		extern Renderable renderable_screen_quad;
 
-		extern RenderTarget g_rtGBuffer;
-		extern RenderTarget g_rtSSAO;
-		extern RenderTarget g_rtBlur;
-		extern RenderTarget g_rtUI;
-		extern RenderTarget g_rtLighting;
+		extern RenderTarget rt_gbuffer;
+		extern RenderTarget rt_ssao;
+		extern RenderTarget rt_blur;
+		extern RenderTarget rt_ui;
+		extern RenderTarget rt_lighting;
 
-		void initGlobalRenderResources();
+		void init_global_render_resources();
 	}
 }

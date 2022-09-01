@@ -10,56 +10,56 @@ namespace Ty
 {
 	namespace Graphics
 	{
-		void Renderable::setVertexData(ResourceHandle<Buffer> vertexBuffer, ResourceHandle<Buffer> indexBuffer)
+		void Renderable::set_vertex_data(ResourceHandle<Buffer> vertex_buffer, ResourceHandle<Buffer> index_buffer)
 		{
-			if (vaoHandle == HANDLE_INVALID)
+			if (vao_api_handle == HANDLE_INVALID)
 			{
-				GL(glGenVertexArrays(1, &vaoHandle));
+				GL(glGenVertexArrays(1, &vao_api_handle));
 			}
 
-			this->vertexBuffer = vertexBuffer;
-			this->indexBuffer = indexBuffer;
+			this->vertex_buffer = vertex_buffer;
+			this->index_buffer = index_buffer;
 
-			GL(glBindVertexArray(vaoHandle));
+			GL(glBindVertexArray(vao_api_handle));
 
-			g_bufferResourceManager.bindBuffer(vertexBuffer);
-			g_bufferResourceManager.bindBuffer(indexBuffer);
+			buffer_resource_manager.bind_buffer(vertex_buffer);
+			buffer_resource_manager.bind_buffer(index_buffer);
 
 			{
 				// For vertex buffers: vertex position (x, y, z) -> vertex normals (x, y, z) -> vertex UVs (u, v)
-				GL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * g_bufferResourceManager.get(vertexBuffer)->getStride(), (void*)0));
+				GL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * buffer_resource_manager.get(vertex_buffer)->get_stride(), (void*)0));
 				GL(glEnableVertexAttribArray(0));
 
-				GL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * g_bufferResourceManager.get(vertexBuffer)->getStride(), (void*)(3 * sizeof(float))));
+				GL(glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * buffer_resource_manager.get(vertex_buffer)->get_stride(), (void*)(3 * sizeof(float))));
 				GL(glEnableVertexAttribArray(1));
 
-				GL(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * g_bufferResourceManager.get(vertexBuffer)->getStride(), (void*)(6 * sizeof(float))));
+				GL(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * buffer_resource_manager.get(vertex_buffer)->get_stride(), (void*)(6 * sizeof(float))));
 				GL(glEnableVertexAttribArray(2));
 			}
 
 			GL(glBindVertexArray(0));
 		}
 
-		void Renderable::setMaterial(Material* mat)
+		void Renderable::set_material(Material* mat)
 		{
 			material = mat;
 		}
 
-		void bindStandardUniforms(ShaderPipeline shaderPipeline, const RenderParams& params)
+		void bind_standard_uniforms(ShaderPipeline shader_pipeline, const RenderParams& params)
 		{
 			// TODO_SHADER: Change "model" to "world" matrix. WVP is just a better name.
-			shaderPipeline.setUniform("uModel", params.model);
-			shaderPipeline.setUniform("uView", params.view);
-			shaderPipeline.setUniform("uProj", params.proj);
-			shaderPipeline.setUniform("uMV", params.view * params.model);
-			shaderPipeline.setUniform("uVP", params.proj * params.view);
-			shaderPipeline.setUniform("uMVP", params.proj * params.view * params.model);
+			shader_pipeline.set_uniform("uModel", params.model);
+			shader_pipeline.set_uniform("uView", params.view);
+			shader_pipeline.set_uniform("uProj", params.proj);
+			shader_pipeline.set_uniform("uMV", params.view * params.model);
+			shader_pipeline.set_uniform("uVP", params.proj * params.view);
+			shader_pipeline.set_uniform("uMVP", params.proj * params.view * params.model);
 
 			// TODO_SHADER: Get per uniform names from shader instead of this.
-			shaderPipeline.setUniform("tex0", 0);
-			shaderPipeline.setUniform("tex1", 1);
-			shaderPipeline.setUniform("tex2", 2);
-			shaderPipeline.setUniform("tex3", 3);
+			shader_pipeline.set_uniform("tex0", 0);
+			shader_pipeline.set_uniform("tex1", 1);
+			shader_pipeline.set_uniform("tex2", 2);
+			shader_pipeline.set_uniform("tex3", 3);
 		}
 
 		void Renderable::draw(const RenderParams& params)
@@ -69,85 +69,85 @@ namespace Ty
 			// TODO_SHADER: Make a better process for binding all this default stuff, uniform buffers, etc.
 			// I like OGLDev's pipeline stuff.
 
-			bindStandardUniforms(material->shaderPipeline, params);
+			bind_standard_uniforms(material->shader_pipeline, params);
 
-			GL(glBindVertexArray(vaoHandle));
+			GL(glBindVertexArray(vao_api_handle));
 
-			GL(glDrawElements(GL_TRIANGLES, g_bufferResourceManager.get(indexBuffer)->getCount(), GL_UNSIGNED_INT, 0));
+			GL(glDrawElements(GL_TRIANGLES, buffer_resource_manager.get(index_buffer)->get_count(), GL_UNSIGNED_INT, 0));
 		}
 
-		void ImmediateRenderable::init(uint32_t viewportWidth, uint32_t viewportHeight)
+		void ImmediateRenderable::init(uint32_t viewport_w, uint32_t viewport_h)
 		{
 			// Initialize vertex and index buffers
-			uint32_t attrSize = sizeof(ImmediateVertexAttr) / sizeof(float);
-			uint32_t vertexCount = MAX_IMMEDIATE_RENDERABLE_TRIS * 3;
-			uint32_t indexCount = MAX_IMMEDIATE_RENDERABLE_TRIS * 3;
-			vertexBuffer = g_bufferResourceManager.createBuffer(
+			uint32_t attr_size = sizeof(ImmediateVertexAttr) / sizeof(float);
+			uint32_t vertex_count = MAX_IMMEDIATE_RENDERABLE_TRIS * 3;
+			uint32_t index_count = MAX_IMMEDIATE_RENDERABLE_TRIS * 3;
+			vertex_buffer = buffer_resource_manager.create_buffer(
 				{
 					BufferType::VERTEX_BUFFER,
 					BufferFormat::R32_FLOAT,
-					vertexCount * attrSize
-				}, vertexData
+					vertex_count * attr_size
+				}, vertex_data
 			);
-			indexBuffer = g_bufferResourceManager.createBuffer(
+			index_buffer = buffer_resource_manager.create_buffer(
 				{
 					BufferType::INDEX_BUFFER,
 					BufferFormat::R32_UINT,
-					indexCount
-				}, indexData
+					index_count
+				}, index_data
 			);
 
 			// Initialize default material and shader pipeline
-			setMaterial(new Material());
-			ResourceHandle<Shader> vs = g_shaderResourceManager.getFromFile(SHADERS_PATH"immediate_vs.vert");
-			ResourceHandle<Shader> ps = g_shaderResourceManager.getFromFile(SHADERS_PATH"immediate_ps.frag");
-			material->init(g_shaderResourceManager.createLinkedShaderPipeline(vs, ps));
+			set_material(new Material());
+			ResourceHandle<Shader> vs = shader_resource_manager.get_from_file(SHADERS_PATH"immediate_vs.vert");
+			ResourceHandle<Shader> ps = shader_resource_manager.get_from_file(SHADERS_PATH"immediate_ps.frag");
+			material->init(shader_resource_manager.create_linked_shader_pipeline(vs, ps));
 
-			this->viewportWidth = viewportWidth;
-			this->viewportHeight = viewportHeight;
+			this->viewport_width = viewport_w;
+			this->viewport_height = viewport_h;
 
-			printf("VertexData size: %lld\n", sizeof(vertexData));
-			printf("IndexData size: %lld\n", sizeof(indexData));
+			printf("VertexData size: %lld\n", sizeof(vertex_data));
+			printf("IndexData size: %lld\n", sizeof(index_data));
 		}
 
 		void ImmediateRenderable::clear()
 		{
-			memset(vertexData, 0, sizeof(vertexData));
-			memset(indexData, 0, sizeof(indexData));
-			vertexCursor = 0;
-			indexCursor = 0;
+			memset(vertex_data, 0, sizeof(vertex_data));
+			memset(index_data, 0, sizeof(index_data));
+			vertex_cursor = 0;
+			index_cursor = 0;
 		}
 
-		void ImmediateRenderable::addQuad(float w, float h, float x, float y, float r, float g, float b, float a)
+		void ImmediateRenderable::add_quad(float w, float h, float x, float y, float r, float g, float b, float a)
 		{
-			uint32_t base = vertexCursor;
-			vertexData[vertexCursor++] = { x,		y,			0.f, r, g, b, a };
-			vertexData[vertexCursor++] = { x,		(y + h),	0.f, r, g, b, a };
-			vertexData[vertexCursor++] = { (x + w),	(y + h),	0.f, r, g, b, a };
-			vertexData[vertexCursor++] = { (x + w),	y,			0.f, r, g, b, a };
+			uint32_t base = vertex_cursor;
+			vertex_data[vertex_cursor++] = { x,		y,			0.f, r, g, b, a };
+			vertex_data[vertex_cursor++] = { x,		(y + h),	0.f, r, g, b, a };
+			vertex_data[vertex_cursor++] = { (x + w),	(y + h),	0.f, r, g, b, a };
+			vertex_data[vertex_cursor++] = { (x + w),	y,			0.f, r, g, b, a };
 
-			indexData[indexCursor++] = base + 0;
-			indexData[indexCursor++] = base + 2;
-			indexData[indexCursor++] = base + 1;
-			indexData[indexCursor++] = base + 0;
-			indexData[indexCursor++] = base + 3;
-			indexData[indexCursor++] = base + 2;
+			index_data[index_cursor++] = base + 0;
+			index_data[index_cursor++] = base + 2;
+			index_data[index_cursor++] = base + 1;
+			index_data[index_cursor++] = base + 0;
+			index_data[index_cursor++] = base + 3;
+			index_data[index_cursor++] = base + 2;
 		}
 
-		void ImmediateRenderable::setVertexData(ResourceHandle<Buffer> vertexBuffer, ResourceHandle<Buffer> indexBuffer)
+		void ImmediateRenderable::set_vertex_data(ResourceHandle<Buffer> vertex_buffer, ResourceHandle<Buffer> index_buffer)
 		{
-			if (vaoHandle == HANDLE_INVALID)
+			if (vao_api_handle == HANDLE_INVALID)
 			{
-				GL(glGenVertexArrays(1, &vaoHandle));
+				GL(glGenVertexArrays(1, &vao_api_handle));
 			}
 
-			this->vertexBuffer = vertexBuffer;
-			this->indexBuffer = indexBuffer;
+			this->vertex_buffer = vertex_buffer;
+			this->index_buffer = index_buffer;
 
-			GL(glBindVertexArray(vaoHandle));
+			GL(glBindVertexArray(vao_api_handle));
 
-			g_bufferResourceManager.bindBuffer(vertexBuffer);
-			g_bufferResourceManager.bindBuffer(indexBuffer);
+			buffer_resource_manager.bind_buffer(vertex_buffer);
+			buffer_resource_manager.bind_buffer(index_buffer);
 
 			{
 				// For vertex buffers (immediate): vertex position (x, y, z) -> vertex colors (r, g, b, a)
@@ -164,18 +164,18 @@ namespace Ty
 		void ImmediateRenderable::draw(const RenderParams& params)
 		{
 			// TODO_RENDER: These have to be created on renderable init, with proper size
-			g_bufferResourceManager.setBufferData(vertexBuffer, vertexData);
-			g_bufferResourceManager.setBufferData(indexBuffer, indexData);
-			setVertexData(vertexBuffer, indexBuffer);
+			buffer_resource_manager.set_buffer_data(vertex_buffer, vertex_data);
+			buffer_resource_manager.set_buffer_data(index_buffer, index_data);
+			set_vertex_data(vertex_buffer, index_buffer);
 
 			// Draw
 			material->bind();
 			// TODO_SHADER: Figure out how to deal with matrix pipeline on immediate renderable
 			//bindStandardUniforms(material->shaderPipeline, params);
-			material->shaderPipeline.setUniform("viewportWidth", (int)viewportWidth);
-			material->shaderPipeline.setUniform("viewportHeight", (int)viewportHeight);
-			GL(glBindVertexArray(vaoHandle));
-			GL(glDrawElements(GL_TRIANGLES, indexCursor, GL_UNSIGNED_INT, 0));
+			material->shader_pipeline.set_uniform("viewportWidth", (int)viewport_width);
+			material->shader_pipeline.set_uniform("viewportHeight", (int)viewport_height);
+			GL(glBindVertexArray(vao_api_handle));
+			GL(glDrawElements(GL_TRIANGLES, index_cursor, GL_UNSIGNED_INT, 0));
 		}
 	}
 }

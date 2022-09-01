@@ -31,8 +31,8 @@ namespace Ty
 				FAIL_CLOSE
 			};
 
-			static Result ReadFile(const char* path, char* buffer);
-			static std::vector<FilePath> getFileNamesFromPath(const char* path);
+			static Result read_file(const char* path, char* buffer);
+			static std::vector<FilePath> get_file_names_from_path(const char* path);
 		};
 	}
 }

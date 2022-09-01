@@ -23,11 +23,11 @@ namespace Ty
 	{
 		struct SSAOData
 		{
-			glm::vec3 ssaoKernel[MAX_SSAO_KERNEL_SIZE];
-			int ssaoKernelSize = 64;
-			glm::vec3 ssaoNoise[MAX_SSAO_NOISE_DIMENSION * MAX_SSAO_NOISE_DIMENSION];
-			int ssaoNoiseDimension = 4;
-			float ssaoRadius = 0.5f;
+			glm::vec3 sample_kernel[MAX_SSAO_KERNEL_SIZE];
+			int sample_amount = 64;
+			glm::vec3 white_noise[MAX_SSAO_NOISE_DIMENSION * MAX_SSAO_NOISE_DIMENSION];
+			int white_noise_dimension = 4;
+			float sample_radius = 0.5f;
 		};
 
 		class Renderer;
@@ -48,41 +48,41 @@ namespace Ty
 			void init(RenderTarget* rt) override;
 			void pass(Renderer* renderer) override;
 
-			void addRenderable(Renderable* renderable);
+			void add_renderable(Renderable* renderable);
 		};
 
 		struct RenderPass_SSAO : RenderPass
 		{
 			SSAOData				ssao_data;
 			Material				ssao_material;
-			ResourceHandle<Texture> ssao_noiseTexture;
-			ResourceHandle<Texture> ssao_outputTexture;
+			ResourceHandle<Texture> ssao_noise_texture;
+			ResourceHandle<Texture> ssao_output_texture;
 
 			void init(RenderTarget* rt) override;
 			void pass(Renderer* renderer) override;
 
-			void generateKernel();
-			void bindKernel();
-			void generateNoise();
-			void bindNoiseTexture();
-			void bindRadius();
+			void generate_sample_kernel();
+			void bind_sample_kernel();
+			void generate_white_noise();
+			void bind_white_noise_texture();
+			void bind_sample_radius();
 		};
 
 		struct RenderPass_Blur : RenderPass
 		{
 			Material				blur_material;
-			ResourceHandle<Texture> blur_inputTexture;
-			ResourceHandle<Texture> blur_outputTexture;
+			ResourceHandle<Texture> blur_input_texture;
+			ResourceHandle<Texture> blur_output_texture;
 
 			void init(RenderTarget* rt) override;
 			void pass(Renderer* renderer) override;
 
-			void setInputTexture(ResourceHandle<Texture> inputTexture);
+			void set_input_texture(ResourceHandle<Texture> input_texture);
 		};
 
 		struct RenderPass_UI : RenderPass
 		{
-			Profile::FPSGraph ui_fpsGraph;
+			Profile::FPSGraph ui_fps_graph;
 
 			void init(RenderTarget* rt) override;
 			void pass(Renderer* renderer) override;
@@ -91,36 +91,35 @@ namespace Ty
 		struct RenderPass_Lighting : RenderPass
 		{
 			Material				lighting_material;
-			ResourceHandle<Texture> lighting_inputTexture;
-			ResourceHandle<Texture> lighting_outputTexture;
+			ResourceHandle<Texture> lighting_input_texture;
+			ResourceHandle<Texture> lighting_output_texture;
 
 			void init(RenderTarget* rt) override;
 			void pass(Renderer* renderer) override;
 
-			void setInputTexture(ResourceHandle<Texture> inputTexture);
+			void set_input_texture(ResourceHandle<Texture> input_texture);
 		};
 
 		class Renderer
 		{
 		public:
-			Window* pWindow;
-			SDL_GLContext pGlContextHandle;
-			Math::Primitives::u32_rect renderViewport;
+			Window* window;
+			SDL_GLContext gl_context_handle;
+			Math::Primitives::u32_rect render_viewport;
 			Camera camera;
 
 			// Render passes
-			RenderPass_GBuffer		pass_gBuffer;
+			RenderPass_GBuffer		pass_gbuffer;
 			RenderPass_SSAO			pass_ssao;
 			RenderPass_Blur			pass_blur;
 			RenderPass_UI			pass_ui;
 			RenderPass_Lighting		pass_lighting;
 
-			void createNewWindow(uint32_t width, uint32_t height, uint32_t x, uint32_t y, const char* title);
-			void createNewRenderContext();
-			void retrieveAPIFunctionLocations();
+			void init_window(uint32_t w, uint32_t h, uint32_t x, uint32_t y, const char* title);
+			void init_api_context();
 
-			void setViewport(Math::Primitives::u32_rect viewportRect);
-			void setCamera(float x, float y, float z, float fov, float aspect);
+			void set_viewport(Math::Primitives::u32_rect viewport_rect);
+			void set_camera(float x, float y, float z, float fov, float aspect);
 
 			void init(uint32_t w, uint32_t h, uint32_t x, uint32_t y);
 			void destroy();

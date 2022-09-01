@@ -6,77 +6,77 @@ namespace Ty
 {
 	namespace Graphics
 	{
-		void Camera::SetPosition(float x, float y, float z)
+		void Camera::set_position(float x, float y, float z)
 		{
 			position = glm::vec3(x, y, z);
 		}
 
-		void Camera::SetFront(glm::vec3 f)
+		void Camera::set_front(glm::vec3 f)
 		{
 			glm::vec3 result = f;
 			front = glm::normalize(result);
 			right = glm::normalize(glm::cross(front, glm::vec3(0.f, 1.f, 0.f)));
 		}
 
-		void Camera::Move(glm::vec3& dir, float dt)
+		void Camera::move(glm::vec3& dir, float dt)
 		{
 			position += (speed * dt) * dir;
 		}
 
-		void Camera::Rotate(float anglesPitch, float anglesYaw, float dt)
+		void Camera::rotate(float angles_pitch, float angles_yaw, float dt)
 		{
-			anglePitch += anglesPitch * dt;
-			angleYaw += anglesYaw * dt;
+			angle_pitch += angles_pitch * dt;
+			angle_yaw += angles_yaw * dt;
 
-			glm::vec3 rotationVector;
-			rotationVector.x = cos(angleYaw) * cos(anglePitch);
-			rotationVector.y = sin(anglePitch);
-			rotationVector.z = sin(angleYaw) * cos(anglePitch);
-			rotationVector = glm::normalize(rotationVector);
+			glm::vec3 rotation;
+			rotation.x = cos(angle_yaw) * cos(angle_pitch);
+			rotation.y = sin(angle_pitch);
+			rotation.z = sin(angle_yaw) * cos(angle_pitch);
+			rotation = glm::normalize(rotation);
 
-			SetFront(rotationVector);
+			set_front(rotation);
 		}
 
-		void Camera::SetPerspective(float newFov, float newAspect)
+		void Camera::set_perspective(float new_fov, float new_aspect)
 		{
-			fov = newFov;
-			aspectRatio = newAspect;
+			fov = new_fov;
+			aspect_ratio = new_aspect;
 		}
 
-		void Camera::Init(float startX, float startY, float startZ, float startFov, float startAspect)
+		void Camera::init(float start_x, float start_y, float start_z, float start_fov, float start_aspect)
 		{
-			SetPosition(startX, startY, startZ);
-			SetFront(glm::vec3(0, 0, -1));
-			SetPerspective(startFov, startAspect);
+			set_position(start_x, start_y, start_z);
+			set_front(glm::vec3(0, 0, -1));
+			set_perspective(start_fov, start_aspect);
 		}
 
-		glm::mat4 Camera::GetViewMatrix()
+		glm::mat4 Camera::get_view_matrix()
 		{
 			return glm::lookAt(position, position + front, glm::vec3(0.f, 1.f, 0.f));
 		}
 
-		glm::mat4 Camera::GetProjectionMatrix()
+		glm::mat4 Camera::get_projection_matrix()
 		{
-			return glm::perspective(fov, aspectRatio, 0.1f, 1000.f);
+			return glm::perspective(fov, aspect_ratio, 0.1f, 1000.f);
 		}
 
-		void Camera::Update(float dt)
+		void Camera::update(float dt)
 		{
-			if (moveAmounts.x != 0 || moveAmounts.y != 0)
+			if (move_amounts.x != 0 || move_amounts.y != 0)
 			{
-				auto moveFront = (float)moveAmounts.y * front;
-				auto moveSide = (float)moveAmounts.x * right;
-				auto moveDir = glm::normalize(moveFront + moveSide);
-				if (!glm::any(glm::isnan(moveDir)))
+				auto move_front = (float)move_amounts.y * front;
+				auto move_side = (float)move_amounts.x * right;
+				auto move_dir = glm::normalize(move_front + move_side);
+				if (!glm::any(glm::isnan(move_dir)))
 				{
-					Move(moveDir, dt);
+					move(move_dir, dt);
 				}
 			}
 
-			Input::MouseData mouseData = Input::InputManager::mouseData;
-			if (mouseData.offset.x != 0 || mouseData.offset.y != 0)
+			Input::MouseData mouse_data = Input::InputManager::mouse_data;
+			if (mouse_data.offset.x != 0 || mouse_data.offset.y != 0)
 			{
-				Rotate(-mouseData.offset.y * rotationSpeed, mouseData.offset.x * rotationSpeed, dt);
+				rotate(-mouse_data.offset.y * rotation_speed, mouse_data.offset.x * rotation_speed, dt);
 			}
 		}
 	}

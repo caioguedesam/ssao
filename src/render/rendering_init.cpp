@@ -14,42 +14,42 @@ namespace Ty
 		{
 			this->rt = rt;
 
-			rt->setOutput(g_gBuffer.diffuse, 0);
-			rt->setOutput(g_gBuffer.position, 1);
-			rt->setOutput(g_gBuffer.normal, 2);
+			rt->set_output(gbuffer.diffuse, 0);
+			rt->set_output(gbuffer.position, 1);
+			rt->set_output(gbuffer.normal, 2);
 		}
 
 		void RenderPass_SSAO::init(RenderTarget* rt)
 		{
 			this->rt = rt;
 
-			generateKernel();
-			generateNoise();
+			generate_sample_kernel();
+			generate_white_noise();
 
-			ssao_noiseTexture = g_textureResourceManager.createTexture({ 4, 4, TextureFormat::R32_G32_B32_FLOAT }, &ssao_data.ssaoNoise[0]);
-			ssao_outputTexture = g_textureResourceManager.createTexture({ GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, TextureFormat::R8_FLOAT }, nullptr);
+			ssao_noise_texture = texture_resource_manager.create_texture({ 4, 4, TextureFormat::R32_G32_B32_FLOAT }, &ssao_data.white_noise[0]);
+			ssao_output_texture = texture_resource_manager.create_texture({ GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, TextureFormat::R8_FLOAT }, nullptr);
 
-			ResourceHandle<Shader> ssao_vs = g_shaderResourceManager.getFromFile(SHADERS_PATH"screen_quad_vs.vert");
-			ResourceHandle<Shader> ssao_ps = g_shaderResourceManager.getFromFile(SHADERS_PATH"ssao_ps.frag");
-			ShaderPipeline ssao_shaderPipeline = g_shaderResourceManager.createLinkedShaderPipeline(ssao_vs, ssao_ps);
+			ResourceHandle<Shader> ssao_vs = shader_resource_manager.get_from_file(SHADERS_PATH"screen_quad_vs.vert");
+			ResourceHandle<Shader> ssao_ps = shader_resource_manager.get_from_file(SHADERS_PATH"ssao_ps.frag");
+			ShaderPipeline ssao_shaderPipeline = shader_resource_manager.create_linked_shader_pipeline(ssao_vs, ssao_ps);
 			ssao_material.init(ssao_shaderPipeline);
 
-			bindKernel();
-			bindNoiseTexture();
-			bindRadius();
-			ssao_material.addTextureToSlot(g_gBuffer.position, 0);
-			ssao_material.addTextureToSlot(g_gBuffer.normal, 1);
-			ssao_material.addTextureToSlot(ssao_noiseTexture, 2);
+			bind_sample_kernel();
+			bind_white_noise_texture();
+			bind_sample_radius();
+			ssao_material.add_texture_to_slot(gbuffer.position, 0);
+			ssao_material.add_texture_to_slot(gbuffer.normal, 1);
+			ssao_material.add_texture_to_slot(ssao_noise_texture, 2);
 
-			rt->setOutput(ssao_outputTexture, 0);
+			rt->set_output(ssao_output_texture, 0);
 		}
 
-		void RenderPass_Blur::setInputTexture(ResourceHandle<Texture> inputTexture)
+		void RenderPass_Blur::set_input_texture(ResourceHandle<Texture> input_texture)
 		{
-			if (blur_inputTexture != inputTexture)
+			if (blur_input_texture != input_texture)
 			{
-				blur_inputTexture = inputTexture;
-				blur_material.addTextureToSlot(inputTexture, 0);
+				blur_input_texture = input_texture;
+				blur_material.add_texture_to_slot(input_texture, 0);
 			}
 		}
 
@@ -57,77 +57,73 @@ namespace Ty
 		{
 			this->rt = rt;
 
-			blur_outputTexture = g_textureResourceManager.createTexture({ GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, TextureFormat::R8_FLOAT }, nullptr);
+			blur_output_texture = texture_resource_manager.create_texture({ GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, TextureFormat::R8_FLOAT }, nullptr);
 
-			ResourceHandle<Shader> blur_vs = g_shaderResourceManager.getFromFile(SHADERS_PATH"screen_quad_vs.vert");
-			ResourceHandle<Shader> blur_ps = g_shaderResourceManager.getFromFile(SHADERS_PATH"ssao_blur_ps.frag");
-			ShaderPipeline blur_shaderPipeline = g_shaderResourceManager.createLinkedShaderPipeline(blur_vs, blur_ps);
+			ResourceHandle<Shader> blur_vs = shader_resource_manager.get_from_file(SHADERS_PATH"screen_quad_vs.vert");
+			ResourceHandle<Shader> blur_ps = shader_resource_manager.get_from_file(SHADERS_PATH"ssao_blur_ps.frag");
+			ShaderPipeline blur_shaderPipeline = shader_resource_manager.create_linked_shader_pipeline(blur_vs, blur_ps);
 			blur_material.init(blur_shaderPipeline);
 
-			rt->setOutput(blur_outputTexture, 0);
+			rt->set_output(blur_output_texture, 0);
 		}
 
 		void RenderPass_UI::init(RenderTarget* rt)
 		{
 			this->rt = rt;
 
-			ui_fpsGraph.init();
-			rt->setOutput(ui_fpsGraph.fpsGraphTexture, 0);
+			ui_fps_graph.init();
+			rt->set_output(ui_fps_graph.fps_graph_texture, 0);
 		}
 
 		void RenderPass_Lighting::init(RenderTarget* rt)
 		{
 			this->rt = rt;
 
-			lighting_outputTexture = g_textureResourceManager.createTexture({ GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, TextureFormat::R8_G8_B8_A8_UNORM }, nullptr);
-			ResourceHandle<Shader> lighting_vs = g_shaderResourceManager.getFromFile(SHADERS_PATH"screen_quad_vs.vert");
-			ResourceHandle<Shader> lighting_ps = g_shaderResourceManager.getFromFile(SHADERS_PATH"final_pass_ps.frag");
-			ShaderPipeline lighting_shaderPipeline = g_shaderResourceManager.createLinkedShaderPipeline(lighting_vs, lighting_ps);
+			lighting_output_texture = texture_resource_manager.create_texture({ GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, TextureFormat::R8_G8_B8_A8_UNORM }, nullptr);
+			ResourceHandle<Shader> lighting_vs = shader_resource_manager.get_from_file(SHADERS_PATH"screen_quad_vs.vert");
+			ResourceHandle<Shader> lighting_ps = shader_resource_manager.get_from_file(SHADERS_PATH"final_pass_ps.frag");
+			ShaderPipeline lighting_shaderPipeline = shader_resource_manager.create_linked_shader_pipeline(lighting_vs, lighting_ps);
 			lighting_material.init(lighting_shaderPipeline);
-			lighting_material.addTextureToSlot(g_gBuffer.diffuse, 0);
+			lighting_material.add_texture_to_slot(gbuffer.diffuse, 0);
 
-			rt->setOutput(lighting_outputTexture, 0);
+			rt->set_output(lighting_output_texture, 0);
 		}
 
-		void RenderPass_Lighting::setInputTexture(ResourceHandle<Texture> inputTexture)
+		void RenderPass_Lighting::set_input_texture(ResourceHandle<Texture> input_texture)
 		{
-			if (lighting_inputTexture != inputTexture)
+			if (lighting_input_texture != input_texture)
 			{
-				lighting_inputTexture = inputTexture;
-				lighting_material.addTextureToSlot(inputTexture, 0);
+				lighting_input_texture = input_texture;
+				lighting_material.add_texture_to_slot(input_texture, 0);
 			}
 		}
 
-		void Renderer::createNewWindow(uint32_t width, uint32_t height, uint32_t x, uint32_t y, const char* title)
+		void Renderer::init_window(uint32_t w, uint32_t h, uint32_t x, uint32_t y, const char* title)
 		{
-			pWindow = new Window();
-			pWindow->Init(width, height, x, y, title);
+			window = new Window();
+			window->init(w, h, x, y, title);
 		}
 
-		void Renderer::createNewRenderContext()
+		void Renderer::init_api_context()
 		{
-			ASSERT(!pGlContextHandle, "Trying to create new OpenGL context when renderer already has one.");
-			ASSERT(pWindow, "Trying to create new OpenGL context without window associated to renderer.");
-			pGlContextHandle = SDL_GL_CreateContext(pWindow->handle);
-			ASSERT(pGlContextHandle, "Failed to create new OpenGL context.");
-			SDL_GL_MakeCurrent(pWindow->handle, pGlContextHandle);
-		}
-
-		void Renderer::retrieveAPIFunctionLocations()
-		{
+			ASSERT(!gl_context_handle, "Trying to create new OpenGL context when renderer already has one.");
+			ASSERT(window, "Trying to create new OpenGL context without window associated to renderer.");
+			gl_context_handle = SDL_GL_CreateContext(window->handle);
+			ASSERT(gl_context_handle, "Failed to create new OpenGL context.");
+			SDL_GL_MakeCurrent(window->handle, gl_context_handle);
 			bool result = gladLoadGLLoader(SDL_GL_GetProcAddress);
 			ASSERT(result, "Failed to retrieve OpenGL API function locations using GLAD.");
 		}
 
-		void Renderer::setViewport(Math::Primitives::u32_rect viewportRect)
+		void Renderer::set_viewport(Math::Primitives::u32_rect viewport_rect)
 		{
-			renderViewport = viewportRect;
-			GL(glViewport(renderViewport.x, renderViewport.y, renderViewport.w, renderViewport.h));
+			render_viewport = viewport_rect;
+			GL(glViewport(render_viewport.x, render_viewport.y, render_viewport.w, render_viewport.h));
 		}
 
-		void Renderer::setCamera(float x, float y, float z, float fov, float aspect)
+		void Renderer::set_camera(float x, float y, float z, float fov, float aspect)
 		{
-			camera.Init(x, y, z, fov, aspect);
+			camera.init(x, y, z, fov, aspect);
 		}
 
 		void Renderer::init(uint32_t w, uint32_t h, uint32_t x, uint32_t y)
@@ -145,44 +141,43 @@ namespace Ty
 			}
 
 			// Initializing window and context
-			createNewWindow(w, h, x, y, APP_TITLE);
-			createNewRenderContext();
-			retrieveAPIFunctionLocations();
+			init_window(w, h, x, y, APP_TITLE);
+			init_api_context();
 
 			// Initializing render resource managers
-			g_bufferResourceManager.init();
-			g_textureResourceManager.init();
-			g_shaderResourceManager.init();
+			buffer_resource_manager.init();
+			texture_resource_manager.init();
+			shader_resource_manager.init();
 
 			// Initializing camera
 			float camera_aspect = (float)w / (float)h;
-			setCamera(DEFAULT_CAMERA_X, DEFAULT_CAMERA_Y, DEFAULT_CAMERA_Z, DEFAULT_CAMERA_FOV, camera_aspect);
+			set_camera(DEFAULT_CAMERA_X, DEFAULT_CAMERA_Y, DEFAULT_CAMERA_Z, DEFAULT_CAMERA_FOV, camera_aspect);
 
 			// Initializing other state
 			GL(glEnable(GL_DEPTH_TEST));
 			GL(glEnable(GL_CULL_FACE));
 			GL(glFrontFace(GL_CCW));
 
-			setViewport({ w, h, 0, 0 });
+			set_viewport({ w, h, 0, 0 });
 
 			// Global rendering resources
-			initGlobalRenderResources();
+			init_global_render_resources();
 
 			// Render passes
-			pass_gBuffer.init(&g_rtGBuffer);
-			pass_ssao.init(&g_rtSSAO);
-			pass_blur.init(&g_rtBlur);
-			pass_ui.init(&g_rtUI);
-			pass_lighting.init(&g_rtLighting);
+			pass_gbuffer.init(&rt_gbuffer);
+			pass_ssao.init(&rt_ssao);
+			pass_blur.init(&rt_blur);
+			pass_ui.init(&rt_ui);
+			pass_lighting.init(&rt_lighting);
 		}
 
 		void Renderer::destroy()
 		{
-			if (pGlContextHandle)
+			if (gl_context_handle)
 			{
-				SDL_GL_DeleteContext(pGlContextHandle);
+				SDL_GL_DeleteContext(gl_context_handle);
 			}
-			if (pWindow) delete pWindow;
+			if (window) delete window;
 		}
 
 

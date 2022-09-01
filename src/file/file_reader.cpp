@@ -13,13 +13,13 @@ namespace Ty
 
 		size_t HashFunction_FilePath::operator()(const FilePath& fp) const
 		{
-			return Hash::HashString(fp.path);
+			return Hash::hash_string(fp.path);
 		}
 
-		FileReader::Result FileReader::ReadFile(const char* path, char* buffer)
+		FileReader::Result FileReader::read_file(const char* path, char* buffer)
 		{
 #if _WIN32
-			HANDLE fHandle = CreateFileA(
+			HANDLE file_handle = CreateFileA(
 				path,
 				GENERIC_READ,
 				FILE_SHARE_READ,
@@ -28,24 +28,24 @@ namespace Ty
 				0,
 				NULL
 			);
-			if (fHandle == INVALID_HANDLE_VALUE)
+			if (file_handle == INVALID_HANDLE_VALUE)
 			{
 				return Result::FAIL_OPEN;
 			}
-			LARGE_INTEGER fSize;
-			GetFileSizeEx(fHandle, &fSize);
+			LARGE_INTEGER file_size;
+			GetFileSizeEx(file_handle, &file_size);
 
-			if (!::ReadFile(fHandle, buffer, fSize.QuadPart, NULL, 0))
+			if (!::ReadFile(file_handle, buffer, file_size.QuadPart, NULL, 0))
 			{
 				return Result::FAIL_READ;
 			}
 
-			if (!CloseHandle(fHandle))
+			if (!CloseHandle(file_handle))
 			{
 				return Result::FAIL_CLOSE;
 			}
 
-			buffer[fSize.QuadPart] = '\0';
+			buffer[file_size.QuadPart] = '\0';
 			return Result::OK;
 #else
 			FILE* pFile;
@@ -80,25 +80,25 @@ namespace Ty
 #endif
 		}
 
-		std::vector<FilePath> FileReader::getFileNamesFromPath(const char* path)
+		std::vector<FilePath> FileReader::get_file_names_from_path(const char* path)
 		{
 #if _WIN32
-			WIN32_FIND_DATAA findData;
+			WIN32_FIND_DATAA find_data;
 			std::vector<FilePath> result;
 			char query[MAX_PATH];
 			strcpy(query, path);
 			strcat(query, "*");		// TODO_FILE: Assuming path ends in forward slash /
-			HANDLE hFind = FindFirstFileA(query, &findData);
+			HANDLE hFind = FindFirstFileA(query, &find_data);
 			do
 			{
-				if (strcmp(findData.cFileName, ".") == 0 || strcmp(findData.cFileName, "..") == 0)
+				if (strcmp(find_data.cFileName, ".") == 0 || strcmp(find_data.cFileName, "..") == 0)
 				{
 					continue;
 				}
 
-				result.push_back(FilePath(findData.cFileName));
+				result.push_back(FilePath(find_data.cFileName));
 
-			} while (FindNextFileA(hFind, &findData));
+			} while (FindNextFileA(hFind, &find_data));
 			FindClose(hFind);
 
 			return result;

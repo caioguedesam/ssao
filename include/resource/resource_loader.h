@@ -11,9 +11,9 @@ namespace Ty
 		class ResourceLoader
 		{
 		public:
-			static tinyobj::ObjReader meshReader;
+			static tinyobj::ObjReader mesh_reader;
 
-			static void LoadModel(Model& targetModel, const char* path);
+			static void load_model(Model& target_model, const char* path);
 		};
 	}
 }

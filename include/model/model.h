@@ -10,7 +10,6 @@ namespace Ty
 		{
 		public:
 			std::vector<float> vertices;
-			// TODO: normals, uvs
 			std::vector<uint32_t> indices;
 		};
 	}

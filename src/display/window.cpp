@@ -11,7 +11,7 @@ namespace Ty
 		}
 	}
 
-	void Window::Init(uint32_t width, uint32_t height, uint32_t x, uint32_t y, const char* title)
+	void Window::init(uint32_t width, uint32_t height, uint32_t x, uint32_t y, const char* title)
 	{
 		handle = SDL_CreateWindow(
 			title,
@@ -25,9 +25,9 @@ namespace Ty
 		SDL_WarpMouseInWindow(handle, 0, 0);
 	}
 
-	void Window::OnResize(uint32_t newWidth, uint32_t newHeight)
+	void Window::on_resize(uint32_t new_w, uint32_t new_h)
 	{
-		width = newWidth;
-		height = newHeight;
+		width = new_w;
+		height = new_h;
 	}
 }

@@ -7,30 +7,30 @@ namespace Ty
 {
 	namespace Graphics
 	{
-		void Buffer::init(BufferDesc desc, void* pData)
+		void Buffer::init(BufferDesc desc, void* data)
 		{
-			if (apiHandle == HANDLE_INVALID)
+			if (api_handle == HANDLE_INVALID)
 			{
-				GL(glGenBuffers(1, &apiHandle));
+				GL(glGenBuffers(1, &api_handle));
 			}
 
 			this->desc = desc;
-			setData(pData);
+			set_data(data);
 		}
 
-		void Buffer::setData(void* pData)
+		void Buffer::set_data(void* data)
 		{
-			ASSERT(apiHandle != HANDLE_INVALID, "Trying to set data of invalid buffer resource.");
-			this->pData = pData;
+			ASSERT(api_handle != HANDLE_INVALID, "Trying to set data of invalid buffer resource.");
+			this->data = data;
 			bind();
 			// TODO_GL, TODO_BUFFER: Discriminate between static, dynamic and stream buffers.
 			// TODO_GL, TODO_BUFFER: Subbuffer data to avoid buffer reallocation.
-			GL(glBufferData(getBindTarget(), getSize(), pData, GL_STATIC_DRAW));
+			GL(glBufferData(get_bind_target(), get_size(), data, GL_STATIC_DRAW));
 		}
 
-		uint32_t Buffer::getStride()
+		uint32_t Buffer::get_stride()
 		{
-			ASSERT(apiHandle != HANDLE_INVALID, "Trying to get stride of invalid buffer resource.");
+			ASSERT(api_handle != HANDLE_INVALID, "Trying to get stride of invalid buffer resource.");
 			switch (desc.format)
 			{
 			case BufferFormat::R32_FLOAT:
@@ -43,20 +43,20 @@ namespace Ty
 			return UINT32_MAX;
 		}
 
-		size_t Buffer::getCount()
+		size_t Buffer::get_count()
 		{
-			ASSERT(apiHandle != HANDLE_INVALID, "Trying to get count of invalid buffer resource.");
+			ASSERT(api_handle != HANDLE_INVALID, "Trying to get count of invalid buffer resource.");
 			return desc.count;
 		}
 
-		size_t Buffer::getSize()
+		size_t Buffer::get_size()
 		{
-			return getStride() * getCount();
+			return get_stride() * get_count();
 		}
 
-		uint32_t Buffer::getBindTarget()
+		uint32_t Buffer::get_bind_target()
 		{
-			ASSERT(apiHandle != HANDLE_INVALID, "Trying to get bind target of invalid buffer resource.");
+			ASSERT(api_handle != HANDLE_INVALID, "Trying to get bind target of invalid buffer resource.");
 			switch (desc.type)
 			{
 			case VERTEX_BUFFER:
@@ -71,8 +71,8 @@ namespace Ty
 
 		void Buffer::bind()
 		{
-			ASSERT(apiHandle != HANDLE_INVALID, "Trying to bind invalid buffer resource.");
-			GL(glBindBuffer(getBindTarget(), apiHandle));
+			ASSERT(api_handle != HANDLE_INVALID, "Trying to bind invalid buffer resource.");
+			GL(glBindBuffer(get_bind_target(), api_handle));
 		}
 	}
 }

@@ -10,7 +10,7 @@ namespace Ty
 {
 	namespace Graphics
 	{
-		void RenderPass_GBuffer::addRenderable(Renderable* renderable)
+		void RenderPass_GBuffer::add_renderable(Renderable* renderable)
 		{
 			ASSERT(renderable, "Trying to add null renderable to gbuffer pass.");
 			renderables.push_back(renderable);
@@ -21,79 +21,79 @@ namespace Ty
 			rt->bind();
 			rt->clear();
 			RenderParams params;
-			params.view = renderer->camera.GetViewMatrix();
-			params.proj = renderer->camera.GetProjectionMatrix();
+			params.view = renderer->camera.get_view_matrix();
+			params.proj = renderer->camera.get_projection_matrix();
 			for (int i = 0; i < renderables.size(); i++)
 			{
-				params.model = renderables[i]->uModel;
+				params.model = renderables[i]->u_model;
 				renderables[i]->draw(params);
 			}
 
 			rt->unbind();
 		}
 
-		void RenderPass_SSAO::generateKernel()
+		void RenderPass_SSAO::generate_sample_kernel()
 		{
-			for (int i = 0; i < ssao_data.ssaoKernelSize; i++)	// 64 points for kernel
+			for (int i = 0; i < ssao_data.sample_amount; i++)	// 64 points for kernel
 			{
 				glm::vec3 sample(
-					Random::UniformDistribution(-1.f, 1.f),
-					Random::UniformDistribution(-1.f, 1.f),
-					Random::UniformDistribution(0.f, 1.f)
+					Random::dist_uniform(-1.f, 1.f),
+					Random::dist_uniform(-1.f, 1.f),
+					Random::dist_uniform(0.f, 1.f)
 				);
 				sample = glm::normalize(sample);
-				sample *= Random::UniformDistribution();
+				sample *= Random::dist_uniform();
 				// Push sample towards center
 				float scale = float(i) / 64.f;
 				scale = Math::Lerp(0.1f, 1.f, scale * scale);
 				sample *= scale;
 
-				ssao_data.ssaoKernel[i] = sample;
+				ssao_data.sample_kernel[i] = sample;
 			}
 		}
 
-		void RenderPass_SSAO::bindKernel()
+		void RenderPass_SSAO::bind_sample_kernel()
 		{
-			ssao_material.shaderPipeline.bind();
-			char ssaoKernelName[32];
-			for (int i = 0; i < ssao_data.ssaoKernelSize; i++)
+			ssao_material.shader_pipeline.bind();
+			char bind_name[32];
+			for (int i = 0; i < ssao_data.sample_amount; i++)
 			{
-				sprintf(ssaoKernelName, "samples[%d]", i);
-				ssao_material.shaderPipeline.setUniform(ssaoKernelName, ssao_data.ssaoKernel[i]);
+				sprintf(bind_name, "samples[%d]", i);
+				ssao_material.shader_pipeline.set_uniform(bind_name, ssao_data.sample_kernel[i]);
 			}
-			ssao_material.shaderPipeline.setUniform("kernelSize", ssao_data.ssaoKernelSize);
+			ssao_material.shader_pipeline.set_uniform("kernelSize", ssao_data.sample_amount);
 		}
 
-		void RenderPass_SSAO::generateNoise()
+		void RenderPass_SSAO::generate_white_noise()
 		{
-			for (int i = 0; i < ssao_data.ssaoNoiseDimension * ssao_data.ssaoNoiseDimension; i++)
+			for (int i = 0; i < ssao_data.white_noise_dimension * ssao_data.white_noise_dimension; i++)
 			{
 				glm::vec3 noise(
-					Random::UniformDistribution(-1.f, 1.f),
-					Random::UniformDistribution(-1.f, 1.f),
+					Random::dist_uniform(-1.f, 1.f),
+					Random::dist_uniform(-1.f, 1.f),
 					0.f
 				);
-				ssao_data.ssaoNoise[i] = noise;
+				ssao_data.white_noise[i] = noise;
 			}
 		}
 
-		void RenderPass_SSAO::bindNoiseTexture()
+		void RenderPass_SSAO::bind_white_noise_texture()
 		{
-			ssao_material.shaderPipeline.bind();
-			ssao_material.shaderPipeline.setUniform("noiseDimension", ssao_data.ssaoNoiseDimension);
-			g_textureResourceManager.updateTexture(ssao_noiseTexture,
+			ssao_material.shader_pipeline.bind();
+			ssao_material.shader_pipeline.set_uniform("noiseDimension", ssao_data.white_noise_dimension);
+			texture_resource_manager.update_texture(ssao_noise_texture,
 				{
-					static_cast<uint32_t>(ssao_data.ssaoNoiseDimension),
-					static_cast<uint32_t>(ssao_data.ssaoNoiseDimension),
+					static_cast<uint32_t>(ssao_data.white_noise_dimension),
+					static_cast<uint32_t>(ssao_data.white_noise_dimension),
 					TextureFormat::R32_G32_B32_FLOAT
 				},
-				&ssao_data.ssaoNoise[0]);
+				&ssao_data.white_noise[0]);
 		}
 
-		void RenderPass_SSAO::bindRadius()
+		void RenderPass_SSAO::bind_sample_radius()
 		{
-			ssao_material.shaderPipeline.bind();
-			ssao_material.shaderPipeline.setUniform("radius", ssao_data.ssaoRadius);
+			ssao_material.shader_pipeline.bind();
+			ssao_material.shader_pipeline.set_uniform("radius", ssao_data.sample_radius);
 		}
 
 		void RenderPass_SSAO::pass(Renderer* renderer)
@@ -102,11 +102,11 @@ namespace Ty
 			GL(glDisable(GL_DEPTH_TEST));
 			RenderParams params;
 			params.model = glm::mat4(1.f);
-			params.view = renderer->camera.GetViewMatrix();
-			params.proj = renderer->camera.GetProjectionMatrix();
+			params.view = renderer->camera.get_view_matrix();
+			params.proj = renderer->camera.get_projection_matrix();
 
-			g_renderableScreenQuad.setMaterial(&ssao_material);
-			g_renderableScreenQuad.draw(params);
+			renderable_screen_quad.set_material(&ssao_material);
+			renderable_screen_quad.draw(params);
 
 			rt->unbind();
 		}
@@ -117,11 +117,11 @@ namespace Ty
 			GL(glDisable(GL_DEPTH_TEST));
 			RenderParams params;
 			params.model = glm::mat4(1.f);
-			params.view = renderer->camera.GetViewMatrix();
-			params.proj = renderer->camera.GetProjectionMatrix();
+			params.view = renderer->camera.get_view_matrix();
+			params.proj = renderer->camera.get_projection_matrix();
 
-			g_renderableScreenQuad.setMaterial(&blur_material);
-			g_renderableScreenQuad.draw(params);
+			renderable_screen_quad.set_material(&blur_material);
+			renderable_screen_quad.draw(params);
 
 			rt->unbind();
 		}
@@ -130,17 +130,17 @@ namespace Ty
 		{
 			rt->bind();
 			rt->clear();
-			Math::Primitives::u32_rect viewport_old = renderer->renderViewport;
-			renderer->setViewport({ FPS_WINDOW_WIDTH, FPS_WINDOW_HEIGHT, 0, 0 });
+			Math::Primitives::u32_rect viewport_old = renderer->render_viewport;
+			renderer->set_viewport({ FPS_WINDOW_WIDTH, FPS_WINDOW_HEIGHT, 0, 0 });
 			RenderParams params;
 			params.model = glm::mat4(1.f);
-			params.view = renderer->camera.GetViewMatrix();
-			params.proj = renderer->camera.GetProjectionMatrix();
+			params.view = renderer->camera.get_view_matrix();
+			params.proj = renderer->camera.get_projection_matrix();
 
-			ui_fpsGraph.update();
-			ui_fpsGraph.fpsGraphImmRenderable.draw(params);
+			ui_fps_graph.update();
+			ui_fps_graph.fps_graph_renderable.draw(params);
 
-			renderer->setViewport(viewport_old);
+			renderer->set_viewport(viewport_old);
 			rt->unbind();
 		}
 
@@ -149,11 +149,11 @@ namespace Ty
 			rt->bind();
 			RenderParams params;
 			params.model = glm::mat4(1.f);
-			params.view = renderer->camera.GetViewMatrix();
-			params.proj = renderer->camera.GetProjectionMatrix();
+			params.view = renderer->camera.get_view_matrix();
+			params.proj = renderer->camera.get_projection_matrix();
 
-			g_renderableScreenQuad.setMaterial(&lighting_material);
-			g_renderableScreenQuad.draw(params);
+			renderable_screen_quad.set_material(&lighting_material);
+			renderable_screen_quad.draw(params);
 
 			rt->unbind();
 		}
@@ -170,16 +170,15 @@ namespace Ty
 		{
 			// Pre render configuration
 
-			Math::Primitives::u32_rect defaultViewport = renderViewport;
+			Math::Primitives::u32_rect default_viewport = render_viewport;
 			GL(glEnable(GL_DEPTH_TEST));
 			clear(0.169f, 0.169f, 0.169f, 1.f);		// This clears background
 
-
 			// Render passes (customize order as needed)
 			{
-				setViewport({ GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 0, 0 });
+				set_viewport({ GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 0, 0 });
 				// G-BUFFER
-				pass_gBuffer.pass(this);
+				pass_gbuffer.pass(this);
 
 				// SSAO
 				pass_ssao.pass(this);
@@ -187,7 +186,7 @@ namespace Ty
 				// BLUR
 				if (pass_blur.enabled)
 				{
-					pass_blur.setInputTexture(pass_ssao.ssao_outputTexture);
+					pass_blur.set_input_texture(pass_ssao.ssao_output_texture);
 					pass_blur.pass(this);
 				}
 
@@ -197,22 +196,22 @@ namespace Ty
 				// LIGHTING (FINAL)
 				if (pass_blur.enabled)
 				{
-					pass_lighting.setInputTexture(pass_blur.blur_outputTexture);
+					pass_lighting.set_input_texture(pass_blur.blur_output_texture);
 				}
 				else
 				{
-					pass_lighting.setInputTexture(pass_ssao.ssao_outputTexture);
+					pass_lighting.set_input_texture(pass_ssao.ssao_output_texture);
 				}
 				pass_lighting.pass(this);
 			}
 
 			// Post render configuration
-			setViewport(defaultViewport);
+			set_viewport(default_viewport);
 		}
 
 		void Renderer::flush()
 		{
-			SDL_GL_SwapWindow(pWindow->handle);
+			SDL_GL_SwapWindow(window->handle);
 		}
 	}
 }

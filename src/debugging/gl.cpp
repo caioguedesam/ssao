@@ -3,7 +3,7 @@
 
 #include <glad/glad.h>
 
-void GLCheckError(const char* statement, const char* fname, int line)
+void gl_check_error(const char* statement, const char* fname, int line)
 {
 	GLenum err = glGetError();
 	if (err != GL_NO_ERROR)

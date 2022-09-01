@@ -32,17 +32,17 @@ namespace Ty
 		// TODO: Free resource
 		struct Buffer
 		{
-			uint32_t apiHandle = HANDLE_INVALID;
+			uint32_t api_handle = HANDLE_INVALID;
 			BufferDesc desc;
-			void* pData;
+			void* data;
 
-			void init(BufferDesc desc, void* pData);
-			void setData(void* pData);
-			uint32_t getStride();
-			size_t getCount();
-			size_t getSize();
+			void init(BufferDesc desc, void* data);
+			void set_data(void* data);
+			uint32_t get_stride();
+			size_t get_count();
+			size_t get_size();
 
-			uint32_t getBindTarget();
+			uint32_t get_bind_target();
 			void bind();
 		};
 	}

@@ -5,29 +5,29 @@ namespace Ty
 {
 	namespace Graphics
 	{
-		BufferResourceManager g_bufferResourceManager;
+		BufferResourceManager buffer_resource_manager;
 
 		void BufferResourceManager::init() {}
 		void BufferResourceManager::destroy() {}
 
-		ResourceHandle<Buffer> BufferResourceManager::createBuffer(BufferDesc desc, void* pData)
+		ResourceHandle<Buffer> BufferResourceManager::create_buffer(BufferDesc desc, void* data)
 		{
 			Buffer* buffer = new Buffer();
 
-			buffer->init(desc, pData);
+			buffer->init(desc, data);
 			ResourceHandle<Buffer> handle = add(buffer);
 			return handle;
 		}
 
-		void BufferResourceManager::setBufferData(ResourceHandle<Buffer> bufferHandle, void* pData)
+		void BufferResourceManager::set_buffer_data(ResourceHandle<Buffer> buffer_handle, void* data)
 		{
-			Buffer* buffer = get(bufferHandle);
-			buffer->setData(pData);
+			Buffer* buffer = get(buffer_handle);
+			buffer->set_data(data);
 		}
 
-		void BufferResourceManager::bindBuffer(ResourceHandle<Buffer> bufferHandle)
+		void BufferResourceManager::bind_buffer(ResourceHandle<Buffer> buffer_handle)
 		{
-			get(bufferHandle)->bind();
+			get(buffer_handle)->bind();
 		}
 
 		// TODO_MEMORY, TODO_BUFFER: Buffer freeing (on demand/destruction)

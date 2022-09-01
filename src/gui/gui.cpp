@@ -9,7 +9,7 @@ namespace Ty
 {
     namespace UI
     {
-        GUIState g_guiState;
+        GUIState g_gui_state;
 
         void GUI::init(App* app)
         {
@@ -115,13 +115,13 @@ namespace Ty
             }
 
             // Setup Platform/Renderer backends
-            SDL_Window* sdl_window = app->renderer.pWindow->handle;
-            SDL_GLContext sdl_context = app->renderer.pGlContextHandle;
+            SDL_Window* sdl_window = app->renderer.window->handle;
+            SDL_GLContext sdl_context = app->renderer.gl_context_handle;
             ImGui_ImplSDL2_InitForOpenGL(sdl_window, sdl_context);
             ImGui_ImplOpenGL3_Init("#version 330");
         }
 
-        void GUI::processEvent(SDL_Event* event)
+        void GUI::process_event(SDL_Event* event)
         {
             ImGui_ImplSDL2_ProcessEvent(event);
 
@@ -130,7 +130,7 @@ namespace Ty
                 SDL_Keysym key = event->key.keysym;
                 if (key.sym == SDLK_f)
                 {
-                    g_guiState.show_fps_graph = !g_guiState.show_fps_graph;     // TODO_INPUT, TODO_RENDER: This should trigger something in Renderer to disable fps graph rendering. Also should use remade input system.
+                    g_gui_state.show_fps_graph = !g_gui_state.show_fps_graph;     // TODO_INPUT, TODO_RENDER: This should trigger something in Renderer to disable fps graph rendering. Also should use remade input system.
                 }
             }
         }
@@ -142,27 +142,27 @@ namespace Ty
             ImGui::DestroyContext();
         }
 
-        void GUI::beginFrame()
+        void GUI::begin_frame()
         {
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplSDL2_NewFrame();
             ImGui::NewFrame();
         }
 
-        void GUI::endFrame()
+        void GUI::end_frame()
         {
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         }
 
-        void GUI::beginWindow(const char* title, const uint32_t& w, const uint32_t& h, const uint32_t& x, const uint32_t& y, ImGuiWindowFlags windowFlags)
+        void GUI::begin_window(const char* title, const uint32_t& w, const uint32_t& h, const uint32_t& x, const uint32_t& y, ImGuiWindowFlags windowFlags)
         {
             ImGui::SetNextWindowPos(ImVec2(x, y), ImGuiCond_Once);      // TODO_GUI: Calling this continuously makes windows always reset size and position, so support for moving/resizing windows is broken.
             ImGui::SetNextWindowSize(ImVec2(w, h), ImGuiCond_Once);
             ImGui::Begin(title, 0, windowFlags);
         }
 
-        void GUI::endWindow()
+        void GUI::end_window()
         {
             ImGui::End();
         }
@@ -170,7 +170,7 @@ namespace Ty
         void GUI::image(Graphics::ResourceHandle<Graphics::Texture> textureHandle, uint32_t w, uint32_t h)
         {
             ImGui::Image(
-                (void*)(intptr_t)Graphics::g_textureResourceManager.get(textureHandle)->apiHandle,
+                (void*)(intptr_t)Graphics::texture_resource_manager.get(textureHandle)->api_handle,
                 ImVec2(w, h),
                 ImVec2(0, 1), ImVec2(1, 0)  // OpenGL maps textures down to up left to right, so invert v coordinate.
             );
@@ -178,14 +178,14 @@ namespace Ty
 
         void GUI::display(App* app)
         {
-            beginFrame();
+            begin_frame();
 
             Graphics::Renderer& renderer = app->renderer;
             // Sidebar
             {
-                beginWindow("Properties", 320, APP_DEFAULT_HEIGHT, 0, 0);   // TODO_RESIZE, TODO_GUI: Change this to resize when window changes size
+                begin_window("Properties", 320, APP_DEFAULT_HEIGHT, 0, 0);   // TODO_RESIZE, TODO_GUI: Change this to resize when window changes size
 
-                ImGui::Text("FPS: %.1lf", Time::fps());
+                ImGui::Text("FPS: %.1lf", Time::get_fps());
                 ImGui::Checkbox("Blur pass", &renderer.pass_blur.enabled);
 
                 Graphics::RenderPass_SSAO& pass_ssao = renderer.pass_ssao;
@@ -195,71 +195,71 @@ namespace Ty
                     int noiseDimension;
                     float radius;
                 };
-                static ssao_parameters lastSsaoParams;
-                lastSsaoParams =
+                static ssao_parameters lass_ssao_params;
+                lass_ssao_params =
                 {
-                    pass_ssao.ssao_data.ssaoKernelSize,
-                    pass_ssao.ssao_data.ssaoNoiseDimension,
-                    pass_ssao.ssao_data.ssaoRadius
+                    pass_ssao.ssao_data.sample_amount,
+                    pass_ssao.ssao_data.white_noise_dimension,
+                    pass_ssao.ssao_data.sample_radius
                 };
-                ssao_parameters newSsaoParams = lastSsaoParams;
-                ImGui::SliderInt("Kernel size", &newSsaoParams.kernelSize, 0, MAX_SSAO_KERNEL_SIZE);
+                ssao_parameters new_ssao_params = lass_ssao_params;
+                ImGui::SliderInt("Kernel size", &new_ssao_params.kernelSize, 0, MAX_SSAO_KERNEL_SIZE);
                 if (ImGui::IsItemHovered())
                 {
                     ImGui::SetTooltip("How many points will be pseudo-randomly sampled for each screen pixel in the SSAO pass.");
                 }
-                ImGui::SliderInt("Noise dimension", &newSsaoParams.noiseDimension, 0, MAX_SSAO_NOISE_DIMENSION);
+                ImGui::SliderInt("Noise dimension", &new_ssao_params.noiseDimension, 0, MAX_SSAO_NOISE_DIMENSION);
                 if (ImGui::IsItemHovered())
                 {
                     ImGui::SetTooltip("The dimension of the square noise texture used for pseudo-random kernel rotations in the SSAO pass.");
                 }
-                ImGui::SliderFloat("Radius", &newSsaoParams.radius, 0, MAX_SSAO_RADIUS);
+                ImGui::SliderFloat("Radius", &new_ssao_params.radius, 0, MAX_SSAO_RADIUS);
                 if (ImGui::IsItemHovered())
                 {
                     ImGui::SetTooltip("The maximum radius that the samples will be projected to, in view space.");
                 }
-                if (lastSsaoParams.kernelSize != newSsaoParams.kernelSize)
+                if (lass_ssao_params.kernelSize != new_ssao_params.kernelSize)
                 {
-                    pass_ssao.ssao_data.ssaoKernelSize = newSsaoParams.kernelSize;
-                    pass_ssao.generateKernel();
-                    pass_ssao.bindKernel();
+                    pass_ssao.ssao_data.sample_amount = new_ssao_params.kernelSize;
+                    pass_ssao.generate_sample_kernel();
+                    pass_ssao.bind_sample_kernel();
                 }
-                if (lastSsaoParams.noiseDimension != newSsaoParams.noiseDimension)
+                if (lass_ssao_params.noiseDimension != new_ssao_params.noiseDimension)
                 {
-                    pass_ssao.ssao_data.ssaoNoiseDimension = newSsaoParams.noiseDimension;
-                    pass_ssao.generateNoise();
-                    pass_ssao.bindNoiseTexture();
+                    pass_ssao.ssao_data.white_noise_dimension = new_ssao_params.noiseDimension;
+                    pass_ssao.generate_white_noise();
+                    pass_ssao.bind_white_noise_texture();
                 }
-                if (lastSsaoParams.radius != newSsaoParams.radius)
+                if (lass_ssao_params.radius != new_ssao_params.radius)
                 {
-                    pass_ssao.ssao_data.ssaoRadius = newSsaoParams.radius;
-                    pass_ssao.bindRadius();
+                    pass_ssao.ssao_data.sample_radius = new_ssao_params.radius;
+                    pass_ssao.bind_sample_radius();
                 }
-                lastSsaoParams = newSsaoParams;
+                lass_ssao_params = new_ssao_params;
 
-                endWindow();
+                end_window();
             }
 
             // Main game window
             {
                 uint32_t w = MAIN_WINDOW_DEFAULT_WIDTH;
                 uint32_t h = MAIN_WINDOW_DEFAULT_HEIGHT;
-                beginWindow("Game", w, h, APP_DEFAULT_WIDTH / 2 - w / 2, APP_DEFAULT_HEIGHT / 2 - h / 2, ImGuiWindowFlags_NoTitleBar);
-                image(renderer.pass_lighting.lighting_outputTexture, w, h);
-                endWindow();
+                begin_window("Game", w, h, APP_DEFAULT_WIDTH / 2 - w / 2, APP_DEFAULT_HEIGHT / 2 - h / 2, ImGuiWindowFlags_NoTitleBar);
+                image(renderer.pass_lighting.lighting_output_texture, w, h);
+                end_window();
             }
 
             // FPS graph
-            if (g_guiState.show_fps_graph)
+            if (g_gui_state.show_fps_graph)
             {
                 uint32_t w = FPS_WINDOW_WIDTH;
                 uint32_t h = FPS_WINDOW_HEIGHT;
-                beginWindow("FPS", w, h, APP_DEFAULT_WIDTH - w, APP_DEFAULT_HEIGHT - h, ImGuiWindowFlags_NoTitleBar);
-                image(renderer.pass_ui.ui_fpsGraph.fpsGraphTexture, w, h);
-                endWindow();
+                begin_window("FPS", w, h, APP_DEFAULT_WIDTH - w, APP_DEFAULT_HEIGHT - h, ImGuiWindowFlags_NoTitleBar);
+                image(renderer.pass_ui.ui_fps_graph.fps_graph_texture, w, h);
+                end_window();
             }
 
-            endFrame();
+            end_frame();
         }
     }
 }

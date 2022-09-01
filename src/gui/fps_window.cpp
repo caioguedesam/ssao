@@ -13,7 +13,7 @@ namespace Ty
 
 		void FPSGraph::init()
 		{
-			fpsGraphTexture = g_textureResourceManager.createTexture(
+			fps_graph_texture = texture_resource_manager.create_texture(
 				{
 					FPS_WINDOW_WIDTH,
 					FPS_WINDOW_HEIGHT,
@@ -21,7 +21,7 @@ namespace Ty
 					TextureParams::TEXPARAMS_NONE
 				}, nullptr);
 
-			fpsGraphImmRenderable.init(FPS_WINDOW_WIDTH, FPS_WINDOW_HEIGHT);
+			fps_graph_renderable.init(FPS_WINDOW_WIDTH, FPS_WINDOW_HEIGHT);
 		}
 
 		void FPSGraph::update()		// TODO_RENDER: Move calls to this from render logic to update logic
@@ -37,7 +37,7 @@ namespace Ty
 			}
 
 			// Add a new quad for each frame
-			fpsGraphImmRenderable.clear();
+			fps_graph_renderable.clear();
 			float quad_w = FPS_WINDOW_WIDTH / (float)FRAMES_TO_TRACK;
 			for (uint32_t f = 0; f < FRAMES_TO_TRACK; f++)
 			{
@@ -51,15 +51,15 @@ namespace Ty
 				float cpu_quad_y = 0.f;
 				float gpu_quad_y = cpu_quad_h;
 
-				fpsGraphImmRenderable.addQuad(quad_w, cpu_quad_h, quad_x, cpu_quad_y, 0, 0, 1, 1);
-				fpsGraphImmRenderable.addQuad(quad_w, gpu_quad_h, quad_x, gpu_quad_y, 0, 1, 0, 1);
+				fps_graph_renderable.add_quad(quad_w, cpu_quad_h, quad_x, cpu_quad_y, 0, 0, 1, 1);
+				fps_graph_renderable.add_quad(quad_w, gpu_quad_h, quad_x, gpu_quad_y, 0, 1, 0, 1);
 			}
 
 			// Add standard frame time marks (60fps, 120fps)
-			float relativeFrametime_60 = static_cast<float>(16.666 / top);
-			float relativeFrametime_120 = static_cast<float>(8.333 / top);
-			fpsGraphImmRenderable.addQuad(FPS_WINDOW_WIDTH, 1.f, 0.f, relativeFrametime_60 * FPS_WINDOW_HEIGHT, 1.f, 1.f, 1.f, 0.5f);
-			fpsGraphImmRenderable.addQuad(FPS_WINDOW_WIDTH, 1.f, 0.f, relativeFrametime_120 * FPS_WINDOW_HEIGHT, 1.f, 1.f, 1.f, 0.5f);
+			float relative_frametime_60 = static_cast<float>(16.666 / top);
+			float relative_frametime_120 = static_cast<float>(8.333 / top);
+			fps_graph_renderable.add_quad(FPS_WINDOW_WIDTH, 1.f, 0.f, relative_frametime_60 * FPS_WINDOW_HEIGHT, 1.f, 1.f, 1.f, 0.5f);
+			fps_graph_renderable.add_quad(FPS_WINDOW_WIDTH, 1.f, 0.f, relative_frametime_120 * FPS_WINDOW_HEIGHT, 1.f, 1.f, 1.f, 0.5f);
 		}
 	}
 }

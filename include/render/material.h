@@ -10,13 +10,11 @@ namespace Ty
 	{
 		struct Material
 		{
-			//Shader* shader;
-			ShaderPipeline shaderPipeline;
+			ShaderPipeline shader_pipeline;
 			std::vector<ResourceHandle<Texture>> textures;
 
-			//void Init(Shader* sh);
-			void init(ShaderPipeline shaderPipeline);
-			void addTextureToSlot(ResourceHandle<Texture> textureHandle, uint32_t slot);
+			void init(ShaderPipeline shader_pipeline);
+			void add_texture_to_slot(ResourceHandle<Texture> texture_handle, uint32_t slot);
 			void bind();
 		};
 	}

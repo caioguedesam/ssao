@@ -5,43 +5,43 @@ namespace Ty
 {
 	namespace Input
 	{
-		InputManager::State InputManager::currentState;
-		MouseData InputManager::mouseData;
-		bool InputManager::gotMouseData;
+		InputManager::State InputManager::current_state;
+		MouseData InputManager::mouse_data;
+		bool InputManager::got_mouse_data;
 
 		void InputManager::init()
 		{
-			InputManager::changeInputMode(InputManager::State::APP);
-			mouseData.position = glm::ivec2(g_screenWidth / 2, g_screenHeight / 2);
+			InputManager::change_input_mode(InputManager::State::APP);
+			mouse_data.position = glm::ivec2(screen_w / 2, screen_h / 2);
 		}
 
-		void InputManager::updateMouseData(SDL_Event& e)
+		void InputManager::update_mouse_data(SDL_Event& e)
 		{
-			if (currentState == State::APP)
+			if (current_state == State::APP)
 			{
-				mouseData.offset.x = e.motion.xrel;
-				mouseData.offset.y = e.motion.yrel;
-				mouseData.position.x += mouseData.offset.x;
-				mouseData.position.y += mouseData.offset.y;
-				gotMouseData = true;
+				mouse_data.offset.x = e.motion.xrel;
+				mouse_data.offset.y = e.motion.yrel;
+				mouse_data.position.x += mouse_data.offset.x;
+				mouse_data.position.y += mouse_data.offset.y;
+				got_mouse_data = true;
 			}
 		}
 
 		void InputManager::update()
 		{
-			if (!gotMouseData)
+			if (!got_mouse_data)
 			{
-				mouseData.offset.x = 0;
-				mouseData.offset.y = 0;
+				mouse_data.offset.x = 0;
+				mouse_data.offset.y = 0;
 			}
 
-			gotMouseData = false;
+			got_mouse_data = false;
 		}
 
-		void InputManager::changeInputMode(InputManager::State state)
+		void InputManager::change_input_mode(InputManager::State state)
 		{
-			currentState = state;
-			int screenWidth = 0, screenHeight = 0;
+			current_state = state;
+			int w = 0, h = 0;
 			switch (state)
 			{
 			case InputManager::State::APP:
@@ -50,9 +50,9 @@ namespace Ty
 			case InputManager::State::GUI:
 				SDL_SetRelativeMouseMode(SDL_FALSE);
 #if _WIN32
-				screenWidth = GetSystemMetrics(SM_CXSCREEN);
-				screenHeight = GetSystemMetrics(SM_CYSCREEN);
-				SetCursorPos(screenWidth / 2, screenHeight / 2);
+				w = GetSystemMetrics(SM_CXSCREEN);
+				h = GetSystemMetrics(SM_CYSCREEN);
+				SetCursorPos(w / 2, h / 2);
 #endif
 				break;
 			default:

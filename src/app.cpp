@@ -14,7 +14,7 @@
 namespace Ty
 {
 	// TODO_MULTIPLATFORM: Remove this SDL dependency and use platform api
-	void GetDisplayDimensions(uint32_t& w, uint32_t& h)
+	void get_display_dimensions(uint32_t& w, uint32_t& h)
 	{
 		ASSERT(SDL_WasInit(SDL_INIT_VIDEO), "Trying to get display dimensions without initializing SDL.");
 		SDL_DisplayMode DM;
@@ -25,36 +25,34 @@ namespace Ty
 
 	void App::init()
 	{
-		uint32_t appWidth = APP_DEFAULT_WIDTH;
-		uint32_t appHeight = APP_DEFAULT_HEIGHT;
-		GetDisplayDimensions(g_screenWidth, g_screenHeight);
+		uint32_t app_w = APP_DEFAULT_WIDTH;
+		uint32_t app_h = APP_DEFAULT_HEIGHT;
+		get_display_dimensions(screen_w, screen_h);
 
 		// Core engine systems initialization
-		//Time::Init();
 		Time::init();
 		Input::InputManager::init();
 
 		// Rendering system initialization
-		renderer.init(appWidth, appHeight, (g_screenWidth - appWidth) / 2, (g_screenHeight - appHeight) / 2);
+		renderer.init(app_w, app_h, (screen_w - app_w) / 2, (screen_h - app_h) / 2);
 
 		// Resource system initialization
-		Graphics::g_textureResourceManager.init();
-		Graphics::g_shaderResourceManager.init();
-		/*renderer.initializeRenderResources(appWidth, appHeight);*/
+		Graphics::texture_resource_manager.init();
+		Graphics::shader_resource_manager.init();
 
 		UI::GUI::init(this);
 
-		isRunning = true;
+		is_running = true;
 	}
 
-	void App::pollEvents(double dt)
+	void App::poll_events(double dt)
 	{
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
 			using namespace Input;
 
-			UI::GUI::processEvent(&event);
+			UI::GUI::process_event(&event);
 			if (event.type == SDL_KEYDOWN)
 			{
 				SDL_Keysym key = event.key.keysym;
@@ -62,43 +60,43 @@ namespace Ty
 				{
 				case SDLK_ESCAPE:
 				{
-					isRunning = false;
+					is_running = false;
 				} break;
 				case SDLK_p:
 				{
-					InputManager::changeInputMode(InputManager::currentState == InputManager::State::APP ? InputManager::State::GUI : InputManager::State::APP);
+					InputManager::change_input_mode(InputManager::current_state == InputManager::State::APP ? InputManager::State::GUI : InputManager::State::APP);
 				} break;
 				case SDLK_w:
 				{
-					renderer.camera.moveAmounts.y = 1;
+					renderer.camera.move_amounts.y = 1;
 				} break;
 				case SDLK_s:
 				{
-					renderer.camera.moveAmounts.y = -1;
+					renderer.camera.move_amounts.y = -1;
 				} break;
 				case SDLK_a:
 				{
-					renderer.camera.moveAmounts.x = -1;
+					renderer.camera.move_amounts.x = -1;
 				} break;
 				case SDLK_d:
 				{
-					renderer.camera.moveAmounts.x = 1;
+					renderer.camera.move_amounts.x = 1;
 				} break;
 				case SDLK_UP:
 				{
-					renderer.camera.rotateAmounts.x = 1;
+					renderer.camera.rotate_amounts.x = 1;
 				} break;
 				case SDLK_DOWN:
 				{
-					renderer.camera.rotateAmounts.x = -1;
+					renderer.camera.rotate_amounts.x = -1;
 				} break;
 				case SDLK_LEFT:
 				{
-					renderer.camera.rotateAmounts.y = -1;
+					renderer.camera.rotate_amounts.y = -1;
 				} break;
 				case SDLK_RIGHT:
 				{
-					renderer.camera.rotateAmounts.y = 1;
+					renderer.camera.rotate_amounts.y = 1;
 				} break;
 				}
 			}
@@ -110,28 +108,28 @@ namespace Ty
 				case SDLK_w:
 				case SDLK_s:
 				{
-					renderer.camera.moveAmounts.y = 0;
+					renderer.camera.move_amounts.y = 0;
 				} break;
 				case SDLK_a:
 				case SDLK_d:
 				{
-					renderer.camera.moveAmounts.x = 0;
+					renderer.camera.move_amounts.x = 0;
 				} break;
 				case SDLK_UP:
 				case SDLK_DOWN:
 				{
-					renderer.camera.rotateAmounts.x = 0;
+					renderer.camera.rotate_amounts.x = 0;
 				} break;
 				case SDLK_LEFT:
 				case SDLK_RIGHT:
 				{
-					renderer.camera.rotateAmounts.y = 0;
+					renderer.camera.rotate_amounts.y = 0;
 				} break;
 				}
 			}
 			else if (event.type == SDL_MOUSEMOTION)
 			{
-				InputManager::updateMouseData(event);
+				InputManager::update_mouse_data(event);
 			}
 			else if (event.type == SDL_WINDOWEVENT)
 			{
@@ -144,7 +142,7 @@ namespace Ty
 			}
 			else if (event.type == SDL_QUIT)
 			{
-				isRunning = false;
+				is_running = false;
 			}
 		}
 	}
@@ -152,37 +150,36 @@ namespace Ty
 	void App::run()
 	{
 		AssetSystem::Model sponza;
-		AssetSystem::ResourceLoader::LoadModel(sponza, MODELS_PATH"sponza.obj");
+		AssetSystem::ResourceLoader::load_model(sponza, MODELS_PATH"sponza.obj");
 
-		Graphics::ResourceHandle<Graphics::Buffer> vertexBuffer = Graphics::g_bufferResourceManager.createBuffer({ Graphics::BufferType::VERTEX_BUFFER, Graphics::BufferFormat::R32_FLOAT, sponza.vertices.size() }, sponza.vertices.data());
-		Graphics::ResourceHandle<Graphics::Buffer> indexBuffer = Graphics::g_bufferResourceManager.createBuffer({ Graphics::BufferType::INDEX_BUFFER, Graphics::BufferFormat::R32_UINT, sponza.indices.size() }, sponza.indices.data());
+		Graphics::ResourceHandle<Graphics::Buffer> vertex_buffer = Graphics::buffer_resource_manager.create_buffer({ Graphics::BufferType::VERTEX_BUFFER, Graphics::BufferFormat::R32_FLOAT, sponza.vertices.size() }, sponza.vertices.data());
+		Graphics::ResourceHandle<Graphics::Buffer> index_buffer = Graphics::buffer_resource_manager.create_buffer({ Graphics::BufferType::INDEX_BUFFER, Graphics::BufferFormat::R32_UINT, sponza.indices.size() }, sponza.indices.data());
 
 		Graphics::Renderable obj;
-		obj.uModel = glm::mat4(1.f);
-		obj.uModel = glm::scale(obj.uModel, glm::vec3(0.01f, 0.01f, 0.01f));
-		obj.setVertexData(vertexBuffer, indexBuffer);
+		obj.u_model = glm::mat4(1.f);
+		obj.u_model = glm::scale(obj.u_model, glm::vec3(0.01f, 0.01f, 0.01f));
+		obj.set_vertex_data(vertex_buffer, index_buffer);
 
-		Graphics::ResourceHandle<Graphics::Shader> vs_obj = Graphics::g_shaderResourceManager.getFromFile(SHADERS_PATH"default_vs.vert");
-		Graphics::ResourceHandle<Graphics::Shader> ps_obj = Graphics::g_shaderResourceManager.getFromFile(SHADERS_PATH"default_ps.frag");
-		Graphics::ShaderPipeline objShaderPipeline = Graphics::g_shaderResourceManager.createLinkedShaderPipeline(vs_obj, ps_obj);
+		Graphics::ResourceHandle<Graphics::Shader> vs_obj = Graphics::shader_resource_manager.get_from_file(SHADERS_PATH"default_vs.vert");
+		Graphics::ResourceHandle<Graphics::Shader> ps_obj = Graphics::shader_resource_manager.get_from_file(SHADERS_PATH"default_ps.frag");
+		Graphics::ShaderPipeline obj_shader_pipeline = Graphics::shader_resource_manager.create_linked_shader_pipeline(vs_obj, ps_obj);
 
-		Graphics::Material objMat;
-		objMat.init(objShaderPipeline);
+		Graphics::Material obj_mat;
+		obj_mat.init(obj_shader_pipeline);
 
-		obj.setMaterial(&objMat);
+		obj.set_material(&obj_mat);
 
-		//renderer.AddRenderable(&obj);
-		renderer.pass_gBuffer.addRenderable(&obj);
+		renderer.pass_gbuffer.add_renderable(&obj);
 
-		while (isRunning)
+		while (is_running)
 		{
 			Time::FrameTracking::cpu_frametracking_start();
 			Time::FrameTracking::gpu_frametracking_start();
 			Time::update();
-			pollEvents(Time::deltaTime());
+			poll_events(Time::get_delta_time());
 
 			Input::InputManager::update();
-			renderer.camera.Update(Time::deltaTime());
+			renderer.camera.update(Time::get_delta_time());
 
 			// TODO: update logic here		
 
