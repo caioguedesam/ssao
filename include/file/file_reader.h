@@ -8,12 +8,14 @@ namespace Ty
 		struct FilePath
 		{
 			char path[MAX_PATH] = "";
+			uint32_t len = 0;
 
 			FilePath(const char* str);
 
 			inline bool operator==(const FilePath& rhs) const { return strcmp(path, rhs.path) == 0; }
 
 			// TODO_FILE: Implement useful filepath methods, like getting extension, stripping file name, etc.
+			const char* get_file_name_with_ext();
 		};
 
 		struct HashFunction_FilePath

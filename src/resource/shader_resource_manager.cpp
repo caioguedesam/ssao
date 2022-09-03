@@ -86,9 +86,9 @@ namespace Ty
 			return handle;
 		}
 
-		ResourceHandle<Shader> ShaderResourceManager::get_from_file(const char* filePath)
+		ResourceHandle<Shader> ShaderResourceManager::get_from_file(const char* file_path)
 		{
-			FileSystem::FilePath path(filePath);
+			FileSystem::FilePath path(file_path);
 			ASSERT(handle_list.count(path), "Trying to get shader from file that was not compiled yet.");
 			return handle_list[path];
 		}

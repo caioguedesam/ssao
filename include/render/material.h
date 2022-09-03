@@ -10,10 +10,13 @@ namespace Ty
 	{
 		struct Material
 		{
+			char name[128];
 			ShaderPipeline shader_pipeline;
 			std::vector<ResourceHandle<Texture>> textures;
 
-			void init(ShaderPipeline shader_pipeline);
+			// TODO_RENDER: Material properties
+
+			void init(const char* name, ShaderPipeline shader_pipeline);
 			void add_texture_to_slot(ResourceHandle<Texture> texture_handle, uint32_t slot);
 			void bind();
 		};

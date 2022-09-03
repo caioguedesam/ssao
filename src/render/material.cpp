@@ -7,8 +7,9 @@ namespace Ty
 {
 	namespace Graphics
 	{
-		void Material::init(ShaderPipeline shader_pipeline)
+		void Material::init(const char* name, ShaderPipeline shader_pipeline)
 		{
+			strcpy(this->name,name);
 			this->shader_pipeline = shader_pipeline;
 			textures = std::vector<ResourceHandle<Texture>>(MAX_TEXTURE_SLOTS);
 		}

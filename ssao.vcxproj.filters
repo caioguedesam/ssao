@@ -123,6 +123,15 @@
     <ClCompile Include="src\render\rendering_render.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\resource\material_resource_manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\resource\model_resource_manager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\render\model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
@@ -176,7 +185,7 @@
     <ClInclude Include="include\render\shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\model\model.h">
+    <ClInclude Include="include\render\model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\app.h">
@@ -264,6 +273,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\render\rendering_resources.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\resource\material_resource_manager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\resource\model_resource_manager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

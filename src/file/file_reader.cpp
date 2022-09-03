@@ -9,6 +9,17 @@ namespace Ty
 		FilePath::FilePath(const char* str)
 		{
 			strcpy(path, str);
+			len = strlen(str);
+		}
+
+		const char* FilePath::get_file_name_with_ext()
+		{
+			for (uint32_t i = len - 1; i >= 0; i--)
+			{
+				char c = path[i];
+				if (c == '/' || c == '\\') return path + i;
+			}
+			return nullptr;
 		}
 
 		size_t HashFunction_FilePath::operator()(const FilePath& fp) const
