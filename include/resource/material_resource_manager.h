@@ -21,6 +21,8 @@ namespace Ty
 			// TODO_RENDER: Add methods to manipulate material properties when supported
 
 			void bind_material(ResourceHandle<Material> material_handle);
+
+			// TODO_RENDER: Add set uniform methods
 		};
 
 		extern MaterialResourceManager material_resource_manager;

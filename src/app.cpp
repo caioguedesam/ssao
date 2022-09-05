@@ -9,6 +9,8 @@
 #include "resource/buffer_resource_manager.h"
 #include "resource/texture_resource_manager.h"
 #include "resource/shader_resource_manager.h"
+#include "resource/material_resource_manager.h"
+#include "resource/model_resource_manager.h"
 #include "gui/gui.h"
 
 namespace Ty
@@ -149,8 +151,10 @@ namespace Ty
 
 	void App::run()
 	{
-		AssetSystem::Model sponza;
-		AssetSystem::ResourceLoader::load_model(sponza, MODELS_PATH"sponza.obj");
+		//Graphics::Model sponza;
+		//AssetSystem::ResourceLoader::load_model(sponza, MODELS_PATH"sponza.obj");
+
+		Graphics::ResourceHandle<Graphics::Model> model_sponza = Graphics::model_resource_manager.load_from_file(MODELS_PATH"sponza.obj");
 
 		Graphics::ResourceHandle<Graphics::Buffer> vertex_buffer = Graphics::buffer_resource_manager.create_buffer({ Graphics::BufferType::VERTEX_BUFFER, Graphics::BufferFormat::R32_FLOAT, sponza.vertices.size() }, sponza.vertices.data());
 		Graphics::ResourceHandle<Graphics::Buffer> index_buffer = Graphics::buffer_resource_manager.create_buffer({ Graphics::BufferType::INDEX_BUFFER, Graphics::BufferFormat::R32_UINT, sponza.indices.size() }, sponza.indices.data());
@@ -164,8 +168,9 @@ namespace Ty
 		Graphics::ResourceHandle<Graphics::Shader> ps_obj = Graphics::shader_resource_manager.get_from_file(SHADERS_PATH"default_ps.frag");
 		Graphics::ShaderPipeline obj_shader_pipeline = Graphics::shader_resource_manager.create_linked_shader_pipeline(vs_obj, ps_obj);
 
-		Graphics::Material obj_mat;
-		obj_mat.init(obj_shader_pipeline);
+		Graphics::ResourceHandle<Graphics::Material> obj_mat;
+		//obj_mat.init(obj_shader_pipeline);
+		
 
 		obj.set_material(&obj_mat);
 

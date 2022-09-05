@@ -24,11 +24,11 @@ namespace Ty
 			ResourceHandle<Buffer> vertex_buffer;
 			ResourceHandle<Buffer> index_buffer;
 
-			Material* material;
+			ResourceHandle<Material> material;
 			glm::mat4 u_model;
 
 			virtual void set_vertex_data(ResourceHandle<Buffer> vertex_buffer, ResourceHandle<Buffer> index_buffer);
-			void set_material(Material* mat);
+			void set_material(ResourceHandle<Material> mat);
 
 			virtual void draw(const RenderParams& params);
 		};

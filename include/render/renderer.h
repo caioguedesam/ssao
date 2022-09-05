@@ -53,10 +53,10 @@ namespace Ty
 
 		struct RenderPass_SSAO : RenderPass
 		{
-			SSAOData				ssao_data;
-			Material				ssao_material;
-			ResourceHandle<Texture> ssao_noise_texture;
-			ResourceHandle<Texture> ssao_output_texture;
+			SSAOData					ssao_data;
+			ResourceHandle<Material>	ssao_material;
+			ResourceHandle<Texture>		ssao_noise_texture;
+			ResourceHandle<Texture>		ssao_output_texture;
 
 			void init(RenderTarget* rt) override;
 			void pass(Renderer* renderer) override;
@@ -70,9 +70,9 @@ namespace Ty
 
 		struct RenderPass_Blur : RenderPass
 		{
-			Material				blur_material;
-			ResourceHandle<Texture> blur_input_texture;
-			ResourceHandle<Texture> blur_output_texture;
+			ResourceHandle<Material>	blur_material;
+			ResourceHandle<Texture>		blur_input_texture;
+			ResourceHandle<Texture>		blur_output_texture;
 
 			void init(RenderTarget* rt) override;
 			void pass(Renderer* renderer) override;
@@ -90,9 +90,9 @@ namespace Ty
 
 		struct RenderPass_Lighting : RenderPass
 		{
-			Material				lighting_material;
-			ResourceHandle<Texture> lighting_input_texture;
-			ResourceHandle<Texture> lighting_output_texture;
+			ResourceHandle<Material>	lighting_material;
+			ResourceHandle<Texture>		lighting_input_texture;
+			ResourceHandle<Texture>		lighting_output_texture;
 
 			void init(RenderTarget* rt) override;
 			void pass(Renderer* renderer) override;

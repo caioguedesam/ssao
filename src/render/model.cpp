@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "render/model.h"
 
 namespace Ty

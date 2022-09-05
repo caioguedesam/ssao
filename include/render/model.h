@@ -7,9 +7,16 @@ namespace Ty
 {
 	namespace Graphics
 	{
+		struct ModelVertex
+		{
+			float px, py, pz;
+			float nx, ny, nz;
+			float tx, ty;
+		};
+
 		struct Mesh
 		{
-			float* vertex_data;
+			ModelVertex* vertex_data;
 			size_t vertex_count;
 			uint32_t* index_data;
 			size_t index_count;

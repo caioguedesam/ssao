@@ -101,7 +101,7 @@ namespace Ty
 			set_material(new Material());
 			ResourceHandle<Shader> vs = shader_resource_manager.get_from_file(SHADERS_PATH"immediate_vs.vert");
 			ResourceHandle<Shader> ps = shader_resource_manager.get_from_file(SHADERS_PATH"immediate_ps.frag");
-			material->init(shader_resource_manager.create_linked_shader_pipeline(vs, ps));
+			material->init("", shader_resource_manager.create_linked_shader_pipeline(vs, ps));
 
 			this->viewport_width = viewport_w;
 			this->viewport_height = viewport_h;
