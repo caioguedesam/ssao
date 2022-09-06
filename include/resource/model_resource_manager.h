@@ -18,6 +18,7 @@ namespace Ty
 
 			ResourceHandle<Model> load_from_file(const char* file_path);
 			ResourceHandle<Model> get_from_file(const char* file_path);
+			std::vector<std::pair<Mesh*, ResourceHandle<Material>>>& get_parts(ResourceHandle<Model> model_handle);
 		};
 
 		extern ModelResourceManager model_resource_manager;

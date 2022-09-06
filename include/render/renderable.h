@@ -3,6 +3,7 @@
 
 #include "render/buffer.h"
 #include "render/material.h"
+#include "render/model.h"
 
 #define MAX_IMMEDIATE_RENDERABLE_TRIS 2048
 
@@ -58,5 +59,9 @@ namespace Ty
 			void draw(const RenderParams& params) override;
 		};
 
+		struct MeshRenderable : Renderable
+		{
+			void set_mesh_data(Mesh* mesh, ResourceHandle<Material> material_handle);
+		};
 	}
 }

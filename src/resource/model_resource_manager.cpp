@@ -96,7 +96,7 @@ namespace Ty
 				Mesh* mesh = new Mesh();
 				mesh->vertex_count = tinyobj_mesh.num_face_vertices.size() * 3;
 				mesh->index_count = tinyobj_mesh.num_face_vertices.size() * 3;
-				mesh->vertex_data = (ModelVertex*)malloc(mesh->vertex_count * sizeof(ModelVertex));
+				mesh->vertex_data = (MeshVertex*)malloc(mesh->vertex_count * sizeof(MeshVertex));
 				mesh->index_data = (uint32_t*)malloc(mesh->index_count * sizeof(uint32_t));
 
 				//size_t index_offset = 0;
@@ -107,7 +107,7 @@ namespace Ty
 					for (size_t v = 0; v < 3; v++)
 					{
 						uint32_t current_vertex = f * 3 + v;
-						ModelVertex* model_vertex = &mesh->vertex_data[current_vertex];
+						MeshVertex* model_vertex = &mesh->vertex_data[current_vertex];
 						tinyobj::index_t idx = tinyobj_mesh.indices[current_vertex];
 
 						model_vertex->px = attrib.vertices[3 * size_t(idx.vertex_index) + 0];
@@ -184,6 +184,11 @@ namespace Ty
 			FileSystem::FilePath path(file_path);
 			ASSERT(handle_list.count(path), "Trying to get shader from file that was not compiled yet.");
 			return handle_list[path];
+		}
+
+		std::vector<std::pair<Mesh*, ResourceHandle<Material>>>& ModelResourceManager::get_parts(ResourceHandle<Model> model_handle)
+		{
+			return get(model_handle)->parts;
 		}
 	}
 }

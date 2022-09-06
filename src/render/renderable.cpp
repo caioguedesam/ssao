@@ -183,5 +183,32 @@ namespace Ty
 			GL(glBindVertexArray(vao_api_handle));
 			GL(glDrawElements(GL_TRIANGLES, index_cursor, GL_UNSIGNED_INT, 0));
 		}
+
+		void MeshRenderable::set_mesh_data(Mesh* mesh, ResourceHandle<Material> material_handle)
+		{
+			// Create new vertex/index graphics resources
+			ASSERT(!vertex_buffer.is_valid(), "[ERROR:RENDERABLE] Adding new mesh to renderable with already initialized vertex buffer");
+			ASSERT(!index_buffer.is_valid(), "[ERROR:RENDERABLE] Adding new mesh to renderable with already initialized index buffer");
+			vertex_buffer = buffer_resource_manager.create_buffer(
+				{
+					BufferType::VERTEX_BUFFER,
+					BufferFormat::R32_FLOAT,
+					mesh->vertex_count * sizeof(MeshVertex)
+				}, mesh->vertex_data
+			);
+			index_buffer = buffer_resource_manager.create_buffer(
+				{
+					BufferType::INDEX_BUFFER,
+					BufferFormat::R32_UINT,
+					mesh->index_count
+				}, mesh->index_data
+			);
+
+			// call set_vertex_data with mesh data
+			set_vertex_data(vertex_buffer, index_buffer);
+
+			// set mesh material
+			set_material(material_handle);
+		}
 	}
 }
