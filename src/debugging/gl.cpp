@@ -1,13 +1,26 @@
-#include "debugging/gl.h"
 #include "stdafx.h"
+#include "debugging/gl.h"
+#include "debugging/assert.h"
 
 #include <glad/glad.h>
+
+const char* gl_errors[] =
+{
+	"GL_INVALID_ENUM",
+	"GL_INVALID_VALUE",
+	"GL_INVALID_OPERATION",
+	"GL_STACK_OVERFLOW",
+	"GL_STACK_UNDERFLOW",
+	"GL_OUT_OF_MEMORY",
+	"GL_INVALID_FRAMEBUFFER_OPERATION",
+};
 
 void gl_check_error(const char* statement, const char* fname, int line)
 {
 	GLenum err = glGetError();
 	if (err != GL_NO_ERROR)
 	{
-		printf("OpenGL error %08x, at %s:%i - for %s\n", err, fname, line, statement);
+		uint32_t err_index = err - 0x0500;
+		ASSERT_FORMAT(0, "OpenGL error %08x(%s), at %s:%i - for %s\n", err, gl_errors[err_index], fname, line, statement);
 	}
 }

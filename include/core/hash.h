@@ -20,7 +20,7 @@ namespace Ty
 			result += (result << 3);
 			result ^= (result >> 11);
 			result += (result << 15);
-			return result;
+			return result;					// TODO_CONTINUE: This hash is not working properly!
 		}
 
 		struct HashFunction_CSTR

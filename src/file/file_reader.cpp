@@ -14,10 +14,13 @@ namespace Ty
 
 		const char* FilePath::get_file_name_with_ext()
 		{
-			for (uint32_t i = len - 1; i >= 0; i--)
+			for (int i = len - 1; i >= 0; i--)
 			{
 				char c = path[i];
-				if (c == '/' || c == '\\') return path + i;
+				if (c == '/' || c == '\\')
+				{
+					return path + i + 1;
+				}
 			}
 			return nullptr;
 		}

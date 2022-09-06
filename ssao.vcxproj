@@ -211,7 +211,6 @@
     <ClCompile Include="src\resource\buffer_resource_manager.cpp" />
     <ClCompile Include="src\resource\material_resource_manager.cpp" />
     <ClCompile Include="src\resource\model_resource_manager.cpp" />
-    <ClCompile Include="src\resource\resource_loader.cpp" />
     <ClCompile Include="src\resource\shader_resource_manager.cpp" />
     <ClCompile Include="src\resource\texture_resource_manager.cpp" />
     <ClCompile Include="src\stdafx.cpp">
@@ -266,7 +265,6 @@
     <ClInclude Include="include\resource\buffer_resource_manager.h" />
     <ClInclude Include="include\resource\material_resource_manager.h" />
     <ClInclude Include="include\resource\model_resource_manager.h" />
-    <ClInclude Include="include\resource\resource_loader.h" />
     <ClInclude Include="include\resource\resource_manager.h" />
     <ClInclude Include="include\resource\shader_resource_manager.h" />
     <ClInclude Include="include\resource\texture_resource_manager.h" />

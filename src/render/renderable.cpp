@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "resource/buffer_resource_manager.h"
 #include "resource/shader_resource_manager.h"
+#include "resource/material_resource_manager.h"
 #include "render/renderable.h"
 #include <glad/glad.h>
 #include "debugging/gl.h"
@@ -40,36 +41,38 @@ namespace Ty
 			GL(glBindVertexArray(0));
 		}
 
-		void Renderable::set_material(Material* mat)
+		void Renderable::set_material(ResourceHandle<Material> material_handle)
 		{
-			material = mat;
+			material = material_handle;
 		}
 
-		void bind_standard_uniforms(ShaderPipeline shader_pipeline, const RenderParams& params)
+		void bind_standard_uniforms(ResourceHandle<Material> material_handle, const RenderParams& params)
 		{
 			// TODO_SHADER: Change "model" to "world" matrix. WVP is just a better name.
-			shader_pipeline.set_uniform("uModel", params.model);
-			shader_pipeline.set_uniform("uView", params.view);
-			shader_pipeline.set_uniform("uProj", params.proj);
-			shader_pipeline.set_uniform("uMV", params.view * params.model);
-			shader_pipeline.set_uniform("uVP", params.proj * params.view);
-			shader_pipeline.set_uniform("uMVP", params.proj * params.view * params.model);
+			material_resource_manager.set_material_uniform(material_handle, "uModel", params.model);
+			material_resource_manager.set_material_uniform(material_handle, "uView", params.view);
+			material_resource_manager.set_material_uniform(material_handle, "uProj", params.proj);
+			material_resource_manager.set_material_uniform(material_handle, "uMV", params.view * params.model);
+			material_resource_manager.set_material_uniform(material_handle, "uVP", params.proj * params.view);
+			material_resource_manager.set_material_uniform(material_handle, "uMVP", params.proj * params.view * params.model);
 
 			// TODO_SHADER: Get per uniform names from shader instead of this.
-			shader_pipeline.set_uniform("tex0", 0);
-			shader_pipeline.set_uniform("tex1", 1);
-			shader_pipeline.set_uniform("tex2", 2);
-			shader_pipeline.set_uniform("tex3", 3);
+			material_resource_manager.set_material_uniform(material_handle, "tex0", 0);
+			material_resource_manager.set_material_uniform(material_handle, "tex1", 1);
+			material_resource_manager.set_material_uniform(material_handle, "tex2", 2);
+			material_resource_manager.set_material_uniform(material_handle, "tex3", 3);
 		}
 
 		void Renderable::draw(const RenderParams& params)
 		{
-			material->bind();
+			//material->bind();
+			
 
 			// TODO_SHADER: Make a better process for binding all this default stuff, uniform buffers, etc.
 			// I like OGLDev's pipeline stuff.
 
-			bind_standard_uniforms(material->shader_pipeline, params);
+			//bind_standard_uniforms(material->shader_pipeline, params);
+			bind_standard_uniforms(material, params);
 
 			GL(glBindVertexArray(vao_api_handle));
 
@@ -98,10 +101,11 @@ namespace Ty
 			);
 
 			// Initialize default material and shader pipeline
-			set_material(new Material());
+			//set_material(new Material());
 			ResourceHandle<Shader> vs = shader_resource_manager.get_from_file(SHADERS_PATH"immediate_vs.vert");
 			ResourceHandle<Shader> ps = shader_resource_manager.get_from_file(SHADERS_PATH"immediate_ps.frag");
-			material->init("", shader_resource_manager.create_linked_shader_pipeline(vs, ps));
+			//material->init("", shader_resource_manager.create_linked_shader_pipeline(vs, ps));
+			material = material_resource_manager.create_material("Immediate Material", shader_resource_manager.create_linked_shader_pipeline(vs, ps));
 
 			this->viewport_width = viewport_w;
 			this->viewport_height = viewport_h;
@@ -169,11 +173,12 @@ namespace Ty
 			set_vertex_data(vertex_buffer, index_buffer);
 
 			// Draw
-			material->bind();
+			/*material->bind();*/
+			material_resource_manager.bind_material(material);
 			// TODO_SHADER: Figure out how to deal with matrix pipeline on immediate renderable
 			//bindStandardUniforms(material->shaderPipeline, params);
-			material->shader_pipeline.set_uniform("viewportWidth", (int)viewport_width);
-			material->shader_pipeline.set_uniform("viewportHeight", (int)viewport_height);
+			material_resource_manager.set_material_uniform(material, "viewportWidth", (int)viewport_width);
+			material_resource_manager.set_material_uniform(material, "viewportHeight", (int)viewport_height);
 			GL(glBindVertexArray(vao_api_handle));
 			GL(glDrawElements(GL_TRIANGLES, index_cursor, GL_UNSIGNED_INT, 0));
 		}

@@ -1,10 +1,11 @@
+#include "stdafx.h"
 #include "resource/model_resource_manager.h"
 #include "resource/shader_resource_manager.h"
 #include "resource/texture_resource_manager.h"
 #include "resource/material_resource_manager.h"
-#include "tiny_obj_loader.h"
 #include "globals.h"
 #define TINYOBJLOADER_IMPLEMENTATION	// Only define this here.
+#include "tiny_obj_loader.h"
 
 namespace Ty
 {
@@ -31,9 +32,15 @@ namespace Ty
 			const char* texture_filename = names[0];
 			for (uint32_t i = 0; i < names_len; i++)
 			{
-				ResourceHandle<Texture> texture_handle = texture_resource_manager.load_from_file(FileSystem::FilePath(texture_filename).get_file_name_with_ext(););
+				char texture_filepath[MAX_PATH];
+				ResourceHandle<Texture> texture_handle;
+				const char* filename_with_ext = FileSystem::FilePath(texture_filename).get_file_name_with_ext();
+				if (filename_with_ext)
+				{
+					sprintf(texture_filepath, "%s%s", TEXTURES_PATH, filename_with_ext);
+					texture_handle = texture_resource_manager.load_from_file(texture_filepath);
+				}
 				handles.push_back(texture_handle);
-				//texture_filename += strlen(texture_filename) + 1;
 				texture_filename = names[i + 1];
 			}
 			return handles;

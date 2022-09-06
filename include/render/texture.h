@@ -13,6 +13,8 @@ namespace Ty
 		{
 			INVALID_TEXTURE = 0,
 			R8_FLOAT,
+			R8_UNORM,
+			R8_G8_UNORM,
 			R8_G8_B8_UNORM,
 			R8_G8_B8_A8_UNORM,
 			R16_G16_B16_A16_FLOAT,

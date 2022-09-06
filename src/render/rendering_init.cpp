@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "render/rendering_resources.h"
 #include "render/renderer.h"
+#include "resource/material_resource_manager.h"
 #include <glad/glad.h>
 #include "math/math.h"
 #include "random/random.h"
@@ -31,15 +32,19 @@ namespace Ty
 
 			ResourceHandle<Shader> ssao_vs = shader_resource_manager.get_from_file(SHADERS_PATH"screen_quad_vs.vert");
 			ResourceHandle<Shader> ssao_ps = shader_resource_manager.get_from_file(SHADERS_PATH"ssao_ps.frag");
-			ShaderPipeline ssao_shaderPipeline = shader_resource_manager.create_linked_shader_pipeline(ssao_vs, ssao_ps);
-			ssao_material.init(ssao_shaderPipeline);
+			ShaderPipeline ssao_shader_pipeline = shader_resource_manager.create_linked_shader_pipeline(ssao_vs, ssao_ps);
+			//ssao_material.init(ssao_shaderPipeline);
+			ssao_material = material_resource_manager.create_material("SSAO Material", ssao_shader_pipeline);
 
 			bind_sample_kernel();
 			bind_white_noise_texture();
 			bind_sample_radius();
-			ssao_material.add_texture_to_slot(gbuffer.position, 0);
+			/*ssao_material.add_texture_to_slot(gbuffer.position, 0);
 			ssao_material.add_texture_to_slot(gbuffer.normal, 1);
-			ssao_material.add_texture_to_slot(ssao_noise_texture, 2);
+			ssao_material.add_texture_to_slot(ssao_noise_texture, 2);*/
+			material_resource_manager.bind_texture_to_slot(ssao_material, gbuffer.position, 0);
+			material_resource_manager.bind_texture_to_slot(ssao_material, gbuffer.normal, 1);
+			material_resource_manager.bind_texture_to_slot(ssao_material, ssao_noise_texture, 2);
 
 			rt->set_output(ssao_output_texture, 0);
 		}
@@ -49,7 +54,8 @@ namespace Ty
 			if (blur_input_texture != input_texture)
 			{
 				blur_input_texture = input_texture;
-				blur_material.add_texture_to_slot(input_texture, 0);
+				//blur_material.add_texture_to_slot(input_texture, 0);
+				material_resource_manager.bind_texture_to_slot(blur_material, input_texture, 0);
 			}
 		}
 
@@ -61,8 +67,9 @@ namespace Ty
 
 			ResourceHandle<Shader> blur_vs = shader_resource_manager.get_from_file(SHADERS_PATH"screen_quad_vs.vert");
 			ResourceHandle<Shader> blur_ps = shader_resource_manager.get_from_file(SHADERS_PATH"ssao_blur_ps.frag");
-			ShaderPipeline blur_shaderPipeline = shader_resource_manager.create_linked_shader_pipeline(blur_vs, blur_ps);
-			blur_material.init(blur_shaderPipeline);
+			ShaderPipeline blur_shader_pipeline = shader_resource_manager.create_linked_shader_pipeline(blur_vs, blur_ps);
+			//blur_material.init(blur_shaderPipeline);
+			blur_material = material_resource_manager.create_material("Blur Material", blur_shader_pipeline);
 
 			rt->set_output(blur_output_texture, 0);
 		}
@@ -82,9 +89,11 @@ namespace Ty
 			lighting_output_texture = texture_resource_manager.create_texture({ GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, TextureFormat::R8_G8_B8_A8_UNORM }, nullptr);
 			ResourceHandle<Shader> lighting_vs = shader_resource_manager.get_from_file(SHADERS_PATH"screen_quad_vs.vert");
 			ResourceHandle<Shader> lighting_ps = shader_resource_manager.get_from_file(SHADERS_PATH"final_pass_ps.frag");
-			ShaderPipeline lighting_shaderPipeline = shader_resource_manager.create_linked_shader_pipeline(lighting_vs, lighting_ps);
-			lighting_material.init(lighting_shaderPipeline);
-			lighting_material.add_texture_to_slot(gbuffer.diffuse, 0);
+			ShaderPipeline lighting_shader_pipeline = shader_resource_manager.create_linked_shader_pipeline(lighting_vs, lighting_ps);
+			//lighting_material.init(lighting_shaderPipeline);
+			lighting_material = material_resource_manager.create_material("Lighting Material", lighting_shader_pipeline);
+			//lighting_material.add_texture_to_slot(gbuffer.diffuse, 0);
+			material_resource_manager.bind_texture_to_slot(lighting_material, gbuffer.diffuse, 0);
 
 			rt->set_output(lighting_output_texture, 0);
 		}
@@ -94,7 +103,8 @@ namespace Ty
 			if (lighting_input_texture != input_texture)
 			{
 				lighting_input_texture = input_texture;
-				lighting_material.add_texture_to_slot(input_texture, 0);
+				//lighting_material.add_texture_to_slot(input_texture, 0);
+				material_resource_manager.bind_texture_to_slot(lighting_material, input_texture, 0);
 			}
 		}
 

@@ -57,6 +57,10 @@ namespace Ty
 			{
 			case TextureFormat::R8_FLOAT:
 				return GL_RED;
+			case TextureFormat::R8_UNORM:
+				return GL_RED;
+			case TextureFormat::R8_G8_UNORM:
+				return GL_RG;
 			case TextureFormat::R8_G8_B8_UNORM:
 				return GL_RGB;
 			case TextureFormat::R8_G8_B8_A8_UNORM:
@@ -78,6 +82,14 @@ namespace Ty
 			case TextureFormat::R8_FLOAT:
 				out_format = GL_RED;
 				out_type = GL_FLOAT;
+				break;
+			case TextureFormat::R8_UNORM:
+				out_format = GL_RED;
+				out_type = GL_UNSIGNED_BYTE;
+				break;
+			case TextureFormat::R8_G8_UNORM:
+				out_format = GL_RG;
+				out_type = GL_UNSIGNED_BYTE;
 				break;
 			case TextureFormat::R8_G8_B8_UNORM:
 				out_format = GL_RGB;

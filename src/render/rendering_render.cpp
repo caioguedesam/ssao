@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "render/renderer.h"
 #include "render/rendering_resources.h"
+#include "resource/material_resource_manager.h"
 #include <glad/glad.h>
 #include "math/math.h"
 #include "random/random.h"
@@ -54,14 +55,17 @@ namespace Ty
 
 		void RenderPass_SSAO::bind_sample_kernel()
 		{
-			ssao_material.shader_pipeline.bind();
+			/*ssao_material.shader_pipeline.bind();*/
+			material_resource_manager.bind_material(ssao_material);
 			char bind_name[32];
 			for (int i = 0; i < ssao_data.sample_amount; i++)
 			{
 				sprintf(bind_name, "samples[%d]", i);
-				ssao_material.shader_pipeline.set_uniform(bind_name, ssao_data.sample_kernel[i]);
+				//ssao_material.shader_pipeline.set_uniform(bind_name, ssao_data.sample_kernel[i]);
+				material_resource_manager.set_material_uniform(ssao_material, bind_name, ssao_data.sample_kernel[i]);
 			}
-			ssao_material.shader_pipeline.set_uniform("kernelSize", ssao_data.sample_amount);
+			//ssao_material.shader_pipeline.set_uniform("kernelSize", ssao_data.sample_amount);
+			material_resource_manager.set_material_uniform(ssao_material, "kernelSize", ssao_data.sample_amount);
 		}
 
 		void RenderPass_SSAO::generate_white_noise()
@@ -79,8 +83,10 @@ namespace Ty
 
 		void RenderPass_SSAO::bind_white_noise_texture()
 		{
-			ssao_material.shader_pipeline.bind();
-			ssao_material.shader_pipeline.set_uniform("noiseDimension", ssao_data.white_noise_dimension);
+			//ssao_material.shader_pipeline.bind();
+			material_resource_manager.bind_material(ssao_material);
+			//ssao_material.shader_pipeline.set_uniform("noiseDimension", ssao_data.white_noise_dimension);
+			material_resource_manager.set_material_uniform(ssao_material, "noiseDimension", ssao_data.white_noise_dimension);
 			texture_resource_manager.update_texture(ssao_noise_texture,
 				{
 					static_cast<uint32_t>(ssao_data.white_noise_dimension),
@@ -92,8 +98,10 @@ namespace Ty
 
 		void RenderPass_SSAO::bind_sample_radius()
 		{
-			ssao_material.shader_pipeline.bind();
-			ssao_material.shader_pipeline.set_uniform("radius", ssao_data.sample_radius);
+			/*ssao_material.shader_pipeline.bind();
+			ssao_material.shader_pipeline.set_uniform("radius", ssao_data.sample_radius);*/
+			material_resource_manager.bind_material(ssao_material);
+			material_resource_manager.set_material_uniform(ssao_material, "radius", ssao_data.sample_radius);
 		}
 
 		void RenderPass_SSAO::pass(Renderer* renderer)
@@ -105,7 +113,8 @@ namespace Ty
 			params.view = renderer->camera.get_view_matrix();
 			params.proj = renderer->camera.get_projection_matrix();
 
-			renderable_screen_quad.set_material(&ssao_material);
+			//renderable_screen_quad.set_material(&ssao_material);
+			//renderable_screen_quad.set_material(ssao_material);
 			renderable_screen_quad.draw(params);
 
 			rt->unbind();
@@ -120,7 +129,8 @@ namespace Ty
 			params.view = renderer->camera.get_view_matrix();
 			params.proj = renderer->camera.get_projection_matrix();
 
-			renderable_screen_quad.set_material(&blur_material);
+			//renderable_screen_quad.set_material(&blur_material);
+			renderable_screen_quad.set_material(blur_material);
 			renderable_screen_quad.draw(params);
 
 			rt->unbind();
@@ -152,7 +162,8 @@ namespace Ty
 			params.view = renderer->camera.get_view_matrix();
 			params.proj = renderer->camera.get_projection_matrix();
 
-			renderable_screen_quad.set_material(&lighting_material);
+			//renderable_screen_quad.set_material(&lighting_material);
+			renderable_screen_quad.set_material(lighting_material);
 			renderable_screen_quad.draw(params);
 
 			rt->unbind();

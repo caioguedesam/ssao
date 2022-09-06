@@ -27,14 +27,20 @@ namespace Ty
 			TextureFormat img_format;
 			switch (nC)
 			{
+			case 1:
+				img_format = TextureFormat::R8_UNORM;				// gray
+				break;
+			case 2:
+				img_format = TextureFormat::R8_G8_UNORM;			// gray, alpha
+				break;
 			case 3:
-				img_format = TextureFormat::R8_G8_B8_UNORM;
+				img_format = TextureFormat::R8_G8_B8_UNORM;			// red, blue, green
 				break;
 			case 4:
-				img_format = TextureFormat::R8_G8_B8_A8_UNORM;
+				img_format = TextureFormat::R8_G8_B8_A8_UNORM;		// red, blue, green, alpha
 				break;
 			default:
-				img_format = TextureFormat::R8_G8_B8_A8_UNORM;
+				ASSERT_FORMAT(0, "[ERROR:TEXTURE] Unsupported texture format for %d channels", nC);
 				break;
 			}
 
