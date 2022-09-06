@@ -169,11 +169,10 @@ namespace Ty
 		Graphics::ResourceHandle<Graphics::Shader> ps_obj = Graphics::shader_resource_manager.get_from_file(SHADERS_PATH"default_ps.frag");
 		Graphics::ShaderPipeline obj_shader_pipeline = Graphics::shader_resource_manager.create_linked_shader_pipeline(vs_obj, ps_obj);
 
-		Graphics::ResourceHandle<Graphics::Material> obj_mat;
+		Graphics::ResourceHandle<Graphics::Material> obj_mat = Graphics::material_resource_manager.create_material("GBuffer Mat", obj_shader_pipeline);
 		//obj_mat.init(obj_shader_pipeline);
 		
-
-		/*obj.set_material(&obj_mat);*/
+		obj.set_material(obj_mat);
 
 		renderer.pass_gbuffer.add_renderable(&obj);
 

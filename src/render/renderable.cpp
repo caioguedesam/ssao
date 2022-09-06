@@ -48,6 +48,7 @@ namespace Ty
 
 		void bind_standard_uniforms(ResourceHandle<Material> material_handle, const RenderParams& params)
 		{
+			material_resource_manager.bind_material(material_handle);
 			// TODO_SHADER: Change "model" to "world" matrix. WVP is just a better name.
 			material_resource_manager.set_material_uniform(material_handle, "uModel", params.model);
 			material_resource_manager.set_material_uniform(material_handle, "uView", params.view);

@@ -18,7 +18,7 @@ namespace Ty
 			material->init(name, shader_pipeline);
 
 			handle = add(material);
-			handle_list[get(handle)->name] = handle;
+			handle_list[name] = handle;
 			return handle;
 		}
 
@@ -34,7 +34,7 @@ namespace Ty
 			}
 
 			handle = add(material);
-			handle_list[get(handle)->name] = handle;
+			handle_list[name] = handle;
 			return handle;
 		}
 
