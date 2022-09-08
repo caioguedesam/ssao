@@ -187,13 +187,12 @@ namespace Ty
 			part_renderable->u_model = glm::mat4(1.f);
 			part_renderable->u_model = glm::scale(part_renderable->u_model, glm::vec3(0.01f, 0.01f, 0.01f));
 			renderer.pass_gbuffer.add_renderable(part_renderable);
-			printf("Added renderable %d\n", i);
 		}
 
 		while (is_running)
 		{
 			Time::FrameTracking::cpu_frametracking_start();
-			Time::FrameTracking::gpu_frametracking_start();
+			//Time::FrameTracking::gpu_frametracking_start();
 			Time::update();
 			poll_events(Time::get_delta_time());
 
@@ -207,7 +206,7 @@ namespace Ty
 			UI::GUI::display(this);
 
 			Time::FrameTracking::cpu_frametracking_end();
-			Time::FrameTracking::gpu_frametracking_end();
+			//Time::FrameTracking::gpu_frametracking_end();
 
 			renderer.flush();
 		}

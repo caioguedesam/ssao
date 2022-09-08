@@ -114,7 +114,7 @@ namespace Ty
 			params.proj = renderer->camera.get_projection_matrix();
 
 			//renderable_screen_quad.set_material(&ssao_material);
-			//renderable_screen_quad.set_material(ssao_material);
+			renderable_screen_quad.set_material(ssao_material);
 			renderable_screen_quad.draw(params);
 
 			rt->unbind();
