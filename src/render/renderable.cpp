@@ -193,7 +193,7 @@ namespace Ty
 				{
 					BufferType::VERTEX_BUFFER,
 					BufferFormat::R32_FLOAT,
-					mesh->vertex_count * sizeof(MeshVertex)
+					mesh->vertex_count * sizeof(MeshVertex)/sizeof(float)/*sizeof(MeshVertex)*/
 				}, mesh->vertex_data
 			);
 			index_buffer = buffer_resource_manager.create_buffer(

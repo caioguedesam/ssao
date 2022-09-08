@@ -39,8 +39,11 @@ namespace Ty
 		renderer.init(app_w, app_h, (screen_w - app_w) / 2, (screen_h - app_h) / 2);
 
 		// Resource system initialization
+		Graphics::buffer_resource_manager.init();
 		Graphics::texture_resource_manager.init();
 		Graphics::shader_resource_manager.init();
+		Graphics::material_resource_manager.init();
+		Graphics::model_resource_manager.init();
 
 		UI::GUI::init(this);
 
@@ -184,6 +187,7 @@ namespace Ty
 			part_renderable->u_model = glm::mat4(1.f);
 			part_renderable->u_model = glm::scale(part_renderable->u_model, glm::vec3(0.01f, 0.01f, 0.01f));
 			renderer.pass_gbuffer.add_renderable(part_renderable);
+			printf("Added renderable %d\n", i);
 		}
 
 		while (is_running)
