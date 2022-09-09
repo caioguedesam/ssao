@@ -87,19 +87,12 @@ namespace Ty
 				ASSERT(material_handle.is_valid(), "[ERROR:MODEL] Failed to initialize material.");
 			}
 
-			// TODO_RENDER: Load and allocate all vertex/index data for each mesh, pair them up with created materials, register them to RM
-
+			std::unordered_map<uint32_t, std::vector<MeshVertex>> mesh_lookup;
 			for (size_t s = 0; s < shapes.size(); s++)
 			{
 				uint32_t index = 0;
 				auto& tinyobj_mesh = shapes[s].mesh;
-				Mesh* mesh = new Mesh();
-				mesh->vertex_count = tinyobj_mesh.num_face_vertices.size() * 3;
-				mesh->index_count = tinyobj_mesh.num_face_vertices.size() * 3;
-				mesh->vertex_data = (MeshVertex*)malloc(mesh->vertex_count * sizeof(MeshVertex));
-				mesh->index_data = (uint32_t*)malloc(mesh->index_count * sizeof(uint32_t));
 
-				//size_t index_offset = 0;
 				// For every face (faces are always assumed to be tris)
 				for (size_t f = 0; f < tinyobj_mesh.num_face_vertices.size(); f++)
 				{
@@ -107,72 +100,40 @@ namespace Ty
 					for (size_t v = 0; v < 3; v++)
 					{
 						uint32_t current_vertex = f * 3 + v;
-						MeshVertex* model_vertex = &mesh->vertex_data[current_vertex];
+						MeshVertex model_vertex;
 						tinyobj::index_t idx = tinyobj_mesh.indices[current_vertex];
 
-						model_vertex->px = attrib.vertices[3 * size_t(idx.vertex_index) + 0];
-						model_vertex->py = attrib.vertices[3 * size_t(idx.vertex_index) + 1];
-						model_vertex->pz = attrib.vertices[3 * size_t(idx.vertex_index) + 2];
+						model_vertex.px = attrib.vertices[3 * size_t(idx.vertex_index) + 0];
+						model_vertex.py = attrib.vertices[3 * size_t(idx.vertex_index) + 1];
+						model_vertex.pz = attrib.vertices[3 * size_t(idx.vertex_index) + 2];
 
-						model_vertex->nx = attrib.normals[3 * size_t(idx.normal_index) + 0];
-						model_vertex->ny = attrib.normals[3 * size_t(idx.normal_index) + 1];
-						model_vertex->nz = attrib.normals[3 * size_t(idx.normal_index) + 2];
+						model_vertex.nx = attrib.normals[3 * size_t(idx.normal_index) + 0];
+						model_vertex.ny = attrib.normals[3 * size_t(idx.normal_index) + 1];
+						model_vertex.nz = attrib.normals[3 * size_t(idx.normal_index) + 2];
 
-						model_vertex->tx = attrib.texcoords[2 * size_t(idx.texcoord_index) + 0];
-						model_vertex->ty = attrib.texcoords[2 * size_t(idx.texcoord_index) + 1];
+						model_vertex.tx = attrib.texcoords[2 * size_t(idx.texcoord_index) + 0];
+						model_vertex.ty = attrib.texcoords[2 * size_t(idx.texcoord_index) + 1];
 
-						mesh->index_data[current_vertex] = current_vertex;		// Currently in sequential order, no memory optimizations here yet.
-
-						/*target_model.vertices.push_back(vx);
-						target_model.vertices.push_back(vy);
-						target_model.vertices.push_back(vz);*/
-
-						/*if (idx.normal_index >= 0)
-						{
-							tinyobj::real_t nx = attrib.normals[3 * size_t(idx.normal_index) + 0];
-							tinyobj::real_t ny = attrib.normals[3 * size_t(idx.normal_index) + 1];
-							tinyobj::real_t nz = attrib.normals[3 * size_t(idx.normal_index) + 2];
-
-							target_model.vertices.push_back(nx);
-							target_model.vertices.push_back(ny);
-							target_model.vertices.push_back(nz);
-						}
-						else
-						{
-							ASSERT(0, "No normals data in obj model");
-						}*/
-						//tinyobj::real_t nx = attrib.normals[3 * size_t(idx.normal_index) + 0];
-						//tinyobj::real_t ny = attrib.normals[3 * size_t(idx.normal_index) + 1];
-						//tinyobj::real_t nz = attrib.normals[3 * size_t(idx.normal_index) + 2];
-						//mesh->vertex_data[index_offset + 3] = nx;
-						//mesh->vertex_data[index_offset + 4] = ny;
-						//mesh->vertex_data[index_offset + 5] = nz;
-
-						/*if (idx.texcoord_index >= 0) {
-							tinyobj::real_t tx = attrib.texcoords[2 * size_t(idx.texcoord_index) + 0];
-							tinyobj::real_t ty = attrib.texcoords[2 * size_t(idx.texcoord_index) + 1];
-
-							target_model.vertices.push_back(tx);
-							target_model.vertices.push_back(ty);
-						}
-						else
-						{
-							ASSERT(0, "No UV data in obj model");
-						}*/
-						//tinyobj::real_t tx = attrib.texcoords[2 * size_t(idx.texcoord_index) + 0];
-						//tinyobj::real_t ty = attrib.texcoords[2 * size_t(idx.texcoord_index) + 1];
-						//mesh->vertex_data[index_offset + 6] = tx;
-						//mesh->vertex_data[index_offset + 7] = ty;
-
-						/*target_model.indices.push_back(index++);*/
-						//mesh->index_data[index_offset + 0] = index_offset + 0;
-						//mesh->index_data[index_offset + 1] = index_offset + 1;
-						//mesh->index_data[index_offset + 2] = index_offset + 2;
+						mesh_lookup[tinyobj_mesh.material_ids[f]].push_back(model_vertex);
 					}
-					//index_offset += 3;
+				}
+			}
+
+			for (auto const& element : mesh_lookup)
+			{
+				Mesh* mesh = new Mesh();
+				mesh->vertex_count = element.second.size();
+				mesh->index_count = mesh->vertex_count;
+				mesh->vertex_data = (MeshVertex*)malloc(mesh->vertex_count * sizeof(MeshVertex));
+				mesh->index_data = (uint32_t*)malloc(mesh->index_count * sizeof(uint32_t));
+
+				memcpy(mesh->vertex_data, &element.second[0], mesh->vertex_count * sizeof(MeshVertex));
+				for (int i = 0; i < element.second.size(); i++)
+				{
+					mesh->index_data[i] = i;
 				}
 
-				get(handle)->add_new_part(mesh, material_resource_manager.get_material(mats[tinyobj_mesh.material_ids[0]].name.c_str()));
+				get(handle)->add_new_part(mesh, material_resource_manager.get_material(mats[element.first].name.c_str()));
 			}
 
 			handle_list[path] = handle;

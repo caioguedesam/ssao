@@ -5,7 +5,6 @@
 #include "glm/gtx/transform.hpp"
 
 #include "time/time.h"
-//#include "resource/resource_loader.h"
 #include "resource/buffer_resource_manager.h"
 #include "resource/texture_resource_manager.h"
 #include "resource/shader_resource_manager.h"
@@ -154,30 +153,7 @@ namespace Ty
 
 	void App::run()
 	{
-		//Graphics::Model sponza;
-		//AssetSystem::ResourceLoader::load_model(sponza, MODELS_PATH"sponza.obj");
-
 		Graphics::ResourceHandle<Graphics::Model> model_sponza = Graphics::model_resource_manager.load_from_file(MODELS_PATH"sponza.obj");
-
-		// TODO_RENDER: Move this to model renderable
-		/*Graphics::ResourceHandle<Graphics::Buffer> vertex_buffer = Graphics::buffer_resource_manager.create_buffer({ Graphics::BufferType::VERTEX_BUFFER, Graphics::BufferFormat::R32_FLOAT, sponza.vertices.size() }, sponza.vertices.data());
-		Graphics::ResourceHandle<Graphics::Buffer> index_buffer = Graphics::buffer_resource_manager.create_buffer({ Graphics::BufferType::INDEX_BUFFER, Graphics::BufferFormat::R32_UINT, sponza.indices.size() }, sponza.indices.data());*/
-
-		//Graphics::Renderable obj;
-		//obj.u_model = glm::mat4(1.f);
-		//obj.u_model = glm::scale(obj.u_model, glm::vec3(0.01f, 0.01f, 0.01f));
-		///*obj.set_vertex_data(vertex_buffer, index_buffer);*/
-
-		/*Graphics::ResourceHandle<Graphics::Shader> vs_obj = Graphics::shader_resource_manager.get_from_file(SHADERS_PATH"default_vs.vert");
-		Graphics::ResourceHandle<Graphics::Shader> ps_obj = Graphics::shader_resource_manager.get_from_file(SHADERS_PATH"default_ps.frag");
-		Graphics::ShaderPipeline obj_shader_pipeline = Graphics::shader_resource_manager.create_linked_shader_pipeline(vs_obj, ps_obj);*/
-
-		/*Graphics::ResourceHandle<Graphics::Material> obj_mat = Graphics::material_resource_manager.create_material("GBuffer Mat", obj_shader_pipeline);*/
-		//obj_mat.init(obj_shader_pipeline);
-		
-		/*obj.set_material(obj_mat);*/
-
-		/*renderer.pass_gbuffer.add_renderable(&obj);*/
 
 		auto sponza_parts = Graphics::model_resource_manager.get_parts(model_sponza);
 		for (int i = 0; i < sponza_parts.size(); i++)

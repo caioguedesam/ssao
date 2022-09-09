@@ -15,7 +15,10 @@ uniform mat4 uView;
 
 void main()
 {
-	outDiffuse = texture(tex0, vTexCoord);
+	vec4 diff_color = texture(tex0, vTexCoord);
+	if(diff_color.a < 0.1f) discard;
+	
+	outDiffuse = diff_color;
 	//outDiffuse = vec4(1,1,1,1);
 	//outPos = (uView * vec4(vPos, 1)).xyz;		// G-Buffer textures are stored in view space (for SSAO pass).
 	outPos = vPos;
