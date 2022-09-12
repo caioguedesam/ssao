@@ -52,6 +52,7 @@ namespace Ty
 
 			void init(const TextureDesc desc, void* data);
 			void set_data(void* data);
+			void generate_mips();
 			void bind(uint32_t tex_slot);
 
 			// TODO_TEXTURE: Remove these API specific functions from here

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "render/render_target.h"
+#include "resource/texture_resource_manager.h"
 #include <glad/glad.h>
 #include "debugging/gl.h"
 
@@ -70,6 +71,17 @@ namespace Ty
 				}
 			}
 			GL(glDrawBuffers(count, color_buffers));
+		}
+
+		void RenderTarget::update_output_mips()
+		{
+			for (int i = 0; i < MAX_RENDER_OUTPUTS; i++)
+			{
+				if (target_outputs[i].is_valid())
+				{
+					texture_resource_manager.update_mips(target_outputs[i]);
+				}
+			}
 		}
 
 		bool RenderTarget::is_ready()

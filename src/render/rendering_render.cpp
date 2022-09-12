@@ -30,6 +30,7 @@ namespace Ty
 				renderables[i]->draw(params);
 			}
 
+			rt->update_output_mips();
 			rt->unbind();
 		}
 
@@ -117,6 +118,7 @@ namespace Ty
 			renderable_screen_quad.set_material(ssao_material);
 			renderable_screen_quad.draw(params);
 
+			rt->update_output_mips();
 			rt->unbind();
 		}
 
@@ -133,6 +135,7 @@ namespace Ty
 			renderable_screen_quad.set_material(blur_material);
 			renderable_screen_quad.draw(params);
 
+			rt->update_output_mips();
 			rt->unbind();
 		}
 
@@ -150,6 +153,7 @@ namespace Ty
 			ui_fps_graph.update();
 			ui_fps_graph.fps_graph_renderable.draw(params);
 
+			rt->update_output_mips();
 			renderer->set_viewport(viewport_old);
 			rt->unbind();
 		}
@@ -166,6 +170,7 @@ namespace Ty
 			renderable_screen_quad.set_material(lighting_material);
 			renderable_screen_quad.draw(params);
 
+			rt->update_output_mips();
 			rt->unbind();
 		}
 

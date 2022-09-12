@@ -79,6 +79,11 @@ namespace Ty
 			texture->init(desc, data);
 		}
 
+		void TextureResourceManager::update_mips(ResourceHandle<Texture> handle)
+		{
+			get(handle)->generate_mips();
+		}
+
 		void TextureResourceManager::set_texture_data(ResourceHandle<Texture> handle, void* data)
 		{
 			Texture* texture = get(handle);

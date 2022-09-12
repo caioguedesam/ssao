@@ -24,9 +24,6 @@ namespace Ty
 			GLenum gl_format, gl_type;
 			gl_get_format_and_type(desc.format, gl_format, gl_type);
 
-			GL(glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, desc.width, desc.height, 0, gl_format, gl_type, data));
-			GL(glGenerateMipmap(GL_TEXTURE_2D));	// TODO_#MIPS: Support proper mip map generation
-
 			GLenum filter_min = gl_get_filter_min(desc.params);
 			GLenum filter_mag = gl_get_filter_mag(desc.params);
 			GLenum wrap_u = gl_get_wrap_u(desc.params);
@@ -35,12 +32,22 @@ namespace Ty
 			GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_v));
 			GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter_min));
 			GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter_mag));
+
+			GL(glTexImage2D(GL_TEXTURE_2D, 0, gl_internal_format, desc.width, desc.height, 0, gl_format, gl_type, data));
+			GL(glGenerateMipmap(GL_TEXTURE_2D));
 		}
 
 		void Texture::set_data(void* data)
 		{
 			ASSERT(api_handle != HANDLE_INVALID, "Trying to set data to invalid texture resource.");
 			this->pData = data;
+		}
+
+		void Texture::generate_mips()
+		{
+			ASSERT(api_handle != HANDLE_INVALID, "Trying to update mips of invalid texture resource.");
+			bind(0);
+			GL(glGenerateMipmap(GL_TEXTURE_2D));
 		}
 
 		void Texture::bind(uint32_t tex_slot)
@@ -117,9 +124,9 @@ namespace Ty
 		GLenum Texture::gl_get_filter_min(TextureParams params)
 		{
 			// TODO_#MIPS: Support mip map filtering options
-			if (params & TextureParams::MIN_FILTER_NEAREST) return GL_NEAREST;
-			if (params & TextureParams::MIN_FILTER_LINEAR) return GL_LINEAR;
-			else return GL_NEAREST;	// default
+			if (params & TextureParams::MIN_FILTER_NEAREST) return GL_NEAREST_MIPMAP_NEAREST;
+			if (params & TextureParams::MIN_FILTER_LINEAR) return GL_LINEAR_MIPMAP_LINEAR;
+			else return GL_NEAREST_MIPMAP_NEAREST;	// default
 		}
 
 		GLenum Texture::gl_get_filter_mag(TextureParams params)

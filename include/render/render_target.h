@@ -22,6 +22,7 @@ namespace Ty
 			void clear(const float& r = 0.0f, const float& g = 0.0f, const float& b = 0.0f, const float& a = 0.0f);
 			void set_output(ResourceHandle<Texture> texture_handle, uint32_t slot);
 			void update_outputs();
+			void update_output_mips();
 			bool is_ready();
 		};
 	}
