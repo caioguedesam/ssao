@@ -91,7 +91,7 @@ namespace Ty
 		struct RenderPass_Lighting : RenderPass
 		{
 			ResourceHandle<Material>	lighting_material;
-			ResourceHandle<Texture>		lighting_input_texture;
+			ResourceHandle<Texture>		lighting_ssao_texture;
 			ResourceHandle<Texture>		lighting_output_texture;
 
 			void init(RenderTarget* rt) override;

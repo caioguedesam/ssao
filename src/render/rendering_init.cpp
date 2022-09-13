@@ -100,11 +100,12 @@ namespace Ty
 
 		void RenderPass_Lighting::set_input_texture(ResourceHandle<Texture> input_texture)
 		{
-			if (lighting_input_texture != input_texture)
+			if (lighting_ssao_texture != input_texture)
 			{
-				lighting_input_texture = input_texture;
+				lighting_ssao_texture = input_texture;
 				//lighting_material.add_texture_to_slot(input_texture, 0);
-				material_resource_manager.bind_texture_to_slot(lighting_material, input_texture, 0);
+				//material_resource_manager.bind_texture_to_slot(lighting_material, input_texture, 0);
+				material_resource_manager.bind_texture_to_slot(lighting_material, input_texture, 1);
 			}
 		}
 

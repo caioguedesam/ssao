@@ -126,14 +126,16 @@ namespace Ty
 			// TODO_#MIPS: Support mip map filtering options
 			if (params & TextureParams::MIN_FILTER_NEAREST) return GL_NEAREST_MIPMAP_NEAREST;
 			if (params & TextureParams::MIN_FILTER_LINEAR) return GL_LINEAR_MIPMAP_LINEAR;
-			else return GL_NEAREST_MIPMAP_NEAREST;	// default
+			//else return GL_NEAREST_MIPMAP_NEAREST;	// default
+			else return GL_LINEAR;	// default
 		}
 
 		GLenum Texture::gl_get_filter_mag(TextureParams params)
 		{
 			if (params & TextureParams::MAG_FILTER_NEAREST) return GL_NEAREST;
 			if (params & TextureParams::MAG_FILTER_LINEAR) return GL_LINEAR;
-			else return GL_NEAREST;	// default
+			//else return GL_NEAREST;	// default
+			else return GL_LINEAR;	// default
 		}
 
 		GLenum Texture::gl_get_wrap_u(TextureParams params)
