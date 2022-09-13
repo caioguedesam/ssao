@@ -48,6 +48,7 @@ namespace Ty
 			desc.width = w;
 			desc.height = h;
 			desc.format = img_format;
+			desc.params = (TextureParams)(TextureParams::USE_MIPS | TextureParams::MIN_FILTER_LINEAR | TextureParams::MAG_FILTER_LINEAR);
 
 			ResourceHandle<Texture> handle = create_texture(desc, img_data);
 			handle_list[path] = handle;

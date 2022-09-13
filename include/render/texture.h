@@ -31,7 +31,8 @@ namespace Ty
 			WRAP_REPEAT = 1 << 4,
 			WRAP_MIRRORED_REPEAT = 1 << 5,
 			WRAP_CLAMP_EDGE = 1 << 6,
-			WRAP_CLAMP_BORDER = 1 << 7
+			WRAP_CLAMP_BORDER = 1 << 7,
+			USE_MIPS = 1 << 8,
 		};
 
 		struct TextureDesc

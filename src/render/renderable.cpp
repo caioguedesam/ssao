@@ -66,13 +66,6 @@ namespace Ty
 
 		void Renderable::draw(const RenderParams& params)
 		{
-			//material->bind();
-			
-
-			// TODO_SHADER: Make a better process for binding all this default stuff, uniform buffers, etc.
-			// I like OGLDev's pipeline stuff.
-
-			//bind_standard_uniforms(material->shader_pipeline, params);
 			bind_standard_uniforms(material, params);
 
 			GL(glBindVertexArray(vao_api_handle));
