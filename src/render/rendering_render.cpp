@@ -194,8 +194,9 @@ namespace Ty
 			{
 				set_viewport({ GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 0, 0 });
 				// G-BUFFER
+				//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);	// TODO_RENDER: Wireframe mode
 				pass_gbuffer.pass(this);
-
+				//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	// TODO_RENDER: Wireframe mode
 				// SSAO
 				pass_ssao.pass(this);
 
