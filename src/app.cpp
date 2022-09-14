@@ -70,6 +70,10 @@ namespace Ty
 				{
 					InputManager::change_input_mode(InputManager::current_state == InputManager::State::APP ? InputManager::State::GUI : InputManager::State::APP);
 				} break;
+				case SDLK_1:
+				{
+					UI::g_gui_state.show_sidebar = !UI::g_gui_state.show_sidebar;
+				} break;
 				case SDLK_w:
 				{
 					renderer.camera.move_amounts.y = 1;

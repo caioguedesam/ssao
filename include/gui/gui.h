@@ -13,6 +13,7 @@ namespace Ty
 		struct GUIState
 		{
 			bool show_fps_graph = false;
+			bool show_sidebar = false;
 		};
 
 		extern GUIState g_gui_state;
