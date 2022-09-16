@@ -198,26 +198,38 @@ namespace Ty
 				pass_gbuffer.pass(this);
 				//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	// TODO_RENDER: Wireframe mode
 				// SSAO
-				pass_ssao.pass(this);
-
-				// BLUR
-				if (pass_blur.enabled)
+				if (pass_ssao.enabled)
 				{
-					pass_blur.set_input_texture(pass_ssao.ssao_output_texture);
-					pass_blur.pass(this);
+					pass_ssao.pass(this);
+
+					// BLUR
+					if (pass_blur.enabled)
+					{
+						pass_blur.set_input_texture(pass_ssao.ssao_output_texture);
+						pass_blur.pass(this);
+					}
 				}
 
 				// DEBUG UI
 				pass_ui.pass(this);
 
 				// LIGHTING (FINAL)
-				if (pass_blur.enabled)
+				material_resource_manager.bind_material(pass_lighting.lighting_material);
+				if (pass_ssao.enabled)
 				{
-					pass_lighting.set_input_texture(pass_blur.blur_output_texture);
+					if (pass_blur.enabled)
+					{
+						pass_lighting.set_input_texture(pass_blur.blur_output_texture);
+					}
+					else
+					{
+						pass_lighting.set_input_texture(pass_ssao.ssao_output_texture);
+					}
+					material_resource_manager.set_material_uniform(pass_lighting.lighting_material, "use_ssao", true);
 				}
 				else
 				{
-					pass_lighting.set_input_texture(pass_ssao.ssao_output_texture);
+					material_resource_manager.set_material_uniform(pass_lighting.lighting_material, "use_ssao", false);
 				}
 				pass_lighting.pass(this);
 			}
