@@ -108,6 +108,7 @@ namespace Ty
 		void RenderPass_SSAO::pass(Renderer* renderer)
 		{
 			rt->bind();
+			rt->clear();
 			GL(glDisable(GL_DEPTH_TEST));
 			RenderParams params;
 			params.model = glm::mat4(1.f);
@@ -125,6 +126,7 @@ namespace Ty
 		void RenderPass_Blur::pass(Renderer* renderer)
 		{
 			rt->bind();
+			rt->clear();
 			GL(glDisable(GL_DEPTH_TEST));
 			RenderParams params;
 			params.model = glm::mat4(1.f);
@@ -161,6 +163,7 @@ namespace Ty
 		void RenderPass_Lighting::pass(Renderer* renderer)
 		{
 			rt->bind();
+			rt->clear();
 			RenderParams params;
 			params.model = glm::mat4(1.f);
 			params.view = renderer->camera.get_view_matrix();
