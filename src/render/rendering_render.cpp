@@ -169,7 +169,10 @@ namespace Ty
 			params.view = renderer->camera.get_view_matrix();
 			params.proj = renderer->camera.get_projection_matrix();
 
-			//renderable_screen_quad.set_material(&lighting_material);
+			material_resource_manager.set_material_uniform(lighting_material, "light.position", light_directional.position);
+			material_resource_manager.set_material_uniform(lighting_material, "light.direction", light_directional.direction);
+			material_resource_manager.set_material_uniform(lighting_material, "light.color", light_directional.color);
+
 			renderable_screen_quad.set_material(lighting_material);
 			renderable_screen_quad.draw(params);
 

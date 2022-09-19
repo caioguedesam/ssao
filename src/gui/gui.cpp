@@ -4,6 +4,7 @@
 #include "backends/imgui_impl_opengl3.h"
 #include "app.h"
 #include "time/time.h"
+#include "render/renderer.h"
 
 namespace Ty
 {
@@ -110,6 +111,10 @@ namespace Ty
                 ImGui::Text("FPS: %.1lf", Time::get_fps());
                 ImGui::Checkbox("SSAO", &renderer.pass_ssao.enabled);
                 ImGui::Checkbox("Blur pass", &renderer.pass_blur.enabled);
+
+                ImGui::SliderFloat3("Light position", &renderer.pass_lighting.light_directional.position[0], -1, 1, "%.2f");
+                ImGui::SliderFloat3("Light direction", &renderer.pass_lighting.light_directional.direction[0], -1, 1, "%.2f");
+                ImGui::SliderFloat3("Light color", &renderer.pass_lighting.light_directional.color[0], 0, 1, "%.2f");
 
                 Graphics::RenderPass_SSAO& pass_ssao = renderer.pass_ssao;
                 struct ssao_parameters

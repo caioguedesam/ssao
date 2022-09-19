@@ -88,8 +88,18 @@ namespace Ty
 			void pass(Renderer* renderer) override;
 		};
 
+		struct Light
+		{
+			glm::vec3 position = { 0,0,0 };
+			glm::vec3 direction = { 0,0,0 };
+			glm::vec3 color = { 1,1,1 };
+		};
+
 		struct RenderPass_Lighting : RenderPass
 		{
+
+			Light light_directional;
+
 			ResourceHandle<Material>	lighting_material;
 			ResourceHandle<Texture>		lighting_ssao_texture;
 			ResourceHandle<Texture>		lighting_output_texture;
@@ -98,6 +108,7 @@ namespace Ty
 			void pass(Renderer* renderer) override;
 
 			void set_input_texture(ResourceHandle<Texture> input_texture);
+			void update_directional_light(Light new_light);
 		};
 
 		class Renderer
