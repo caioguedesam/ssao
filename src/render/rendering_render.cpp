@@ -169,9 +169,18 @@ namespace Ty
 			params.view = renderer->camera.get_view_matrix();
 			params.proj = renderer->camera.get_projection_matrix();
 
-			material_resource_manager.set_material_uniform(lighting_material, "light.position", light_directional.position);
-			material_resource_manager.set_material_uniform(lighting_material, "light.direction", light_directional.direction);
-			material_resource_manager.set_material_uniform(lighting_material, "light.color", light_directional.color);
+			material_resource_manager.set_material_uniform(lighting_material, "light_count", light_count);
+
+			for (int i = 0; i < light_count; i++)
+			{
+				char bind_name[256];
+				sprintf(bind_name, "lights[%d].position", i);
+				material_resource_manager.set_material_uniform(lighting_material, bind_name, point_lights[i].position);
+				sprintf(bind_name, "lights[%d].direction", i);
+				material_resource_manager.set_material_uniform(lighting_material, bind_name, point_lights[i].direction);
+				sprintf(bind_name, "lights[%d].color", i);
+				material_resource_manager.set_material_uniform(lighting_material, bind_name, point_lights[i].color);
+			}
 
 			renderable_screen_quad.set_material(lighting_material);
 			renderable_screen_quad.draw(params);

@@ -90,14 +90,12 @@ namespace Ty
 			ResourceHandle<Shader> lighting_vs = shader_resource_manager.get_from_file(SHADERS_PATH"screen_quad_vs.vert");
 			ResourceHandle<Shader> lighting_ps = shader_resource_manager.get_from_file(SHADERS_PATH"final_pass_ps.frag");
 			ShaderPipeline lighting_shader_pipeline = shader_resource_manager.create_linked_shader_pipeline(lighting_vs, lighting_ps);
-			//lighting_material.init(lighting_shaderPipeline);
 			lighting_material = material_resource_manager.create_material("Lighting Material", lighting_shader_pipeline);
-			//lighting_material.add_texture_to_slot(gbuffer.diffuse, 0);
 			material_resource_manager.bind_texture_to_slot(lighting_material, gbuffer.diffuse, 0);
 			material_resource_manager.bind_texture_to_slot(lighting_material, gbuffer.position, 1);
 			material_resource_manager.bind_texture_to_slot(lighting_material, gbuffer.normal, 2);
 
-			light_directional = {};
+			light_count = 0;
 
 			rt->set_output(lighting_output_texture, 0);
 		}
@@ -107,16 +105,14 @@ namespace Ty
 			if (lighting_ssao_texture != input_texture)
 			{
 				lighting_ssao_texture = input_texture;
-				//lighting_material.add_texture_to_slot(input_texture, 0);
-				//material_resource_manager.bind_texture_to_slot(lighting_material, input_texture, 0);
 				material_resource_manager.bind_texture_to_slot(lighting_material, input_texture, 3);
 			}
 		}
 
 		void RenderPass_Lighting::update_directional_light(Light new_light)
 		{
-			new_light.direction = glm::normalize(new_light.direction);
-			light_directional = new_light;
+			/*new_light.direction = glm::normalize(new_light.direction);
+			light_directional = new_light;*/
 		}
 
 		void Renderer::init_window(uint32_t w, uint32_t h, uint32_t x, uint32_t y, const char* title)

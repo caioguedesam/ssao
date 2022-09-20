@@ -17,6 +17,8 @@
 #define MAX_SSAO_NOISE_DIMENSION 64
 #define MAX_SSAO_RADIUS 5
 
+#define MAX_LIGHTS 16
+
 namespace Ty
 {
 	namespace Graphics
@@ -98,7 +100,8 @@ namespace Ty
 		struct RenderPass_Lighting : RenderPass
 		{
 
-			Light light_directional;
+			Light point_lights[MAX_LIGHTS];
+			int light_count;
 
 			ResourceHandle<Material>	lighting_material;
 			ResourceHandle<Texture>		lighting_ssao_texture;
