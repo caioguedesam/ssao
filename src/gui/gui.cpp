@@ -112,7 +112,6 @@ namespace Ty
                 ImGui::Checkbox("SSAO", &renderer.pass_ssao.enabled);
                 ImGui::Checkbox("Blur pass", &renderer.pass_blur.enabled);
 
-                // TODO_RENDERER: Add new light
                 if (renderer.pass_lighting.light_count < MAX_LIGHTS)
                 {
                     if (ImGui::Button("Add light"))
@@ -121,14 +120,19 @@ namespace Ty
                         renderer.pass_lighting.point_lights[renderer.pass_lighting.light_count - 1] = {};
                     }
                 }
-                // TODO_RENDERER: Edit lights
+
                 for (int i = 0; i < renderer.pass_lighting.light_count; i++)
                 {
                     ImGui::Separator();
-                    ImGui::SliderFloat3("Light position", &renderer.pass_lighting.point_lights[i].position[0], -1, 1, "%.2f");
-                    ImGui::SliderFloat3("Light direction", &renderer.pass_lighting.point_lights[i].direction[0], -1, 1, "%.2f");
-                    ImGui::SliderFloat3("Light color", &renderer.pass_lighting.point_lights[i].color[0], 0, 1, "%.2f");
+                    char bind_name[256];
+                    sprintf(bind_name, "Light %d position", i);
+                    ImGui::DragFloat3(bind_name, &renderer.pass_lighting.point_lights[i].position[0], .1f, -300, 300, "%.2f");
+                    sprintf(bind_name, "Light %d color", i);
+                    ImGui::SliderFloat3(bind_name, &renderer.pass_lighting.point_lights[i].color[0], 0, 1, "%.2f");
+                    sprintf(bind_name, "Light %d power", i);
+                    ImGui::DragFloat(bind_name, &renderer.pass_lighting.point_lights[i].power, .02f, 0, 10, "%.2f");
                 }
+                ImGui::Separator();
 
                 Graphics::RenderPass_SSAO& pass_ssao = renderer.pass_ssao;
                 struct ssao_parameters

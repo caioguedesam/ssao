@@ -93,8 +93,8 @@ namespace Ty
 		struct Light
 		{
 			glm::vec3 position = { 0,0,0 };
-			glm::vec3 direction = { 0,0,0 };
 			glm::vec3 color = { 1,1,1 };
+			float power = 1.f;
 		};
 
 		struct RenderPass_Lighting : RenderPass

@@ -176,10 +176,10 @@ namespace Ty
 				char bind_name[256];
 				sprintf(bind_name, "lights[%d].position", i);
 				material_resource_manager.set_material_uniform(lighting_material, bind_name, point_lights[i].position);
-				sprintf(bind_name, "lights[%d].direction", i);
-				material_resource_manager.set_material_uniform(lighting_material, bind_name, point_lights[i].direction);
 				sprintf(bind_name, "lights[%d].color", i);
 				material_resource_manager.set_material_uniform(lighting_material, bind_name, point_lights[i].color);
+				sprintf(bind_name, "lights[%d].power", i);
+				material_resource_manager.set_material_uniform(lighting_material, bind_name, point_lights[i].power);
 			}
 
 			renderable_screen_quad.set_material(lighting_material);

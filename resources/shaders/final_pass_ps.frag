@@ -20,7 +20,6 @@ struct Light
 {
 	float power;
 	vec3 position;
-	vec3 direction;
 	vec3 color;
 };
 
@@ -42,14 +41,13 @@ void main()
 
 		// Diffuse light
 		vec3 light_view_pos = (uView * vec4(light.position.xyz, 1)).xyz;
-		vec3 light_view_dir = (uView * vec4(light.direction.xyz, 1)).xyz;
 
 		vec3 fragment_view_pos = texture(tex1, vTexCoord).xyz;
 		vec3 fragment_view_norm = texture(tex2, vTexCoord).xyz;
 
 		vec3 D = normalize(light_view_pos - fragment_view_pos);
 		float diffuse_power = max(dot(fragment_view_norm, D), 0.0);
-		light_diffuse += diffuse_power * light.color;	
+		light_diffuse += diffuse_power * light.color * light.power;
 	}
 
 	vec3 color = (light_ambient + light_diffuse) * albedo;

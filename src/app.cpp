@@ -166,6 +166,7 @@ namespace Ty
 			part_renderable->set_mesh_data(sponza_parts[i].first, sponza_parts[i].second);
 			part_renderable->u_model = glm::mat4(1.f);
 			part_renderable->u_model = glm::scale(part_renderable->u_model, glm::vec3(0.01f, 0.01f, 0.01f));
+			part_renderable->u_model = glm::rotate(part_renderable->u_model, glm::radians(90.f), glm::vec3(0.f, 1.f, 0.f));
 			renderer.pass_gbuffer.add_renderable(part_renderable);
 		}
 
