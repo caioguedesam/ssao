@@ -1,6 +1,7 @@
 #pragma once
 #include "stdafx.h"
 
+#include "core/math.h"
 #include "render/buffer.h"
 #include "render/material.h"
 #include "render/model.h"
@@ -13,9 +14,9 @@ namespace Ty
 	{
 		struct RenderParams
 		{
-			glm::mat4 model;
-			glm::mat4 view;
-			glm::mat4 proj;
+			Math::m4f model;
+			Math::m4f view;
+			Math::m4f proj;
 		};
 
 		struct Renderable
@@ -26,7 +27,7 @@ namespace Ty
 			ResourceHandle<Buffer> index_buffer;
 
 			ResourceHandle<Material> material;
-			glm::mat4 u_model;
+			Math::m4f u_model;
 
 			virtual void set_vertex_data(ResourceHandle<Buffer> vertex_buffer, ResourceHandle<Buffer> index_buffer);
 			void set_material(ResourceHandle<Material> mat);

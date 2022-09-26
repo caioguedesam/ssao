@@ -189,6 +189,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\app.cpp" />
+    <ClCompile Include="src\core\math.cpp" />
     <ClCompile Include="src\debugging\gl.cpp" />
     <ClCompile Include="src\display\window.cpp" />
     <ClCompile Include="src\file\file_reader.cpp" />
@@ -250,7 +251,7 @@
     <ClInclude Include="include\gui\fps_window.h" />
     <ClInclude Include="include\gui\gui.h" />
     <ClInclude Include="include\input\input.h" />
-    <ClInclude Include="include\math\math.h" />
+    <ClInclude Include="include\core\math.h" />
     <ClInclude Include="include\render\model.h" />
     <ClInclude Include="include\random\random.h" />
     <ClInclude Include="include\render\buffer.h" />

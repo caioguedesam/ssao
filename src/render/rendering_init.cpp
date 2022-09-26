@@ -3,7 +3,7 @@
 #include "render/renderer.h"
 #include "resource/material_resource_manager.h"
 #include <glad/glad.h>
-#include "math/math.h"
+#include "core/math.h"
 #include "random/random.h"
 #include "debugging/gl.h"
 

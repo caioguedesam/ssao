@@ -1,6 +1,7 @@
 #pragma once
 
 #include "stdafx.h"
+#include "core/math.h"
 #include "resource/resource_manager.h"
 
 namespace Ty
@@ -33,10 +34,10 @@ namespace Ty
 			ShaderPipeline(ResourceHandle<Shader> vs, ResourceHandle<Shader> ps);
 
 			void bind();
-			void set_uniform(const char* bind_name, const glm::mat4& bind_value);
+			void set_uniform(const char* bind_name, const Math::m4f& bind_value);
 			void set_uniform(const char* bind_name, const int& bind_value);
 			void set_uniform(const char* bind_name, const float& bind_value);
-			void set_uniform(const char* bind_name, const glm::vec3& bind_value);
+			void set_uniform(const char* bind_name, const Math::v3f& bind_value);
 		};
 	}
 }

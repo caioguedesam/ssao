@@ -3,6 +3,7 @@
 #include "resource/resource_manager.h"
 #include "render/material.h"
 #include "core/hash.h"
+#include "core/math.h"
 
 namespace Ty
 {
@@ -23,10 +24,10 @@ namespace Ty
 
 			void bind_material(ResourceHandle<Material> material_handle);
 			void bind_texture_to_slot(ResourceHandle<Material> material_handle, ResourceHandle<Texture> texture_handle, uint32_t slot);
-			void set_material_uniform(ResourceHandle<Material> material_handle, const char* bind_name, const glm::mat4& bind_value);
+			void set_material_uniform(ResourceHandle<Material> material_handle, const char* bind_name, const Math::m4f& bind_value);
 			void set_material_uniform(ResourceHandle<Material> material_handle, const char* bind_name, const int& bind_value);
 			void set_material_uniform(ResourceHandle<Material> material_handle, const char* bind_name, const float& bind_value);
-			void set_material_uniform(ResourceHandle<Material> material_handle, const char* bind_name, const glm::vec3& bind_value);
+			void set_material_uniform(ResourceHandle<Material> material_handle, const char* bind_name, const Math::v3f& bind_value);
 			// TODO_RENDER: Add set uniform methods
 		};
 
