@@ -177,10 +177,9 @@ namespace Ty
 			rt->bind();
 			rt->clear();
 			RenderParams params;
-			// TODO_MATH: OpenGL uses column major, my math lib uses row major, so these have to be transposed to go to GLSL.
 			params.model = Math::identity();
-			params.view = Math::transpose(renderer->camera.get_view_matrix());
-			params.proj = Math::transpose(renderer->camera.get_projection_matrix());
+			params.view = renderer->camera.get_view_matrix();
+			params.proj = renderer->camera.get_projection_matrix();
 
 			material_resource_manager.set_material_uniform(lighting_material, "light_count", light_count);
 

@@ -278,7 +278,8 @@ namespace Ty
 
 		m4f look_at(const v3f& center, const v3f& target, const v3f up)
 		{
-			v3f look_dir	= normalize(target - center);
+			//v3f look_dir	= normalize(target - center);
+			v3f look_dir	= normalize(center - target);		// TODO_MATH: OpenGL convention (camera points to z negative)
 			v3f look_right	= normalize(cross(up, look_dir));
 			v3f look_up		= cross(look_dir, look_right);
 			m4f look_rotation =
@@ -299,19 +300,18 @@ namespace Ty
 		}
 		m4f perspective(const f32& fov_y, const f32& aspect, const f32& near_plane, const f32& far_plane)
 		{
-			// TODO_MATH: This should stop depending on OpenGL projection matrix specifics. And column-major vs row-major.
-			// Since my math lib is currently row-major, this returns a row major perspective matrix.
 			f32 top = tan(fov_y / 2) * near_plane;
 			f32 bottom = -top;
 			f32 right = top * aspect;
 			f32 left = bottom * aspect;
-			return
+			m4f res =
 			{
 				(2 * near_plane) / (right - left), 0, 0, 0,
 				0, (2 * near_plane) / (top - bottom), 0, 0,
 				(right + left) / (right - left), (top + bottom) / (top - bottom), -(far_plane + near_plane) / (far_plane - near_plane), -1,
 				0, 0, -(2 * far_plane * near_plane) / (far_plane - near_plane), 0
 			};
+			return transpose(res);		// TODO_MATH: OpenGL convention (matrix layout as column major, figure this out later?)
 		}
 	}
 }
