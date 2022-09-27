@@ -12,7 +12,7 @@ namespace Ty
 		void InputManager::init()
 		{
 			InputManager::change_input_mode(InputManager::State::APP);
-			mouse_data.position = glm::ivec2(screen_w / 2, screen_h / 2);
+			mouse_data.position = { (i32)screen_w / 2, (i32)screen_h / 2 };
 		}
 
 		void InputManager::update_mouse_data(SDL_Event& e)

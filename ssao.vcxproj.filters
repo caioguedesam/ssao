@@ -129,6 +129,9 @@
     <ClCompile Include="src\render\model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\core\math.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
@@ -209,7 +212,7 @@
     <ClInclude Include="include\random\random.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\math\math.h">
+    <ClInclude Include="include\core\math.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\core\hash.h">

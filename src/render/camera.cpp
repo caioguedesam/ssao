@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "render/camera.h"
-#include <glm/gtc/matrix_transform.hpp>
 
 namespace Ty
 {
@@ -8,19 +7,19 @@ namespace Ty
 	{
 		void Camera::set_position(float x, float y, float z)
 		{
-			position = glm::vec3(x, y, z);
+			position = { x, y, z };
 		}
 
-		void Camera::set_front(glm::vec3 f)
+		void Camera::set_front(Math::v3f f)
 		{
-			glm::vec3 result = f;
-			front = glm::normalize(result);
-			right = glm::normalize(glm::cross(front, glm::vec3(0.f, 1.f, 0.f)));
+			Math::v3f result = f;
+			front = normalize(result);
+			right = normalize(Math::cross(front, {0.f, 1.f, 0.f}));
 		}
 
-		void Camera::move(glm::vec3& dir, float dt)
+		void Camera::move(Math::v3f& dir, float dt)
 		{
-			position += (speed * dt) * dir;
+			position = position + (speed * dt) * dir;
 		}
 
 		void Camera::rotate(float angles_pitch, float angles_yaw, float dt)
@@ -28,11 +27,11 @@ namespace Ty
 			angle_pitch += angles_pitch * dt;
 			angle_yaw += angles_yaw * dt;
 
-			glm::vec3 rotation;
+			Math::v3f rotation;
 			rotation.x = cos(angle_yaw) * cos(angle_pitch);
 			rotation.y = sin(angle_pitch);
 			rotation.z = sin(angle_yaw) * cos(angle_pitch);
-			rotation = glm::normalize(rotation);
+			rotation = normalize(rotation);
 
 			set_front(rotation);
 		}
@@ -46,18 +45,18 @@ namespace Ty
 		void Camera::init(float start_x, float start_y, float start_z, float start_fov, float start_aspect)
 		{
 			set_position(start_x, start_y, start_z);
-			set_front(glm::vec3(0, 0, -1));
+			set_front({0, 0, -1});
 			set_perspective(start_fov, start_aspect);
 		}
 
-		glm::mat4 Camera::get_view_matrix()
+		Math::m4f Camera::get_view_matrix()
 		{
-			return glm::lookAt(position, position + front, glm::vec3(0.f, 1.f, 0.f));
+			return Math::look_at(position, position + front, { 0.f, 1.f, 0.f });
 		}
 
-		glm::mat4 Camera::get_projection_matrix()
+		Math::m4f Camera::get_projection_matrix()
 		{
-			return glm::perspective(fov, aspect_ratio, 0.1f, 1000.f);
+			return Math::perspective(fov, aspect_ratio, 0.1f, 1000.f);
 		}
 
 		void Camera::update(float dt)
@@ -66,11 +65,8 @@ namespace Ty
 			{
 				auto move_front = (float)move_amounts.y * front;
 				auto move_side = (float)move_amounts.x * right;
-				auto move_dir = glm::normalize(move_front + move_side);
-				if (!glm::any(glm::isnan(move_dir)))
-				{
-					move(move_dir, dt);
-				}
+				auto move_dir = normalize(move_front + move_side);
+				move(move_dir, dt);
 			}
 
 			Input::MouseData mouse_data = Input::InputManager::mouse_data;

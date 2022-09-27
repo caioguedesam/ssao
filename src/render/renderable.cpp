@@ -50,12 +50,12 @@ namespace Ty
 		{
 			material_resource_manager.bind_material(material_handle);
 			// TODO_SHADER: Change "model" to "world" matrix. WVP is just a better name.
-			material_resource_manager.set_material_uniform(material_handle, "uModel", params.model);
-			material_resource_manager.set_material_uniform(material_handle, "uView", params.view);
-			material_resource_manager.set_material_uniform(material_handle, "uProj", params.proj);
-			material_resource_manager.set_material_uniform(material_handle, "uMV", params.view * params.model);
-			material_resource_manager.set_material_uniform(material_handle, "uVP", params.proj * params.view);
-			material_resource_manager.set_material_uniform(material_handle, "uMVP", params.proj * params.view * params.model);
+			material_resource_manager.set_material_uniform(material_handle, "uModel", Math::transpose(params.model));
+			material_resource_manager.set_material_uniform(material_handle, "uView", Math::transpose(params.view));
+			material_resource_manager.set_material_uniform(material_handle, "uProj", Math::transpose(params.proj));
+			material_resource_manager.set_material_uniform(material_handle, "uMV", Math::transpose(params.view * params.model));
+			material_resource_manager.set_material_uniform(material_handle, "uVP", Math::transpose(params.proj * params.view));
+			material_resource_manager.set_material_uniform(material_handle, "uMVP", Math::transpose(params.proj * params.view * params.model));
 
 			// TODO_SHADER: Get per uniform names from shader instead of this.
 			material_resource_manager.set_material_uniform(material_handle, "tex0", 0);

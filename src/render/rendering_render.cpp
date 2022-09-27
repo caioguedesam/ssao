@@ -3,7 +3,7 @@
 #include "render/rendering_resources.h"
 #include "resource/material_resource_manager.h"
 #include <glad/glad.h>
-#include "math/math.h"
+#include "core/math.h"
 #include "random/random.h"
 #include "debugging/gl.h"
 
@@ -38,17 +38,17 @@ namespace Ty
 		{
 			for (int i = 0; i < ssao_data.sample_amount; i++)	// 64 points for kernel
 			{
-				glm::vec3 sample(
+				Math::v3f sample =
+				{
 					Random::dist_uniform(-1.f, 1.f),
 					Random::dist_uniform(-1.f, 1.f),
 					Random::dist_uniform(0.f, 1.f)
-				);
-				sample = glm::normalize(sample);
-				sample *= Random::dist_uniform();
+				};
+				sample = Random::dist_uniform() * sample;
 				// Push sample towards center
 				float scale = float(i) / 64.f;
-				scale = Math::Lerp(0.1f, 1.f, scale * scale);
-				sample *= scale;
+				scale = Math::lerp(0.1f, 1.f, scale * scale);
+				sample = scale * sample;
 
 				ssao_data.sample_kernel[i] = sample;
 			}
@@ -73,11 +73,12 @@ namespace Ty
 		{
 			for (int i = 0; i < ssao_data.white_noise_dimension * ssao_data.white_noise_dimension; i++)
 			{
-				glm::vec3 noise(
+				Math::v3f noise =
+				{
 					Random::dist_uniform(-1.f, 1.f),
 					Random::dist_uniform(-1.f, 1.f),
 					0.f
-				);
+				};
 				ssao_data.white_noise[i] = noise;
 			}
 		}
@@ -111,7 +112,7 @@ namespace Ty
 			rt->clear();
 			GL(glDisable(GL_DEPTH_TEST));
 			RenderParams params;
-			params.model = glm::mat4(1.f);
+			params.model = Math::identity();
 			params.view = renderer->camera.get_view_matrix();
 			params.proj = renderer->camera.get_projection_matrix();
 
@@ -129,7 +130,7 @@ namespace Ty
 			rt->clear();
 			GL(glDisable(GL_DEPTH_TEST));
 			RenderParams params;
-			params.model = glm::mat4(1.f);
+			params.model = Math::identity();
 			params.view = renderer->camera.get_view_matrix();
 			params.proj = renderer->camera.get_projection_matrix();
 
@@ -148,7 +149,7 @@ namespace Ty
 			Math::Primitives::u32_rect viewport_old = renderer->render_viewport;
 			renderer->set_viewport({ FPS_WINDOW_WIDTH, FPS_WINDOW_HEIGHT, 0, 0 });
 			RenderParams params;
-			params.model = glm::mat4(1.f);
+			params.model = Math::identity();
 			params.view = renderer->camera.get_view_matrix();
 			params.proj = renderer->camera.get_projection_matrix();
 
@@ -165,7 +166,7 @@ namespace Ty
 			rt->bind();
 			rt->clear();
 			RenderParams params;
-			params.model = glm::mat4(1.f);
+			params.model = Math::identity();
 			params.view = renderer->camera.get_view_matrix();
 			params.proj = renderer->camera.get_projection_matrix();
 

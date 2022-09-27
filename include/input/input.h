@@ -1,5 +1,6 @@
 #pragma once
 #include "stdafx.h"
+#include "core/math.h"
 #include <SDL.h>
 
 #include "globals.h"
@@ -10,8 +11,8 @@ namespace Ty
 	{
 		struct MouseData
 		{
-			glm::ivec2 position = glm::ivec2(0);
-			glm::ivec2 offset = glm::vec2(0);
+			Math::v2i position;
+			Math::v2i offset;
 		};
 
 		class InputManager

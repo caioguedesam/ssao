@@ -2,7 +2,6 @@
 #include "app.h"
 
 #include <SDL.h>
-#include "glm/gtx/transform.hpp"
 
 #include "time/time.h"
 #include "resource/buffer_resource_manager.h"
@@ -164,9 +163,10 @@ namespace Ty
 		{
 			Graphics::MeshRenderable* part_renderable = new Graphics::MeshRenderable();
 			part_renderable->set_mesh_data(sponza_parts[i].first, sponza_parts[i].second);
-			part_renderable->u_model = glm::mat4(1.f);
-			part_renderable->u_model = glm::scale(part_renderable->u_model, glm::vec3(0.01f, 0.01f, 0.01f));
-			part_renderable->u_model = glm::rotate(part_renderable->u_model, glm::radians(90.f), glm::vec3(0.f, 1.f, 0.f));
+			part_renderable->u_model = Math::identity();
+			part_renderable->u_model = Math::scale(0.01f, 0.01f, 0.01f) * part_renderable->u_model;
+			part_renderable->u_model = Math::rotation(Math::to_rad(90.f), 0.f, 1.f, 0.f) * part_renderable->u_model;
+
 			renderer.pass_gbuffer.add_renderable(part_renderable);
 		}
 

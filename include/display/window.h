@@ -1,5 +1,6 @@
 #pragma once
 #include "stdafx.h"
+#include "core/math.h"
 #include <SDL.h>
 
 namespace Ty
@@ -9,7 +10,7 @@ namespace Ty
 	public:
 		uint32_t width;
 		uint32_t height;
-		glm::uvec2 position;
+		Math::v2u position;
 
 		SDL_Window* handle;
 

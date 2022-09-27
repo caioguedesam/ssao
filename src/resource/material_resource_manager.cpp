@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "resource/material_resource_manager.h"
+#include "core/math.h"
 
 namespace Ty
 {
@@ -56,7 +57,7 @@ namespace Ty
 			get(material_handle)->add_texture_to_slot(texture_handle, slot);
 		}
 
-		void MaterialResourceManager::set_material_uniform(ResourceHandle<Material> material_handle, const char* bind_name, const glm::mat4& bind_value)
+		void MaterialResourceManager::set_material_uniform(ResourceHandle<Material> material_handle, const char* bind_name, const Math::m4f& bind_value)
 		{
 			get(material_handle)->shader_pipeline.set_uniform(bind_name, bind_value);
 		}
@@ -69,7 +70,7 @@ namespace Ty
 		{
 			get(material_handle)->shader_pipeline.set_uniform(bind_name, bind_value);
 		}
-		void MaterialResourceManager::set_material_uniform(ResourceHandle<Material> material_handle, const char* bind_name, const glm::vec3& bind_value)
+		void MaterialResourceManager::set_material_uniform(ResourceHandle<Material> material_handle, const char* bind_name, const Math::v3f& bind_value)
 		{
 			get(material_handle)->shader_pipeline.set_uniform(bind_name, bind_value);
 		}

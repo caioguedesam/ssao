@@ -3,7 +3,7 @@
 #include "render/renderer.h"
 #include "resource/material_resource_manager.h"
 #include <glad/glad.h>
-#include "math/math.h"
+#include "core/math.h"
 #include "random/random.h"
 #include "debugging/gl.h"
 
@@ -107,12 +107,6 @@ namespace Ty
 				lighting_ssao_texture = input_texture;
 				material_resource_manager.bind_texture_to_slot(lighting_material, input_texture, 3);
 			}
-		}
-
-		void RenderPass_Lighting::update_directional_light(Light new_light)
-		{
-			/*new_light.direction = glm::normalize(new_light.direction);
-			light_directional = new_light;*/
 		}
 
 		void Renderer::init_window(uint32_t w, uint32_t h, uint32_t x, uint32_t y, const char* title)

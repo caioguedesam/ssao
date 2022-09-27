@@ -21,7 +21,7 @@ namespace Ty
 		);
 		width = width;
 		height = height;
-		position = glm::uvec2(x, y);
+		position = { x, y };
 		SDL_WarpMouseInWindow(handle, 0, 0);
 	}
 
