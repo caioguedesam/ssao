@@ -151,10 +151,9 @@ namespace Ty
 		// =============================
 		// Utilities
 		// =============================
-		inline f32 lerp(const f32& a, const f32& b, const f32& t)
-		{
-			return a + (b - a) * CLAMP(t, 0, 1);
-		}
+		f32 lerp(const f32& a, const f32& b, const f32& t);
+		v2f lerp(const v2f& a, const v2f& b, const f32& t);
+		v3f lerp(const v3f& a, const v3f& b, const f32& t);
 
 		// TODO_MATH: Deprecate this to use new math library
 		namespace Primitives

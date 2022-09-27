@@ -313,5 +313,32 @@ namespace Ty
 			};
 			return transpose(res);		// TODO_MATH: OpenGL convention (matrix layout as column major, figure this out later?)
 		}
+
+		// =============================
+		// Utilities
+		// =============================
+		f32 lerp(const f32& a, const f32& b, const f32& t)
+		{
+			return a + (b - a) * CLAMP(t, 0, 1);
+		}
+
+		v2f lerp(const v2f& a, const v2f& b, const f32& t)
+		{
+			return
+			{
+				lerp(a.x, b.x, t),
+				lerp(a.y, b.y, t),
+			};
+		}
+
+		v3f lerp(const v3f& a, const v3f& b, const f32& t)
+		{
+			return
+			{
+				lerp(a.x, b.x, t),
+				lerp(a.y, b.y, t),
+				lerp(a.z, b.z, t),
+			};
+		}
 	}
 }
