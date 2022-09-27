@@ -51,13 +51,11 @@ namespace Ty
 
 		Math::m4f Camera::get_view_matrix()
 		{
-			//return glm::lookAt(position, position + front, glm::vec3(0.f, 1.f, 0.f));
 			return Math::look_at(position, position + front, { 0.f, 1.f, 0.f });
 		}
 
 		Math::m4f Camera::get_projection_matrix()
 		{
-			//return glm::perspective(fov, aspect_ratio, 0.1f, 1000.f);
 			return Math::perspective(fov, aspect_ratio, 0.1f, 1000.f);
 		}
 
@@ -68,10 +66,6 @@ namespace Ty
 				auto move_front = (float)move_amounts.y * front;
 				auto move_side = (float)move_amounts.x * right;
 				auto move_dir = normalize(move_front + move_side);
-				/*if (!glm::any(glm::isnan(move_dir)))
-				{
-					move(move_dir, dt);
-				}*/
 				move(move_dir, dt);
 			}
 

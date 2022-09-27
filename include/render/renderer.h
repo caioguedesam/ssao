@@ -111,7 +111,6 @@ namespace Ty
 			void pass(Renderer* renderer) override;
 
 			void set_input_texture(ResourceHandle<Texture> input_texture);
-			void update_directional_light(Light new_light);
 		};
 
 		class Renderer

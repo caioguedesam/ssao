@@ -109,12 +109,6 @@ namespace Ty
 			}
 		}
 
-		void RenderPass_Lighting::update_directional_light(Light new_light)
-		{
-			/*new_light.direction = glm::normalize(new_light.direction);
-			light_directional = new_light;*/
-		}
-
 		void Renderer::init_window(uint32_t w, uint32_t h, uint32_t x, uint32_t y, const char* title)
 		{
 			window = new Window();

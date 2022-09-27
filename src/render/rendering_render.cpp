@@ -38,12 +38,6 @@ namespace Ty
 		{
 			for (int i = 0; i < ssao_data.sample_amount; i++)	// 64 points for kernel
 			{
-				/*glm::vec3 sample(
-					Random::dist_uniform(-1.f, 1.f),
-					Random::dist_uniform(-1.f, 1.f),
-					Random::dist_uniform(0.f, 1.f)
-				);
-				sample = glm::normalize(sample);*/
 				Math::v3f sample =
 				{
 					Random::dist_uniform(-1.f, 1.f),
@@ -79,11 +73,6 @@ namespace Ty
 		{
 			for (int i = 0; i < ssao_data.white_noise_dimension * ssao_data.white_noise_dimension; i++)
 			{
-				/*glm::vec3 noise(
-					Random::dist_uniform(-1.f, 1.f),
-					Random::dist_uniform(-1.f, 1.f),
-					0.f
-				);*/
 				Math::v3f noise =
 				{
 					Random::dist_uniform(-1.f, 1.f),
