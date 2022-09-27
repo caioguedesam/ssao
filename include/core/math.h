@@ -155,6 +155,28 @@ namespace Ty
 		v2f lerp(const v2f& a, const v2f& b, const f32& t);
 		v3f lerp(const v3f& a, const v3f& b, const f32& t);
 
+		// =============================
+		// Primitives
+		// =============================
+		struct Box
+		{
+			v3f min;
+			v3f max;
+		};
+		
+		struct Sphere
+		{
+			v3f center;
+			f32 radius;
+		};
+
+		// =============================
+		// Raycasting
+		// =============================
+		bool raycast_triangle(const v3f& ray_origin, const v3f& ray_dir, const v3f& tri_1, const v3f& tri_2, const v3f& tri_3, v3f* out = nullptr);
+		bool raycast_sphere(const v3f& ray_origin, const v3f& ray_dir, const Sphere& sphere, v3f* out = nullptr);
+		bool raycast_box(const v3f& ray_origin, const v3f& ray_dir, const Box& box, v3f* out = nullptr);
+
 		// TODO_MATH: Deprecate this to use new math library
 		namespace Primitives
 		{

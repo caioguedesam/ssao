@@ -340,5 +340,26 @@ namespace Ty
 				lerp(a.z, b.z, t),
 			};
 		}
+
+		// =============================
+		// Raycasting
+		// =============================
+		bool raycast_triangle(const v3f& ray_origin, const v3f& ray_dir, const v3f& tri_1, const v3f& tri_2, const v3f& tri_3, v3f* out = nullptr)
+		{
+			// TODO_MATH: Implement me! Möller-Trumbore? Geometric?
+			return false;
+		}
+
+		bool raycast_sphere(const v3f& ray_origin, const v3f& ray_dir, const Sphere& sphere, v3f* out = nullptr)
+		{
+			// TODO_MATH: Implement me! Geometric
+			return false;
+		}
+
+		bool raycast_box(const v3f& ray_origin, const v3f& ray_dir, const Box& box, v3f* out = nullptr)
+		{
+			// TODO_MATH: Implement me! Geometric
+			return false;
+		}
 	}
 }
