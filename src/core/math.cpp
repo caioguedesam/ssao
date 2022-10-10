@@ -16,7 +16,7 @@ namespace Ty
 		{
 			return deg * PI / 180.f;
 		}
-
+        
 		// =============================
 		// Vector2
 		// =============================
@@ -70,8 +70,8 @@ namespace Ty
 		{
 			return acos(dot(normalize(lhs), normalize(rhs)));
 		}
-
-
+        
+        
 		v2u operator+(const v2u& lhs, const v2u& rhs)
 		{
 			return { lhs.x + rhs.x, lhs.y + rhs.y };
@@ -84,7 +84,7 @@ namespace Ty
 		{
 			return lhs.x == rhs.x && lhs.y == rhs.y;
 		}
-
+        
 		v2i operator+(const v2i& lhs, const v2i& rhs)
 		{
 			return { lhs.x + rhs.x, lhs.y + rhs.y };
@@ -97,7 +97,7 @@ namespace Ty
 		{
 			return lhs.x == rhs.x && lhs.y == rhs.y;
 		}
-
+        
 		// =============================
 		// Vector3
 		// =============================
@@ -150,7 +150,7 @@ namespace Ty
 		{
 			return v / len(v);
 		}
-
+        
 		// =============================
 		// Matrix4x4
 		// =============================
@@ -201,19 +201,19 @@ namespace Ty
 				lhs.m00 * rhs.m01 + lhs.m01 * rhs.m11 + lhs.m02 * rhs.m21 + lhs.m03 * rhs.m31,
 				lhs.m00 * rhs.m02 + lhs.m01 * rhs.m12 + lhs.m02 * rhs.m22 + lhs.m03 * rhs.m32,
 				lhs.m00 * rhs.m03 + lhs.m01 * rhs.m13 + lhs.m02 * rhs.m23 + lhs.m03 * rhs.m33,
-
+                
 				// Row 1
 				lhs.m10 * rhs.m00 + lhs.m11 * rhs.m10 + lhs.m12 * rhs.m20 + lhs.m13 * rhs.m30,
 				lhs.m10 * rhs.m01 + lhs.m11 * rhs.m11 + lhs.m12 * rhs.m21 + lhs.m13 * rhs.m31,
 				lhs.m10 * rhs.m02 + lhs.m11 * rhs.m12 + lhs.m12 * rhs.m22 + lhs.m13 * rhs.m32,
 				lhs.m10 * rhs.m03 + lhs.m11 * rhs.m13 + lhs.m12 * rhs.m23 + lhs.m13 * rhs.m33,
-
+                
 				// Row 2
 				lhs.m20 * rhs.m00 + lhs.m21 * rhs.m10 + lhs.m22 * rhs.m20 + lhs.m23 * rhs.m30,
 				lhs.m20 * rhs.m01 + lhs.m21 * rhs.m11 + lhs.m22 * rhs.m21 + lhs.m23 * rhs.m31,
 				lhs.m20 * rhs.m02 + lhs.m21 * rhs.m12 + lhs.m22 * rhs.m22 + lhs.m23 * rhs.m32,
 				lhs.m20 * rhs.m03 + lhs.m21 * rhs.m13 + lhs.m22 * rhs.m23 + lhs.m23 * rhs.m33,
-
+                
 				// Row 3
 				lhs.m30 * rhs.m00 + lhs.m31 * rhs.m10 + lhs.m32 * rhs.m20 + lhs.m33 * rhs.m30,
 				lhs.m30 * rhs.m01 + lhs.m31 * rhs.m11 + lhs.m32 * rhs.m21 + lhs.m33 * rhs.m31,
@@ -231,7 +231,7 @@ namespace Ty
 				m.m03, m.m13, m.m23, m.m33,
 			};
 		}
-
+        
 		m4f identity()
 		{
 			return
@@ -275,7 +275,7 @@ namespace Ty
 				0, 0, 0, 1
 			};
 		}
-
+        
 		m4f look_at(const v3f& center, const v3f& target, const v3f up)
 		{
 			//v3f look_dir	= normalize(target - center);
@@ -313,7 +313,7 @@ namespace Ty
 			};
 			return transpose(res);		// TODO_MATH: OpenGL convention (matrix layout as column major, figure this out later?)
 		}
-
+        
 		// =============================
 		// Utilities
 		// =============================
@@ -321,7 +321,7 @@ namespace Ty
 		{
 			return a + (b - a) * CLAMP(t, 0, 1);
 		}
-
+        
 		v2f lerp(const v2f& a, const v2f& b, const f32& t)
 		{
 			return
@@ -330,7 +330,7 @@ namespace Ty
 				lerp(a.y, b.y, t),
 			};
 		}
-
+        
 		v3f lerp(const v3f& a, const v3f& b, const f32& t)
 		{
 			return
@@ -340,23 +340,23 @@ namespace Ty
 				lerp(a.z, b.z, t),
 			};
 		}
-
+        
 		// =============================
 		// Raycasting
 		// =============================
-		bool raycast_triangle(const v3f& ray_origin, const v3f& ray_dir, const v3f& tri_1, const v3f& tri_2, const v3f& tri_3, v3f* out = nullptr)
+		bool raycast_triangle(const v3f& ray_origin, const v3f& ray_dir, const v3f& tri_1, const v3f& tri_2, const v3f& tri_3, v3f* out)
 		{
 			// TODO_MATH: Implement me! Möller-Trumbore? Geometric?
 			return false;
 		}
-
-		bool raycast_sphere(const v3f& ray_origin, const v3f& ray_dir, const Sphere& sphere, v3f* out = nullptr)
+        
+		bool raycast_sphere(const v3f& ray_origin, const v3f& ray_dir, const Sphere& sphere, v3f* out)
 		{
 			// TODO_MATH: Implement me! Geometric
 			return false;
 		}
-
-		bool raycast_box(const v3f& ray_origin, const v3f& ray_dir, const Box& box, v3f* out = nullptr)
+        
+		bool raycast_box(const v3f& ray_origin, const v3f& ray_dir, const Box& box, v3f* out)
 		{
 			// TODO_MATH: Implement me! Geometric
 			return false;

@@ -16,3 +16,10 @@ The results are visually pleasing, and can be tweaked by changing certain parame
 The final version of the project will have the SSAO implementation contributing to a lighting pass with Blinn-Phong shading, with a toggle to turn SSAO on/off for visual comparison.
 
 In the future I also want to use most of the code for this project and repurpose it as a toy renderer for implementing other graphics algorithms and make engines on top of.
+
+#### Credits
+
+Sponza Atrium model by Frank Meinl, Crytek. License: [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/)
+                                                                 
+                                                                 
+Survival Guitar Backpack model by Berk Gedik. License: [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
