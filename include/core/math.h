@@ -3,8 +3,9 @@
 
 // Math definitions
 #define PI 3.14159265358979323846
-#define MIN(A, B) A < B ? A : B
-#define MAX(A, B) A > B ? A : B
+#define ABS(V) ((V) < 0 ? (-V) : (V))
+#define MIN(A, B) ((A) < (B) ? (A) : (B))
+#define MAX(A, B) ((A) > (B) ? (A) : (B))
 #define CLAMP(V, A, B) MAX(A, MIN(V, B))
 
 namespace Ty
@@ -120,6 +121,7 @@ namespace Ty
 		bool operator==(const m4f& lhs, const m4f& rhs);
 		m4f operator*(const f32& a, const m4f& m);
 		m4f operator*(const m4f& lhs, const m4f& rhs);
+        v3f operator*(const m4f& lhs, const v3f& rhs);
 		m4f transpose(const m4f& m);
 
 		// TODO_MATH: Implement more useful matrix operations
@@ -130,6 +132,7 @@ namespace Ty
 		m4f scale(const f32& scale_x, const f32& scale_y, const f32& scale_z);
 		m4f rotation(const f32& angle, const f32& axis_x, const f32& axis_y, const f32& axis_z);
 		m4f translation(const f32& move_x, const f32& move_y, const f32& move_z);
+        m4f inverse(const m4f& m);
 
 		m4f look_at(const v3f& center, const v3f& target, const v3f up);
 		m4f perspective(const f32& fov_y, const f32& aspect, const f32& near_plane, const f32& far_plane);

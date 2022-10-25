@@ -192,6 +192,16 @@ namespace Ty
 				a * m.m30, a * m.m31, a * m.m32, a * m.m33
 			};
 		}
+        v3f operator*(const m4f& lhs, const v3f& rhs)
+        {
+            return
+            {
+                lhs.m00 * rhs.x + lhs.m01 * rhs.y + lhs.m02 * rhs.z/* + lhs.m03*/,
+                lhs.m10 * rhs.x + lhs.m11 * rhs.y + lhs.m12 * rhs.z/* + lhs.m13*/,
+                lhs.m20 * rhs.x + lhs.m21 * rhs.y + lhs.m22 * rhs.z/* + lhs.m23*/,
+            };
+        }
+
 		m4f operator*(const m4f& lhs, const m4f& rhs)
 		{
 			return
@@ -275,6 +285,56 @@ namespace Ty
 				0, 0, 0, 1
 			};
 		}
+
+        m4f inverse(const m4f& m)
+        {
+            // https://stackoverflow.com/questions/1148309/inverting-a-4x4-matrix
+            f32 A2323 = m.m22 * m.m33 - m.m23 * m.m32;
+            f32 A1323 = m.m21 * m.m33 - m.m23 * m.m31;
+            f32 A1223 = m.m21 * m.m32 - m.m22 * m.m31;
+            f32 A0323 = m.m20 * m.m33 - m.m23 * m.m30;
+            f32 A0223 = m.m20 * m.m32 - m.m22 * m.m30;
+            f32 A0123 = m.m20 * m.m31 - m.m21 * m.m30;
+            f32 A2313 = m.m12 * m.m33 - m.m13 * m.m32;
+            f32 A1313 = m.m11 * m.m33 - m.m13 * m.m31;
+            f32 A1213 = m.m11 * m.m32 - m.m12 * m.m31;
+            f32 A2312 = m.m12 * m.m23 - m.m13 * m.m22;
+            f32 A1312 = m.m11 * m.m23 - m.m13 * m.m21;
+            f32 A1212 = m.m11 * m.m22 - m.m12 * m.m21;
+            f32 A0313 = m.m10 * m.m33 - m.m13 * m.m30;
+            f32 A0213 = m.m10 * m.m32 - m.m12 * m.m30;
+            f32 A0312 = m.m10 * m.m23 - m.m13 * m.m20;
+            f32 A0212 = m.m10 * m.m22 - m.m12 * m.m20;
+            f32 A0113 = m.m10 * m.m31 - m.m11 * m.m30;
+            f32 A0112 = m.m10 * m.m21 - m.m11 * m.m20;
+
+            f32 det = m.m00 * ( m.m11 * A2323 - m.m12 * A1323 + m.m13 * A1223 ) 
+            - m.m01 * ( m.m10 * A2323 - m.m12 * A0323 + m.m13 * A0223 ) 
+            + m.m02 * ( m.m10 * A1323 - m.m11 * A0323 + m.m13 * A0123 ) 
+            - m.m03 * ( m.m10 * A1223 - m.m11 * A0223 + m.m12 * A0123 );
+            det = 1 / det;
+
+            m4f result = {};
+
+            result.m00 = det *   ( m.m11 * A2323 - m.m12 * A1323 + m.m13 * A1223 );
+            result.m01 = det * - ( m.m01 * A2323 - m.m02 * A1323 + m.m03 * A1223 );
+            result.m02 = det *   ( m.m01 * A2313 - m.m02 * A1313 + m.m03 * A1213 );
+            result.m03 = det * - ( m.m01 * A2312 - m.m02 * A1312 + m.m03 * A1212 );
+            result.m10 = det * - ( m.m10 * A2323 - m.m12 * A0323 + m.m13 * A0223 );
+            result.m11 = det *   ( m.m00 * A2323 - m.m02 * A0323 + m.m03 * A0223 );
+            result.m12 = det * - ( m.m00 * A2313 - m.m02 * A0313 + m.m03 * A0213 );
+            result.m13 = det *   ( m.m00 * A2312 - m.m02 * A0312 + m.m03 * A0212 );
+            result.m20 = det *   ( m.m10 * A1323 - m.m11 * A0323 + m.m13 * A0123 );
+            result.m21 = det * - ( m.m00 * A1323 - m.m01 * A0323 + m.m03 * A0123 );
+            result.m22 = det *   ( m.m00 * A1313 - m.m01 * A0313 + m.m03 * A0113 );
+            result.m23 = det * - ( m.m00 * A1312 - m.m01 * A0312 + m.m03 * A0112 );
+            result.m30 = det * - ( m.m10 * A1223 - m.m11 * A0223 + m.m12 * A0123 );
+            result.m31 = det *   ( m.m00 * A1223 - m.m01 * A0223 + m.m02 * A0123 );
+            result.m32 = det * - ( m.m00 * A1213 - m.m01 * A0213 + m.m02 * A0113 );
+            result.m33 = det *   ( m.m00 * A1212 - m.m01 * A0212 + m.m02 * A0112 );
+
+            return result;
+        }
         
 		m4f look_at(const v3f& center, const v3f& target, const v3f up)
 		{
@@ -358,13 +418,13 @@ namespace Ty
             if (t_ca < 0) return false;
 
             f32 d = sqrt(dot(L, L) - t_ca * t_ca);
-            if (d < 0) return false;
+            if (d < 0 || d > sphere.radius) return false;
 
             f32 t_hc = sqrt(sphere.radius * sphere.radius - d * d);
             f32 t_0 = t_ca - t_hc;
             f32 t_1 = t_ca + t_hc;      // TODO_MATH: Currently not used (second point of intersection)
 
-            *out = ray_origin + (t_0 * ray_dir);
+            if(out) *out = ray_origin + (t_0 * ray_dir);
 
 			return true;
 		}

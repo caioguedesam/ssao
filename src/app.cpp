@@ -10,6 +10,7 @@
 #include "resource/material_resource_manager.h"
 #include "resource/model_resource_manager.h"
 #include "gui/gui.h"
+#include "core/math.h"
 
 // For writing raytraced output:
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -161,19 +162,19 @@ namespace Ty
 
 	void App::run()
 	{
-		Graphics::ResourceHandle<Graphics::Model> model_sponza = Graphics::model_resource_manager.load_from_file(MODELS_PATH"sponza.obj");
-
-		auto sponza_parts = Graphics::model_resource_manager.get_parts(model_sponza);
-		for (int i = 0; i < sponza_parts.size(); i++)
-		{
-			Graphics::MeshRenderable* part_renderable = new Graphics::MeshRenderable();
-			part_renderable->set_mesh_data(sponza_parts[i].first, sponza_parts[i].second);
-			part_renderable->u_model = Math::identity();
-			part_renderable->u_model = Math::scale(0.01f, 0.01f, 0.01f) * part_renderable->u_model;
-			part_renderable->u_model = Math::rotation(Math::to_rad(90.f), 0.f, 1.f, 0.f) * part_renderable->u_model;
-
-			renderer.pass_gbuffer.add_renderable(part_renderable);
-		}
+//		Graphics::ResourceHandle<Graphics::Model> model_sponza = Graphics::model_resource_manager.load_from_file(MODELS_PATH"sponza.obj");
+//
+//		auto sponza_parts = Graphics::model_resource_manager.get_parts(model_sponza);
+//		for (int i = 0; i < sponza_parts.size(); i++)
+//		{
+//			Graphics::MeshRenderable* part_renderable = new Graphics::MeshRenderable();
+//			part_renderable->set_mesh_data(sponza_parts[i].first, sponza_parts[i].second);
+//			part_renderable->u_model = Math::identity();
+//			part_renderable->u_model = Math::scale(0.01f, 0.01f, 0.01f) * part_renderable->u_model;
+//			part_renderable->u_model = Math::rotation(Math::to_rad(90.f), 0.f, 1.f, 0.f) * part_renderable->u_model;
+//
+//			renderer.pass_gbuffer.add_renderable(part_renderable);
+//		}
 
         //// Realtime pipeline
 		//while (is_running)
@@ -199,21 +200,77 @@ namespace Ty
 		//}
 
         // Raytracing pipeline:
-        u32* test_png = (u32*)malloc(sizeof(u32) * GAME_RENDER_WIDTH * GAME_RENDER_HEIGHT);
+        u32* framebuffer = (u32*)malloc(sizeof(u32) * GAME_RENDER_WIDTH * GAME_RENDER_HEIGHT);
+
+        //      Generate rays from camera
+        f32 scale = tan(Math::to_rad((f32)DEFAULT_CAMERA_FOV * 0.5f));
+        f32 aspect = (f32)GAME_RENDER_WIDTH / (f32) GAME_RENDER_HEIGHT;
+        Math::m4f camera_to_world = Math::inverse(renderer.camera.get_view_matrix());
+        Math::Sphere sphere;
+        sphere.center = { 0, 2, -10.f };
+        sphere.radius = 2.f;
         for(i32 i = 0; i < GAME_RENDER_HEIGHT; i++)
         {
             for(i32 j = 0; j < GAME_RENDER_WIDTH; j++)
             {
-                u32 pixel;
-                u8 r = 0, g = 0, b = 255, a = 255;
-                pixel = (pixel & 0xFFFFFF00) |  r;
-                pixel = (pixel & 0xFFFF00FF) | ((uint32_t)g <<  8);
-                pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
-                pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
-                test_png[i * GAME_RENDER_WIDTH + j] = pixel;
+                f32 x = (2 * (j + 0.5) / (f32)GAME_RENDER_WIDTH - 1) * aspect * scale;
+                f32 y = (1 - 2 * (i + 0.5) / (f32)GAME_RENDER_HEIGHT) * scale;
+                Math::v3f dir = { x, y, -1 };
+                dir = camera_to_world * dir;
+                dir = Math::normalize(dir);
+                //// TEST: Collide rays with sphere, save output to buffer
+                Math::v3f intersect = {};
+                if(Math::raycast_sphere(renderer.camera.position, dir, sphere, &intersect))
+                {
+                    u32 pixel;
+                    u8 r = 0, g = 0, b = 255, a = 255;
+                    pixel = (pixel & 0xFFFFFF00) |  r;
+                    pixel = (pixel & 0xFFFF00FF) | ((uint32_t)g <<  8);
+                    pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
+                    pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
+                    framebuffer[i * GAME_RENDER_WIDTH + j] = pixel;
+                }
+                else
+                {
+                    u32 pixel;
+                    u8 r = 0, g = 0, b = 0, a = 255;
+                    pixel = (pixel & 0xFFFFFF00) |  r;
+                    pixel = (pixel & 0xFFFF00FF) | ((uint32_t)g <<  8);
+                    pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
+                    pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
+                    framebuffer[i * GAME_RENDER_WIDTH + j] = pixel;
+                }
+
+                //u32 pixel;
+                //f32 f_r = Math::lerp(0, 255, dir.x);
+                //f32 f_g = Math::lerp(0, 255, dir.y);
+                //f32 f_b = Math::lerp(0, 255, -dir.z);
+                //u8 r = (u8)f_r, g = (u8)f_g, b = (u8)f_b, a = 255;
+                //pixel = (pixel & 0xFFFFFF00) |  r;
+                //pixel = (pixel & 0xFFFF00FF) | ((uint32_t)g <<  8);
+                //pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
+                //pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
+                //framebuffer[i * GAME_RENDER_WIDTH + j] = pixel;
             }
         }
-        stbi_write_png(RESOURCES_PATH"out/raytrace_out.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, test_png, GAME_RENDER_WIDTH * 4);
+
+
+        //      Save output color buffer to file
+//
+//        for(i32 i = 0; i < GAME_RENDER_HEIGHT; i++)
+//        {
+//            for(i32 j = 0; j < GAME_RENDER_WIDTH; j++)
+//            {
+//                u32 pixel;
+//                u8 r = 0, g = 0, b = 255, a = 255;
+//                pixel = (pixel & 0xFFFFFF00) |  r;
+//                pixel = (pixel & 0xFFFF00FF) | ((uint32_t)g <<  8);
+//                pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
+//                pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
+//                framebuffer[i * GAME_RENDER_WIDTH + j] = pixel;
+//            }
+//        }
+        stbi_write_png(RESOURCES_PATH"out/raytrace_out.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, framebuffer, GAME_RENDER_WIDTH * 4);
 	}
 
 	void App::destroy()
