@@ -11,6 +11,11 @@
 #include "resource/model_resource_manager.h"
 #include "gui/gui.h"
 
+// For writing raytraced output:
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
+
 namespace Ty
 {
 	// TODO_MULTIPLATFORM: Remove this SDL dependency and use platform api
@@ -170,27 +175,45 @@ namespace Ty
 			renderer.pass_gbuffer.add_renderable(part_renderable);
 		}
 
-		while (is_running)
-		{
-			Time::FrameTracking::cpu_frametracking_start();
-			//Time::FrameTracking::gpu_frametracking_start();
-			Time::update();
-			poll_events(Time::get_delta_time());
+        //// Realtime pipeline
+		//while (is_running)
+		//{
+		//	Time::FrameTracking::cpu_frametracking_start();
+		//	//Time::FrameTracking::gpu_frametracking_start();
+		//	Time::update();
+		//	poll_events(Time::get_delta_time());
+        //
+		//	Input::InputManager::update();
+		//	renderer.camera.update(Time::get_delta_time());
+        //
+		//	// TODO: update logic here		
+        //
+		//	renderer.render();
+        //
+		//	UI::GUI::display(this);
+        //
+		//	Time::FrameTracking::cpu_frametracking_end();
+		//	//Time::FrameTracking::gpu_frametracking_end();
+        //
+		//	renderer.flush();
+		//}
 
-			Input::InputManager::update();
-			renderer.camera.update(Time::get_delta_time());
-
-			// TODO: update logic here		
-
-			renderer.render();
-
-			UI::GUI::display(this);
-
-			Time::FrameTracking::cpu_frametracking_end();
-			//Time::FrameTracking::gpu_frametracking_end();
-
-			renderer.flush();
-		}
+        // Raytracing pipeline:
+        u32* test_png = (u32*)malloc(sizeof(u32) * GAME_RENDER_WIDTH * GAME_RENDER_HEIGHT);
+        for(i32 i = 0; i < GAME_RENDER_HEIGHT; i++)
+        {
+            for(i32 j = 0; j < GAME_RENDER_WIDTH; j++)
+            {
+                u32 pixel;
+                u8 r = 0, g = 0, b = 255, a = 255;
+                pixel = (pixel & 0xFFFFFF00) |  r;
+                pixel = (pixel & 0xFFFF00FF) | ((uint32_t)g <<  8);
+                pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
+                pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
+                test_png[i * GAME_RENDER_WIDTH + j] = pixel;
+            }
+        }
+        stbi_write_png(RESOURCES_PATH"out/raytrace_out.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, test_png, GAME_RENDER_WIDTH * 4);
 	}
 
 	void App::destroy()

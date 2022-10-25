@@ -352,8 +352,21 @@ namespace Ty
         
 		bool raycast_sphere(const v3f& ray_origin, const v3f& ray_dir, const Sphere& sphere, v3f* out)
 		{
-			// TODO_MATH: Implement me! Geometric
-			return false;
+            // https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
+            v3f L = sphere.center - ray_origin;
+            f32 t_ca = dot(L, ray_dir);
+            if (t_ca < 0) return false;
+
+            f32 d = sqrt(dot(L, L) - t_ca * t_ca);
+            if (d < 0) return false;
+
+            f32 t_hc = sqrt(sphere.radius * sphere.radius - d * d);
+            f32 t_0 = t_ca - t_hc;
+            f32 t_1 = t_ca + t_hc;      // TODO_MATH: Currently not used (second point of intersection)
+
+            *out = ray_origin + (t_0 * ray_dir);
+
+			return true;
 		}
         
 		bool raycast_box(const v3f& ray_origin, const v3f& ray_dir, const Box& box, v3f* out)

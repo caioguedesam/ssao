@@ -94,6 +94,46 @@ namespace Ty
 #endif
 		}
 
+        FileReader::Result FileReader::write_file(const char* path, u8* buffer, u64 size)
+        {
+#if _WIN32
+            HANDLE file_handle = CreateFileA(
+                path,
+                GENERIC_WRITE,
+                0,
+                NULL,
+                CREATE_ALWAYS,
+                FILE_ATTRIBUTE_NORMAL,
+                NULL
+            );
+            if (file_handle == INVALID_HANDLE_VALUE)
+            {
+                return Result::FAIL_OPEN;
+            }
+            LARGE_INTEGER file_size;
+            GetFileSizeEx(file_handle, &file_size);
+
+            DWORD written_size = 0;
+            if (!::WriteFile(file_handle, buffer, size, &written_size, NULL))
+            {
+                return Result::FAIL_WRITE;
+            }
+            if((u64)written_size != size)
+            {
+                return Result::FAIL_WRITE;
+            }
+
+            if (!CloseHandle(file_handle))
+            {
+                return Result::FAIL_CLOSE;
+            }
+
+            return Result::OK;
+#else
+            // TODO_FILE: Not implemented.
+#endif
+        }
+
 		std::vector<FilePath> FileReader::get_file_names_from_path(const char* path)
 		{
 #if _WIN32

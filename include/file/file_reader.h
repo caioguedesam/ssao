@@ -30,11 +30,13 @@ namespace Ty
 				OK = 0,
 				FAIL_OPEN,
 				FAIL_READ,
+                FAIL_WRITE,
 				FAIL_CLOSE
 			};
 
 			static Result read_file(const char* path, char* buffer);
-			static std::vector<FilePath> get_file_names_from_path(const char* path);
+            static Result write_file(const char* path, u8* buffer, u64 size);
+            static std::vector<FilePath> get_file_names_from_path(const char* path);
 		};
 	}
 }

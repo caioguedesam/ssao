@@ -3,7 +3,7 @@ import subprocess as sp
 from pathlib import Path
 import sys
 
-is_release = sys.argv[1] == '-release'
+is_release = sys.argv[1] == '-Release'
 
 ## ========================================================
 ## COMPILER
