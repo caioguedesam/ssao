@@ -206,9 +206,15 @@ namespace Ty
         f32 scale = tan(Math::to_rad((f32)DEFAULT_CAMERA_FOV * 0.5f));
         f32 aspect = (f32)GAME_RENDER_WIDTH / (f32) GAME_RENDER_HEIGHT;
         Math::m4f camera_to_world = Math::inverse(renderer.camera.get_view_matrix());
-        Math::Sphere sphere;
-        sphere.center = { 0, 2, -10.f };
-        sphere.radius = 2.f;
+        //Math::Sphere sphere;
+        //sphere.center = { 0, 2, -10.f };
+        //sphere.radius = 2.f;
+        Math::v3f triangle[3] =
+        {
+            -2.f, 2.f, -5.f,
+            0, 2.f, -5.f,
+            -2.f, 5.f, -5.f,
+        };
         for(i32 i = 0; i < GAME_RENDER_HEIGHT; i++)
         {
             for(i32 j = 0; j < GAME_RENDER_WIDTH; j++)
@@ -218,9 +224,11 @@ namespace Ty
                 Math::v3f dir = { x, y, -1 };
                 dir = camera_to_world * dir;
                 dir = Math::normalize(dir);
-                //// TEST: Collide rays with sphere, save output to buffer
+
+                // TEST: Collide rays with sphere, save output to buffer
                 Math::v3f intersect = {};
-                if(Math::raycast_sphere(renderer.camera.position, dir, sphere, &intersect))
+                //if(Math::raycast_sphere(renderer.camera.position, dir, sphere, &intersect))
+                if(Math::raycast_triangle(renderer.camera.position, dir, triangle[0], triangle[1], triangle[2], &intersect))
                 {
                     u32 pixel;
                     u8 r = 0, g = 0, b = 255, a = 255;
@@ -240,36 +248,9 @@ namespace Ty
                     pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
                     framebuffer[i * GAME_RENDER_WIDTH + j] = pixel;
                 }
-
-                //u32 pixel;
-                //f32 f_r = Math::lerp(0, 255, dir.x);
-                //f32 f_g = Math::lerp(0, 255, dir.y);
-                //f32 f_b = Math::lerp(0, 255, -dir.z);
-                //u8 r = (u8)f_r, g = (u8)f_g, b = (u8)f_b, a = 255;
-                //pixel = (pixel & 0xFFFFFF00) |  r;
-                //pixel = (pixel & 0xFFFF00FF) | ((uint32_t)g <<  8);
-                //pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
-                //pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
-                //framebuffer[i * GAME_RENDER_WIDTH + j] = pixel;
             }
         }
 
-
-        //      Save output color buffer to file
-//
-//        for(i32 i = 0; i < GAME_RENDER_HEIGHT; i++)
-//        {
-//            for(i32 j = 0; j < GAME_RENDER_WIDTH; j++)
-//            {
-//                u32 pixel;
-//                u8 r = 0, g = 0, b = 255, a = 255;
-//                pixel = (pixel & 0xFFFFFF00) |  r;
-//                pixel = (pixel & 0xFFFF00FF) | ((uint32_t)g <<  8);
-//                pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
-//                pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
-//                framebuffer[i * GAME_RENDER_WIDTH + j] = pixel;
-//            }
-//        }
         stbi_write_png(RESOURCES_PATH"out/raytrace_out.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, framebuffer, GAME_RENDER_WIDTH * 4);
 	}
 

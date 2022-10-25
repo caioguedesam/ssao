@@ -404,10 +404,47 @@ namespace Ty
 		// =============================
 		// Raycasting
 		// =============================
-		bool raycast_triangle(const v3f& ray_origin, const v3f& ray_dir, const v3f& tri_1, const v3f& tri_2, const v3f& tri_3, v3f* out)
+		bool raycast_triangle(const v3f& ray_origin, const v3f& ray_dir, const v3f& v0, const v3f& v1, const v3f& v2, v3f* out)
 		{
+            // Compute triangle plane normal
+            v3f v0v1 = v1 - v0;
+            v3f v0v2 = v2 - v0;
+            v3f n = cross(v0v1, v0v2);
+
+            // Finding intersection point
+            f32 NdotR = dot(n, ray_dir);
+            if(ABS(NdotR) < 0.000001f)
+            {
+                return false;   // Ray is parallel to plane.
+            }
+
+            f32 d = -dot(n, v0);
+            f32 t = -(dot(n, ray_origin) + d) / NdotR;
+            if (t < 0) return false;    // Ray is behind the triangle.
+
+            v3f p = ray_origin + (t * ray_dir);
+            
+            // Testing if plane intersection is inside triangle
+            v3f c = {};
+            v3f e0 = v1 - v0;
+            v3f vp0 = p - v0;
+            c = cross(e0, vp0);
+            if (dot(n, c) < 0) return false;
+
+            v3f e1 = v2 - v1;
+            v3f vp1 = p - v1;
+            c = cross(e1, vp1);
+            if (dot(n, c) < 0) return false;
+
+            v3f e2 = v0 - v2;
+            v3f vp2 = p - v2;
+            c = cross(e2, vp2);
+            if (dot(n, c) < 0) return false;
+
+            if (out) *out = p;
+
 			// TODO_MATH: Implement me! Möller-Trumbore? Geometric?
-			return false;
+			return true;
 		}
         
 		bool raycast_sphere(const v3f& ray_origin, const v3f& ray_dir, const Sphere& sphere, v3f* out)

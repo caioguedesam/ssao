@@ -162,7 +162,7 @@ namespace Ty
 		// =============================
 		// Raycasting
 		// =============================
-		bool raycast_triangle(const v3f& ray_origin, const v3f& ray_dir, const v3f& tri_1, const v3f& tri_2, const v3f& tri_3, v3f* out = nullptr);
+        bool raycast_triangle(const v3f& ray_origin, const v3f& ray_dir, const v3f& v0, const v3f& v1, const v3f& v2, v3f* out);
 		bool raycast_sphere(const v3f& ray_origin, const v3f& ray_dir, const Sphere& sphere, v3f* out = nullptr);
 		bool raycast_box(const v3f& ray_origin, const v3f& ray_dir, const Box& box, v3f* out = nullptr);
 
