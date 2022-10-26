@@ -162,59 +162,64 @@ namespace Ty
 
 	void App::run()
 	{
-//		Graphics::ResourceHandle<Graphics::Model> model_sponza = Graphics::model_resource_manager.load_from_file(MODELS_PATH"sponza.obj");
-//
-//		auto sponza_parts = Graphics::model_resource_manager.get_parts(model_sponza);
-//		for (int i = 0; i < sponza_parts.size(); i++)
-//		{
-//			Graphics::MeshRenderable* part_renderable = new Graphics::MeshRenderable();
-//			part_renderable->set_mesh_data(sponza_parts[i].first, sponza_parts[i].second);
-//			part_renderable->u_model = Math::identity();
-//			part_renderable->u_model = Math::scale(0.01f, 0.01f, 0.01f) * part_renderable->u_model;
-//			part_renderable->u_model = Math::rotation(Math::to_rad(90.f), 0.f, 1.f, 0.f) * part_renderable->u_model;
-//
-//			renderer.pass_gbuffer.add_renderable(part_renderable);
-//		}
+		Graphics::ResourceHandle<Graphics::Model> model_sponza = Graphics::model_resource_manager.load_from_file(MODELS_PATH"sponza.obj");
 
-        //// Realtime pipeline
-		//while (is_running)
-		//{
-		//	Time::FrameTracking::cpu_frametracking_start();
-		//	//Time::FrameTracking::gpu_frametracking_start();
-		//	Time::update();
-		//	poll_events(Time::get_delta_time());
-        //
-		//	Input::InputManager::update();
-		//	renderer.camera.update(Time::get_delta_time());
-        //
-		//	// TODO: update logic here		
-        //
-		//	renderer.render();
-        //
-		//	UI::GUI::display(this);
-        //
-		//	Time::FrameTracking::cpu_frametracking_end();
-		//	//Time::FrameTracking::gpu_frametracking_end();
-        //
-		//	renderer.flush();
-		//}
+		auto sponza_parts = Graphics::model_resource_manager.get_parts(model_sponza);
+#if !USE_RAYTRACING
+        // Realtime pipeline
+		for (int i = 0; i < sponza_parts.size(); i++)
+		{
+			Graphics::MeshRenderable* part_renderable = new Graphics::MeshRenderable();
+			part_renderable->set_mesh_data(sponza_parts[i].first, sponza_parts[i].second);
+			part_renderable->u_model = Math::identity();
+			part_renderable->u_model = Math::scale(0.01f, 0.01f, 0.01f) * part_renderable->u_model;
+			part_renderable->u_model = Math::rotation(Math::to_rad(90.f), 0.f, 1.f, 0.f) * part_renderable->u_model;
+        
+			renderer.pass_gbuffer.add_renderable(part_renderable);
+		}
 
+		while (is_running)
+		{
+			Time::FrameTracking::cpu_frametracking_start();
+			//Time::FrameTracking::gpu_frametracking_start();
+			Time::update();
+			poll_events(Time::get_delta_time());
+        
+			Input::InputManager::update();
+			renderer.camera.update(Time::get_delta_time());
+        
+			// TODO: update logic here		
+        
+			renderer.render();
+        
+			UI::GUI::display(this);
+        
+			Time::FrameTracking::cpu_frametracking_end();
+			//Time::FrameTracking::gpu_frametracking_end();
+        
+			renderer.flush();
+		}
+#else
         // Raytracing pipeline:
         u32* framebuffer = (u32*)malloc(sizeof(u32) * GAME_RENDER_WIDTH * GAME_RENDER_HEIGHT);
+
+        //      Populate MeshRenderables
+        std::vector<Graphics::MeshRenderable*> renderables;
+        for (int i = 0; i < sponza_parts.size(); i++)
+        {
+        	Graphics::MeshRenderable* part_renderable = new Graphics::MeshRenderable();
+        	part_renderable->set_mesh_data(sponza_parts[i].first, sponza_parts[i].second);
+        	part_renderable->u_model = Math::identity();
+        	part_renderable->u_model = Math::scale(0.01f, 0.01f, 0.01f) * part_renderable->u_model;
+        	part_renderable->u_model = Math::rotation(Math::to_rad(90.f), 0.f, 1.f, 0.f) * part_renderable->u_model;
+        
+            renderables.push_back(part_renderable);
+        }
 
         //      Generate rays from camera
         f32 scale = tan(Math::to_rad((f32)DEFAULT_CAMERA_FOV * 0.5f));
         f32 aspect = (f32)GAME_RENDER_WIDTH / (f32) GAME_RENDER_HEIGHT;
         Math::m4f camera_to_world = Math::inverse(renderer.camera.get_view_matrix());
-        //Math::Sphere sphere;
-        //sphere.center = { 0, 2, -10.f };
-        //sphere.radius = 2.f;
-        Math::v3f triangle[3] =
-        {
-            -2.f, 2.f, -5.f,
-            0, 2.f, -5.f,
-            -2.f, 5.f, -5.f,
-        };
         for(i32 i = 0; i < GAME_RENDER_HEIGHT; i++)
         {
             for(i32 j = 0; j < GAME_RENDER_WIDTH; j++)
@@ -222,16 +227,60 @@ namespace Ty
                 f32 x = (2 * (j + 0.5) / (f32)GAME_RENDER_WIDTH - 1) * aspect * scale;
                 f32 y = (1 - 2 * (i + 0.5) / (f32)GAME_RENDER_HEIGHT) * scale;
                 Math::v3f dir = { x, y, -1 };
-                dir = camera_to_world * dir;
+                //dir = camera_to_world * dir;
+                dir = Math::transform(camera_to_world, dir, 0);
                 dir = Math::normalize(dir);
 
-                // TEST: Collide rays with sphere, save output to buffer
                 Math::v3f intersect = {};
-                //if(Math::raycast_sphere(renderer.camera.position, dir, sphere, &intersect))
-                if(Math::raycast_triangle(renderer.camera.position, dir, triangle[0], triangle[1], triangle[2], &intersect))
+                bool hit = false;
+                f32 hit_len = 0;
+
+                for(u64 k = 0; k < renderables.size(); k++)
+                {
+                    //      For every renderable, check if ray collides with any of its triangles, and keep the closer one.
+                    Graphics::MeshRenderable* renderable = renderables[k];
+                    Graphics::Mesh* mesh = renderable->mesh;
+                    if (!Math::raycast_box(renderer.camera.position, dir, mesh->aabb, nullptr)) continue;
+                    for(u64 l = 0; l < mesh->vertex_count; l+=3)
+                    {
+                        //      TODO_RENDER: Need to transform these vertices from model to world space
+                        Math::v3f v0 =
+                        {
+                            mesh->vertex_data[l].px,
+                            mesh->vertex_data[l].py,
+                            mesh->vertex_data[l].pz,
+                        };
+                        Math::v3f v1 =
+                        {
+                            mesh->vertex_data[l+1].px,
+                            mesh->vertex_data[l+1].py,
+                            mesh->vertex_data[l+1].pz,
+                        };
+                        Math::v3f v2 =
+                        {
+                            mesh->vertex_data[l+2].px,
+                            mesh->vertex_data[l+2].py,
+                            mesh->vertex_data[l+2].pz,
+                        };
+                        v0 = Math::transform(renderable->u_model, v0, 1);
+                        v1 = Math::transform(renderable->u_model, v1, 1);
+                        v2 = Math::transform(renderable->u_model, v2, 1);
+
+                        if(Math::raycast_triangle(renderer.camera.position, dir, v0, v1, v2, &intersect))
+                        {
+                            f32 intersect_len = Math::len(intersect - renderer.camera.position);
+                            if (!hit || intersect_len < hit_len) hit_len = intersect_len;
+                            hit = true;
+                        }
+                    }
+                }
+
+                // If there's any collision, render the final color based on distance
+                if(hit)
                 {
                     u32 pixel;
-                    u8 r = 0, g = 0, b = 255, a = 255;
+                    f32 color = Math::lerp(0, 255, 1.f - (hit_len / 100.f));
+                    u8 r = (u8)color, g = (u8)color, b = (u8)color, a = 255;
                     pixel = (pixel & 0xFFFFFF00) |  r;
                     pixel = (pixel & 0xFFFF00FF) | ((uint32_t)g <<  8);
                     pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
@@ -249,9 +298,11 @@ namespace Ty
                     framebuffer[i * GAME_RENDER_WIDTH + j] = pixel;
                 }
             }
+            printf("Finished pixels at row h:%d\n", i);
         }
 
         stbi_write_png(RESOURCES_PATH"out/raytrace_out.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, framebuffer, GAME_RENDER_WIDTH * 4);
+#endif
 	}
 
 	void App::destroy()

@@ -121,8 +121,8 @@ namespace Ty
 		bool operator==(const m4f& lhs, const m4f& rhs);
 		m4f operator*(const f32& a, const m4f& m);
 		m4f operator*(const m4f& lhs, const m4f& rhs);
-        v3f operator*(const m4f& lhs, const v3f& rhs);
 		m4f transpose(const m4f& m);
+        v3f transform(const m4f& m, const v3f& v, const f32& w = 1.f);
 
 		// TODO_MATH: Implement more useful matrix operations
 		// inverse, determinant, elementary operations, etc.
@@ -152,6 +152,8 @@ namespace Ty
 			v3f min;
 			v3f max;
 		};
+
+        Box box_union(const Box& b, const v3f& v);
 		
 		struct Sphere
 		{

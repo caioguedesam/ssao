@@ -62,6 +62,8 @@ namespace Ty
 
 		struct MeshRenderable : Renderable
 		{
+            Mesh* mesh = nullptr;     // TODO_RENDER: This is only for raytracing pipeline.
+
 			void set_mesh_data(Mesh* mesh, ResourceHandle<Material> material_handle);
 		};
 	}

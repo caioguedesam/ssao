@@ -192,13 +192,13 @@ namespace Ty
 				a * m.m30, a * m.m31, a * m.m32, a * m.m33
 			};
 		}
-        v3f operator*(const m4f& lhs, const v3f& rhs)
+        v3f transform(const m4f& m, const v3f& v, const f32& w)
         {
             return
             {
-                lhs.m00 * rhs.x + lhs.m01 * rhs.y + lhs.m02 * rhs.z/* + lhs.m03*/,
-                lhs.m10 * rhs.x + lhs.m11 * rhs.y + lhs.m12 * rhs.z/* + lhs.m13*/,
-                lhs.m20 * rhs.x + lhs.m21 * rhs.y + lhs.m22 * rhs.z/* + lhs.m23*/,
+                m.m00 * v.x + m.m01 * v.y + m.m02 * v.z + m.m03 * w,
+                m.m10 * v.x + m.m11 * v.y + m.m12 * v.z + m.m13 * w,
+                m.m20 * v.x + m.m21 * v.y + m.m22 * v.z + m.m23 * w,
             };
         }
 
@@ -400,6 +400,21 @@ namespace Ty
 				lerp(a.z, b.z, t),
 			};
 		}
+
+        // =============================
+        // Primitives
+        // =============================
+        Box box_union(const Box& b, const v3f& v)
+        {
+            Box result = b;
+            result.min.x = MIN(b.min.x, v.x);
+            result.min.y = MIN(b.min.y, v.y);
+            result.min.z = MIN(b.min.z, v.z);
+            result.max.x = MAX(b.max.x, v.x);
+            result.max.y = MAX(b.max.y, v.y);
+            result.max.z = MAX(b.max.z, v.z);
+            return result;
+        }
         
 		// =============================
 		// Raycasting
@@ -466,10 +481,51 @@ namespace Ty
 			return true;
 		}
         
+        void swap(f32& a, f32& b)
+        {
+            f32 t = a;
+            a = b;
+            b = t;
+        }
+
 		bool raycast_box(const v3f& ray_origin, const v3f& ray_dir, const Box& box, v3f* out)
 		{
-			// TODO_MATH: Implement me! Geometric
-			return false;
+            f32 tmin = (box.min.x - ray_origin.x) / ray_dir.x; 
+            f32 tmax = (box.max.x - ray_origin.x) / ray_dir.x; 
+ 
+            if (tmin > tmax) swap(tmin, tmax); 
+ 
+            f32 tymin = (box.min.y - ray_origin.y) / ray_dir.y; 
+            f32 tymax = (box.max.y - ray_origin.y) / ray_dir.y; 
+ 
+            if (tymin > tymax) swap(tymin, tymax); 
+ 
+            if ((tmin > tymax) || (tymin > tmax)) 
+                return false; 
+ 
+            if (tymin > tmin) 
+                tmin = tymin; 
+ 
+            if (tymax < tmax) 
+                tmax = tymax; 
+ 
+            f32 tzmin = (box.min.z - ray_origin.z) / ray_dir.z; 
+            f32 tzmax = (box.max.z - ray_origin.z) / ray_dir.z; 
+ 
+            if (tzmin > tzmax) swap(tzmin, tzmax); 
+ 
+            if ((tmin > tzmax) || (tzmin > tmax)) 
+                return false; 
+ 
+            if (tzmin > tmin) 
+                tmin = tzmin; 
+ 
+            if (tzmax < tmax) 
+                tmax = tzmax; 
+ 
+            if (out) *out = ray_origin + (tmin * ray_dir);
+
+            return true;
 		}
 	}
 }

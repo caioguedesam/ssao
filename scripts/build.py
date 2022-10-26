@@ -84,7 +84,7 @@ command += f'/Fo\"{output_dir}/\" '
 
 linker_options = []
 linker_options += ['/MACHINE:X64']              # x64 platform specification
-linker_options += ['/SUBSYSTEM:WINDOWS']        # Windows app
+linker_options += ['/SUBSYSTEM:CONSOLE']        # Windows app
 if is_release:
     linker_options += ['/INCREMENTAL:NO']       # Disable incremental linking
     linker_options += ['/OPT:REF']              # Eliminates unreferenced functions

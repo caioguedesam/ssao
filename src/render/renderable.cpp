@@ -202,6 +202,9 @@ namespace Ty
 
 			// set mesh material
 			set_material(material_handle);
+
+            this->mesh = mesh;
+            this->mesh->init_bounding_volume();
 		}
 	}
 }

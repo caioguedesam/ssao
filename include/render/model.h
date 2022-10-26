@@ -2,6 +2,7 @@
 
 #include "stdafx.h"
 #include "resource/material_resource_manager.h"
+#include "core/math.h"
 
 namespace Ty
 {
@@ -23,6 +24,10 @@ namespace Ty
 
 			/*std::vector<float> vertices;
 			std::vector<uint32_t> indices;*/
+
+            Math::Box aabb;
+
+            void init_bounding_volume();
 		};
 
 		struct Model
