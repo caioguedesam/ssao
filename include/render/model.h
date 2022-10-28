@@ -27,7 +27,7 @@ namespace Ty
 
             Math::Box aabb;
 
-            void init_bounding_volume();
+            void init_bounding_volume(Math::m4f model_to_world);
 		};
 
 		struct Model

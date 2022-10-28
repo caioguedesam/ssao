@@ -5,6 +5,7 @@
 #include "resource/texture_resource_manager.h"
 #include "render/texture.h"
 #include "stb_image.h"
+#include "globals.h"
 
 namespace Ty
 {
@@ -51,14 +52,17 @@ namespace Ty
 			desc.params = (TextureParams)(TextureParams::USE_MIPS | TextureParams::MIN_FILTER_LINEAR | TextureParams::MAG_FILTER_LINEAR);
 
 			ResourceHandle<Texture> handle = create_texture(desc, img_data);
+            printf("[TEXTURE] Loaded texture at path %s\n\t (%d, %d), channels: %d\n", file_path, w, h, nC);
 			handle_list[path] = handle;
 			return handle;
 		}
 
 		void TextureResourceManager::init()
 		{
+#if !USE_RAYTRACING
 			stbi_set_flip_vertically_on_load(1);
-		}
+#endif
+        }
 
 		void TextureResourceManager::destroy()
 		{

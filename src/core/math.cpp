@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "core/math.h"
+#include <float.h>
 
 namespace Ty
 {
@@ -401,6 +402,13 @@ namespace Ty
 			};
 		}
 
+        f32 fwrap(f32 x, f32 min, f32 max)
+        {
+            if (min > max)
+                return fwrap(x, max, min);
+            return (x >= 0 ? min : max) + fmodf(x, max - min);
+        }
+
         // =============================
         // Primitives
         // =============================
@@ -416,9 +424,50 @@ namespace Ty
             return result;
         }
         
+        f32 get_triangle_area(const v3f& v0, const v3f& v1, const v3f& v2)
+        {
+            f32 e0 = len(v1 - v0);
+            f32 e1 = len(v2 - v1);
+            f32 e2 = len(v0 - v2);
+            f32 s = (e0 + e1 + e2) * 0.5f;
+            if (fabs(s) < 0.000001f) return 0.f;
+            return sqrt(s * (s - e0) * (s - e1) * (s - e2));
+        }
+
 		// =============================
 		// Raycasting
 		// =============================
+        v3f get_barycentric_coordinates(const v3f& v, const v3f& v0, const v3f& v1, const v3f& v2)
+        {
+            //f32 a = get_triangle_area(v0, v1, v2);
+            //f32 a0 = get_triangle_area(v, v1, v2);
+            //f32 a1 = get_triangle_area(v, v2, v0);
+            //f32 a2 = get_triangle_area(v, v0, v1);
+            //return
+            //{
+            //    a0/a,
+            //    a1/a,
+            //    a2/a
+            //};
+
+            v3f result = {};
+
+            v3f e0 = v1 - v0;
+            v3f e1 = v2 - v0;
+            v3f e2 = v - v0;
+            f32 d00 = dot(e0, e0);
+            f32 d01 = dot(e0, e1);
+            f32 d11 = dot(e1, e1);
+            f32 d20 = dot(e2, e0);
+            f32 d21 = dot(e2, e1);
+            f32 denom = d00 * d11 - d01 * d01;
+            result.y = (d11 * d20 - d01 * d21) / denom;
+            result.z = (d00 * d21 - d01 * d20) / denom;
+            result.x = 1.0f - result.y - result.z;
+
+            return result;
+        }
+
 		bool raycast_triangle(const v3f& ray_origin, const v3f& ray_dir, const v3f& v0, const v3f& v1, const v3f& v2, v3f* out)
 		{
             // Compute triangle plane normal

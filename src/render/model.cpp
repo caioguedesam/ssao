@@ -5,11 +5,12 @@ namespace Ty
 {
 	namespace Graphics
 	{
-        void Mesh::init_bounding_volume()
+        void Mesh::init_bounding_volume(Math::m4f model_to_world)
         {
             Math::Box result = {};
             MeshVertex vertex = vertex_data[0];
             Math::v3f v = { vertex.px, vertex.py, vertex.pz };
+            v = Math::transform(model_to_world, v, 1);
             result.min = v;
             result.max = v;
 
@@ -17,6 +18,7 @@ namespace Ty
             {
                 vertex = vertex_data[i];
                 v = { vertex.px, vertex.py, vertex.pz };
+                v = Math::transform(model_to_world, v, 1);
                 result = Math::box_union(result, v);
             }
 

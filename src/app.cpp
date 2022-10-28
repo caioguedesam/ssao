@@ -202,6 +202,7 @@ namespace Ty
 #else
         // Raytracing pipeline:
         u32* framebuffer = (u32*)malloc(sizeof(u32) * GAME_RENDER_WIDTH * GAME_RENDER_HEIGHT);
+        u32* framebuffer_depth = (u32*)malloc(sizeof(u32) * GAME_RENDER_WIDTH * GAME_RENDER_HEIGHT);
 
         //      Populate MeshRenderables
         std::vector<Graphics::MeshRenderable*> renderables;
@@ -212,6 +213,7 @@ namespace Ty
         	part_renderable->u_model = Math::identity();
         	part_renderable->u_model = Math::scale(0.01f, 0.01f, 0.01f) * part_renderable->u_model;
         	part_renderable->u_model = Math::rotation(Math::to_rad(90.f), 0.f, 1.f, 0.f) * part_renderable->u_model;
+            part_renderable->mesh->init_bounding_volume(part_renderable->u_model);
         
             renderables.push_back(part_renderable);
         }
@@ -227,23 +229,23 @@ namespace Ty
                 f32 x = (2 * (j + 0.5) / (f32)GAME_RENDER_WIDTH - 1) * aspect * scale;
                 f32 y = (1 - 2 * (i + 0.5) / (f32)GAME_RENDER_HEIGHT) * scale;
                 Math::v3f dir = { x, y, -1 };
-                //dir = camera_to_world * dir;
                 dir = Math::transform(camera_to_world, dir, 0);
                 dir = Math::normalize(dir);
 
                 Math::v3f intersect = {};
                 bool hit = false;
                 f32 hit_len = 0;
-
+                Math::v2f hit_uv;
+                Graphics::MeshRenderable* hit_renderable = nullptr;
                 for(u64 k = 0; k < renderables.size(); k++)
                 {
                     //      For every renderable, check if ray collides with any of its triangles, and keep the closer one.
                     Graphics::MeshRenderable* renderable = renderables[k];
                     Graphics::Mesh* mesh = renderable->mesh;
                     if (!Math::raycast_box(renderer.camera.position, dir, mesh->aabb, nullptr)) continue;
+                    
                     for(u64 l = 0; l < mesh->vertex_count; l+=3)
                     {
-                        //      TODO_RENDER: Need to transform these vertices from model to world space
                         Math::v3f v0 =
                         {
                             mesh->vertex_data[l].px,
@@ -269,7 +271,18 @@ namespace Ty
                         if(Math::raycast_triangle(renderer.camera.position, dir, v0, v1, v2, &intersect))
                         {
                             f32 intersect_len = Math::len(intersect - renderer.camera.position);
-                            if (!hit || intersect_len < hit_len) hit_len = intersect_len;
+                            if (!hit || intersect_len < hit_len)
+                            {
+                                hit_len = intersect_len;
+                                hit_renderable = renderable;
+                                Math::v3f barycentric = Math::get_barycentric_coordinates(intersect, v0, v1, v2);
+                                hit_uv.u    = barycentric.x * mesh->vertex_data[l].tx
+                                    + barycentric.y * mesh->vertex_data[l+1].tx
+                                    + barycentric.z * mesh->vertex_data[l+2].tx;
+                                hit_uv.v    = barycentric.x * mesh->vertex_data[l].ty
+                                    + barycentric.y * mesh->vertex_data[l+1].ty
+                                    + barycentric.z * mesh->vertex_data[l+2].ty;
+                            }
                             hit = true;
                         }
                     }
@@ -279,13 +292,45 @@ namespace Ty
                 if(hit)
                 {
                     u32 pixel;
-                    f32 color = Math::lerp(0, 255, 1.f - (hit_len / 100.f));
-                    u8 r = (u8)color, g = (u8)color, b = (u8)color, a = 255;
+
+                    // Sample renderable's texture
+                    Graphics::Material* hit_material = Graphics::material_resource_manager.get(hit_renderable->material);
+                    Graphics::Texture* hit_diffuse = Graphics::texture_resource_manager.get(hit_material->textures[0]);
+
+                    Math::v2f pix = {};
+                    pix.x = (hit_uv.u * hit_diffuse->desc.width) - 0.5f;
+                    pix.y = ((1 - hit_uv.v) * hit_diffuse->desc.height) - 0.5f;
+
+                    pix.x = Math::fwrap(pix.x, 0, hit_diffuse->desc.width);
+                    pix.y = Math::fwrap(pix.y, 0, hit_diffuse->desc.height);
+
+                    u32 stride = hit_diffuse->desc.format == Graphics::TextureFormat::R8_G8_B8_A8_UNORM
+                        ? 4
+                        : 3;
+
+                    u32 pixel_offset = ((u32)pix.y * hit_diffuse->desc.width + (u32)pix.x) * stride;
+                    u8* hit_addr = (u8*)(hit_diffuse->pData) + pixel_offset;
+
+                    u8 r = *(hit_addr);
+                    u8 g = *(hit_addr + 1);
+                    u8 b = *(hit_addr + 2);
+                    u8 a = 255;                 // TODO_RENDER: Account for alpha of hit pixel. This'll require sampling before.
+
                     pixel = (pixel & 0xFFFFFF00) |  r;
                     pixel = (pixel & 0xFFFF00FF) | ((uint32_t)g <<  8);
                     pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
                     pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
                     framebuffer[i * GAME_RENDER_WIDTH + j] = pixel;
+                    
+                    // Render to depth texture as well
+                    f32 color_t = Math::lerp(0, 255, 1.f - (hit_len / 100.f));
+                    r = (u8)color_t, g = (u8)color_t, b = (u8)color_t, a = 255;
+
+                    pixel = (pixel & 0xFFFFFF00) |  r;
+                    pixel = (pixel & 0xFFFF00FF) | ((uint32_t)g <<  8);
+                    pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
+                    pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
+                    framebuffer_depth[i * GAME_RENDER_WIDTH + j] = pixel;
                 }
                 else
                 {
@@ -296,12 +341,14 @@ namespace Ty
                     pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
                     pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
                     framebuffer[i * GAME_RENDER_WIDTH + j] = pixel;
+                    framebuffer_depth[i * GAME_RENDER_WIDTH + j] = pixel;
                 }
             }
             printf("Finished pixels at row h:%d\n", i);
         }
 
-        stbi_write_png(RESOURCES_PATH"out/raytrace_out.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, framebuffer, GAME_RENDER_WIDTH * 4);
+        stbi_write_png(RESOURCES_PATH"out/raytrace_out_diffuse.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, framebuffer, GAME_RENDER_WIDTH * 4);
+        stbi_write_png(RESOURCES_PATH"out/raytrace_out_depth.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, framebuffer_depth, GAME_RENDER_WIDTH * 4);
 #endif
 	}
 

@@ -143,6 +143,7 @@ namespace Ty
 		f32 lerp(const f32& a, const f32& b, const f32& t);
 		v2f lerp(const v2f& a, const v2f& b, const f32& t);
 		v3f lerp(const v3f& a, const v3f& b, const f32& t);
+        f32 fwrap(f32 x, f32 min, f32 max);
 
 		// =============================
 		// Primitives
@@ -160,6 +161,9 @@ namespace Ty
 			v3f center;
 			f32 radius;
 		};
+
+        f32 get_triangle_area(const v3f& v0, const v3f& v1, const v3f& v2);
+        v3f get_barycentric_coordinates(const v3f& v, const v3f& v0, const v3f& v1, const v3f& v2);
 
 		// =============================
 		// Raycasting

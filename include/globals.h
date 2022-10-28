@@ -25,7 +25,7 @@
 
 #define DEFAULT_CAMERA_X 0
 #define DEFAULT_CAMERA_Y 2
-#define DEFAULT_CAMERA_Z 0
+#define DEFAULT_CAMERA_Z -3
 #define DEFAULT_CAMERA_FOV 45
 
 #define RESOURCES_PATH "./resources/"
