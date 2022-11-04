@@ -15,6 +15,7 @@
 // For writing raytraced output:
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
+#include "stb_image.h"
 
 
 namespace Ty
@@ -160,12 +161,113 @@ namespace Ty
 		}
 	}
 
+#if USE_RAYTRACING
+    u32 get_texel_nearest(f32 u, f32 v, i32 texture_width, i32 texture_height, i32 texture_channels, u8* texture_data)
+    {
+        u = Math::fwrap(u, 0, 1);
+        v = Math::fwrap(v, 0, 1);
+
+        i32 pixel_x = u * texture_width;
+        i32 pixel_y = v * texture_height;
+
+        u8* hit_addr = (u8*)(texture_data) + (pixel_y * texture_width + pixel_x) * texture_channels;
+        u8 r = *(hit_addr);
+        u8 g = *(hit_addr + 1);
+        u8 b = *(hit_addr + 2);
+        //u8 a = *(hit_addr + 3);
+        
+        u8 a = 255;    // TODO: Alpha support
+
+        u32 pixel = 0;
+        pixel = (pixel & 0xFFFFFF00) |  r;
+        pixel = (pixel & 0xFFFF00FF) | ((uint32_t)g <<  8);
+        pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
+        pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
+    }
+
+    u32 get_texel_bilinear(f32 u, f32 v, i32 texture_width, i32 texture_height, i32 texture_channels, u8* texture_data)
+    {
+        u = Math::fwrap(u, 0, 1);
+        v = Math::fwrap(v, 0, 1);
+
+        f32 pixel_x = u * texture_width - 0.5f, pixel_y = v * texture_height - 0.5f;
+        pixel_x = CLAMP(pixel_x, 0, texture_width   - 1);
+        pixel_y = CLAMP(pixel_y, 0, texture_height  - 1);
+
+        f32 t_x = pixel_x - (i32)floor(pixel_x);
+        f32 t_y = pixel_y - (i32)floor(pixel_y);
+
+        f32 t_pi[2] = { 1.f - t_x, t_x };
+        f32 t_pj[2] = { 1.f - t_y, t_y };
+
+        u8 r = 0, g = 0, b = 0, a = texture_channels == 4 ? 0 : 255;
+        for(i32 pi = 0; pi < 2; pi++)
+        {
+            for(i32 pj = 0; pj < 2; pj++)
+            {
+                f32 p = t_pi[pi] * t_pj[pj];
+                if(p)
+                {
+                    i32 hit_x = CLAMP((i32)pixel_x + pi, 0, texture_width);
+                    i32 hit_y = CLAMP((i32)pixel_y + pj, 0, texture_height);
+                    u8* hit_addr = (u8*)(texture_data) + (hit_y * texture_width + hit_x) * texture_channels;
+                    r += (*(hit_addr)     ) * p;
+                    g += (*(hit_addr + 1) ) * p;
+                    b += (*(hit_addr + 2) ) * p;
+                    if(texture_channels == 4) a += (*(hit_addr + 3) ) * p;
+                }
+            }
+        }
+        u32 pixel = 0;
+        a = 255;    // TODO: Alpha support
+
+        pixel = (pixel & 0xFFFFFF00) |  r;
+        pixel = (pixel & 0xFFFF00FF) | ((uint32_t)g <<  8);
+        pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
+        pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
+        return pixel;
+    }
+#endif
+
 	void App::run()
 	{
 		Graphics::ResourceHandle<Graphics::Model> model_sponza = Graphics::model_resource_manager.load_from_file(MODELS_PATH"sponza.obj");
 
 		auto sponza_parts = Graphics::model_resource_manager.get_parts(model_sponza);
-#if !USE_RAYTRACING
+#if 0
+        i32 w, h, nC;
+        i32 upscale = 4;
+        u8* img_data = stbi_load(TEXTURES_PATH"/sponza_thorn_diff.png", &w, &h, &nC, 0);
+        u32* framebuffer = (u32*)malloc(sizeof(u32) * w * h * upscale * upscale);
+
+        for(i32 i = 0; i < h * upscale; i++)
+        {
+            for(i32 j = 0; j < w * upscale; j++)
+            {
+#if 0   // NEAREST
+                u8* hit_addr = (u8*)(img_data) + ((i/upscale) * w + (j/upscale)) * nC;
+                u8 r = *(hit_addr);
+                u8 g = *(hit_addr + 1);
+                u8 b = *(hit_addr + 2);
+                u8 a = *(hit_addr + 3);
+
+                u32 pixel = 0;
+                pixel = (pixel & 0xFFFFFF00) |  r;
+                pixel = (pixel & 0xFFFF00FF) | ((uint32_t)g <<  8);
+                pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
+                pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
+#else   // BILINEAR
+                f32 v = ((f32)i / (f32)(h * upscale));
+                f32 u = ((f32)j / (f32)(w * upscale));
+
+                u32 pixel = get_texel_bilinear(u, v, w, h, nC, img_data);
+#endif
+                framebuffer[i * w * upscale + j] = pixel;
+            }
+        }
+
+        stbi_write_png(RESOURCES_PATH"out/bilinear_test_LINEAR.png", w * upscale, h * upscale, 4, framebuffer, w * 4 * upscale);
+#elif !USE_RAYTRACING
         // Realtime pipeline
 		for (int i = 0; i < sponza_parts.size(); i++)
 		{
@@ -202,7 +304,6 @@ namespace Ty
 #else
         // Raytracing pipeline:
         u32* framebuffer = (u32*)malloc(sizeof(u32) * GAME_RENDER_WIDTH * GAME_RENDER_HEIGHT);
-        u32* framebuffer_depth = (u32*)malloc(sizeof(u32) * GAME_RENDER_WIDTH * GAME_RENDER_HEIGHT);
 
         //      Populate MeshRenderables
         std::vector<Graphics::MeshRenderable*> renderables;
@@ -291,46 +392,16 @@ namespace Ty
                 // If there's any collision, render the final color based on distance
                 if(hit)
                 {
-                    u32 pixel;
-
                     // Sample renderable's texture
                     Graphics::Material* hit_material = Graphics::material_resource_manager.get(hit_renderable->material);
                     Graphics::Texture* hit_diffuse = Graphics::texture_resource_manager.get(hit_material->textures[0]);
 
-                    Math::v2f pix = {};
-                    pix.x = (hit_uv.u * hit_diffuse->desc.width) - 0.5f;
-                    pix.y = ((1 - hit_uv.v) * hit_diffuse->desc.height) - 0.5f;
-
-                    pix.x = Math::fwrap(pix.x, 0, hit_diffuse->desc.width);
-                    pix.y = Math::fwrap(pix.y, 0, hit_diffuse->desc.height);
-
-                    u32 stride = hit_diffuse->desc.format == Graphics::TextureFormat::R8_G8_B8_A8_UNORM
+                    u32 channels = hit_diffuse->desc.format == Graphics::TextureFormat::R8_G8_B8_A8_UNORM
                         ? 4
                         : 3;
+                    u32 pixel = get_texel_bilinear(hit_uv.u, 1.f - hit_uv.v, hit_diffuse->desc.width, hit_diffuse->desc.height, channels, (u8*)hit_diffuse->pData);
 
-                    u32 pixel_offset = ((u32)pix.y * hit_diffuse->desc.width + (u32)pix.x) * stride;
-                    u8* hit_addr = (u8*)(hit_diffuse->pData) + pixel_offset;
-
-                    u8 r = *(hit_addr);
-                    u8 g = *(hit_addr + 1);
-                    u8 b = *(hit_addr + 2);
-                    u8 a = 255;                 // TODO_RENDER: Account for alpha of hit pixel. This'll require sampling before.
-
-                    pixel = (pixel & 0xFFFFFF00) |  r;
-                    pixel = (pixel & 0xFFFF00FF) | ((uint32_t)g <<  8);
-                    pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
-                    pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
                     framebuffer[i * GAME_RENDER_WIDTH + j] = pixel;
-                    
-                    // Render to depth texture as well
-                    f32 color_t = Math::lerp(0, 255, 1.f - (hit_len / 100.f));
-                    r = (u8)color_t, g = (u8)color_t, b = (u8)color_t, a = 255;
-
-                    pixel = (pixel & 0xFFFFFF00) |  r;
-                    pixel = (pixel & 0xFFFF00FF) | ((uint32_t)g <<  8);
-                    pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
-                    pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
-                    framebuffer_depth[i * GAME_RENDER_WIDTH + j] = pixel;
                 }
                 else
                 {
@@ -341,14 +412,12 @@ namespace Ty
                     pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
                     pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
                     framebuffer[i * GAME_RENDER_WIDTH + j] = pixel;
-                    framebuffer_depth[i * GAME_RENDER_WIDTH + j] = pixel;
                 }
             }
             printf("Finished pixels at row h:%d\n", i);
         }
 
-        stbi_write_png(RESOURCES_PATH"out/raytrace_out_diffuse.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, framebuffer, GAME_RENDER_WIDTH * 4);
-        stbi_write_png(RESOURCES_PATH"out/raytrace_out_depth.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, framebuffer_depth, GAME_RENDER_WIDTH * 4);
+        stbi_write_png(RESOURCES_PATH"out/raytrace_out_diffuse_bilinear.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, framebuffer, GAME_RENDER_WIDTH * 4);
 #endif
 	}
 
