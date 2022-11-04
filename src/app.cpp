@@ -162,6 +162,34 @@ namespace Ty
 	}
 
 #if USE_RAYTRACING
+    Math::v3f pixel_to_color(u32 pixel)
+    {
+        Math::v3f color;
+        u8 r = (u32)(pixel & 0x000000FF);
+        u8 g = ((u32)(pixel & 0x0000FF00) >>  8);
+        u8 b = ((u32)(pixel & 0x00FF0000) >> 16);
+
+        color.r = (f32)r / (f32)0xFF;
+        color.g = (f32)g / (f32)0xFF;
+        color.b = (f32)b / (f32)0xFF;
+
+        return color;
+    }
+
+    u32 color_to_pixel(Math::v3f color)
+    {
+        u8 r = (u8)(color.r * 0xFF);
+        u8 g = (u8)(color.g * 0xFF);
+        u8 b = (u8)(color.b * 0xFF);
+        u32 pixel = 0;
+        pixel = (pixel & 0xFFFFFF00) |  r;
+        pixel = (pixel & 0xFFFF00FF) | ((uint32_t)g <<  8);
+        pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
+        pixel = (pixel & 0x00FFFFFF) | ((uint32_t)255 << 24);   // TODO: Alpha support
+
+        return pixel;
+    }
+
     u32 get_texel_nearest(f32 u, f32 v, i32 texture_width, i32 texture_height, i32 texture_channels, u8* texture_data)
     {
         u = Math::fwrap(u, 0, 1);
@@ -183,6 +211,8 @@ namespace Ty
         pixel = (pixel & 0xFFFF00FF) | ((uint32_t)g <<  8);
         pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
         pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
+
+        return pixel;
     }
 
     u32 get_texel_bilinear(f32 u, f32 v, i32 texture_width, i32 texture_height, i32 texture_channels, u8* texture_data)
@@ -225,12 +255,19 @@ namespace Ty
         pixel = (pixel & 0xFFFF00FF) | ((uint32_t)g <<  8);
         pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
         pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
+
         return pixel;
     }
 #endif
 
 	void App::run()
 	{
+        // Add default first light
+        renderer.pass_lighting.light_count++;
+        renderer.pass_lighting.point_lights[renderer.pass_lighting.light_count - 1] = {};
+        renderer.pass_lighting.point_lights[renderer.pass_lighting.light_count - 1].position.y = 1.5f;
+        renderer.pass_ssao.enabled = false;
+
 		Graphics::ResourceHandle<Graphics::Model> model_sponza = Graphics::model_resource_manager.load_from_file(MODELS_PATH"sponza.obj");
 
 		auto sponza_parts = Graphics::model_resource_manager.get_parts(model_sponza);
@@ -338,6 +375,8 @@ namespace Ty
                 f32 hit_len = 0;
                 Math::v2f hit_uv;
                 Graphics::MeshRenderable* hit_renderable = nullptr;
+                Math::v3f hit_position;
+                Math::v3f hit_normal;
                 for(u64 k = 0; k < renderables.size(); k++)
                 {
                     //      For every renderable, check if ray collides with any of its triangles, and keep the closer one.
@@ -376,6 +415,12 @@ namespace Ty
                             {
                                 hit_len = intersect_len;
                                 hit_renderable = renderable;
+                                
+                                hit_position = intersect;
+                                Math::v3f v0v1 = v1 - v0;
+                                Math::v3f v0v2 = v2 - v0;
+                                hit_normal = Math::normalize(Math::cross(v0v1, v0v2));
+
                                 Math::v3f barycentric = Math::get_barycentric_coordinates(intersect, v0, v1, v2);
                                 hit_uv.u    = barycentric.x * mesh->vertex_data[l].tx
                                     + barycentric.y * mesh->vertex_data[l+1].tx
@@ -401,6 +446,20 @@ namespace Ty
                         : 3;
                     u32 pixel = get_texel_bilinear(hit_uv.u, 1.f - hit_uv.v, hit_diffuse->desc.width, hit_diffuse->desc.height, channels, (u8*)hit_diffuse->pData);
 
+                    // Calculate light contributions
+                    Math::v3f hit_color = pixel_to_color(pixel);
+                    Math::v3f result_color = {};
+                    for(i32 l = 0; l < renderer.pass_lighting.light_count; l++)
+                    {
+                        Graphics::Light* light = &renderer.pass_lighting.point_lights[l];
+                        Math::v3f to_light = Math::normalize(light->position - hit_position);
+                        f32 LdotN = Math::dot(hit_normal, to_light);
+                        LdotN = CLAMP(LdotN, 0, 1);
+                        //hit_color = hit_color * LdotN;
+                        result_color = result_color + (hit_color * LdotN * light->power / Math::sqrlen(to_light));
+                    }
+
+                    pixel = color_to_pixel(result_color);
                     framebuffer[i * GAME_RENDER_WIDTH + j] = pixel;
                 }
                 else
@@ -415,6 +474,7 @@ namespace Ty
                 }
             }
             printf("Finished pixels at row h:%d\n", i);
+            stbi_write_png(RESOURCES_PATH"out/raytrace_out_diffuse_bilinear.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, framebuffer, GAME_RENDER_WIDTH * 4);
         }
 
         stbi_write_png(RESOURCES_PATH"out/raytrace_out_diffuse_bilinear.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, framebuffer, GAME_RENDER_WIDTH * 4);
