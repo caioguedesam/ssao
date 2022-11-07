@@ -340,12 +340,6 @@ namespace Ty
 
     f32 get_occlusion_at_point(const std::vector<Graphics::MeshRenderable*>& scene_renderables, Math::v3f origin_position, Math::v3f origin_normal, i32 ao_samples, f32 ao_radius)
     {
-        // TODO: Add RTAO (16 rays cast per pixel?)
-        // Algorithm should be similar to SSAO:
-        //      > Cast ray direction randomly from hemisphere centered in normal**
-        //      > Check if the ray hits, given occlusion radius**
-        //      > Shade based on proportion of rays hit by rays cast*
-
         f32 ao = 0;
 
         for(i32 i = 0; i < ao_samples; i++)
@@ -377,6 +371,88 @@ namespace Ty
 
         ao /= (f32)ao_samples;
         return ao;
+    }
+
+    struct rtao_job_params
+    {
+        i32 job_line_start = 0;
+        i32 job_line_count = 0;
+        std::vector<Graphics::MeshRenderable*>* job_renderables = nullptr;
+        f32 scale = 0.f;
+        f32 aspect = 0.f;
+        Math::m4f camera_to_world;
+        Graphics::Renderer* renderer;
+        u32* framebuffer;
+    };
+
+    DWORD WINAPI rtao_job(void* args)
+    {
+        rtao_job_params* params = (rtao_job_params*)args;
+        std::vector<Graphics::MeshRenderable*>* renderables = params->job_renderables;
+
+        i32 job_line_end = params->job_line_start + params->job_line_count;
+        f32 job_percent = 0.f;
+        for(i32 i = params->job_line_start; i < job_line_end; i++)
+        {
+            for(i32 j = 0; j < GAME_RENDER_WIDTH; j++)
+            {
+                f32 x = (2 * (j + 0.5) / (f32)GAME_RENDER_WIDTH - 1) * params->aspect * params->scale;
+                f32 y = (1 - 2 * (i + 0.5) / (f32)GAME_RENDER_HEIGHT) * params->scale;
+                Math::v3f dir = { x, y, -1 };
+                dir = Math::transform(params->camera_to_world, dir, 0);
+                dir = Math::normalize(dir);
+
+                RaycastHitInfo raycast = get_ray_intersection(*renderables, params->renderer->camera.position, dir);
+
+                // If there's any collision, render the final color based on distance
+                if(raycast.hit)
+                {
+                    // Sample renderable's texture
+                    Graphics::Material* hit_material = Graphics::material_resource_manager.get(raycast.renderable->material);
+                    Graphics::Texture* hit_diffuse = Graphics::texture_resource_manager.get(hit_material->textures[0]);
+
+                    u32 channels = hit_diffuse->desc.format == Graphics::TextureFormat::R8_G8_B8_A8_UNORM
+                        ? 4
+                        : 3;
+                    u32 pixel = get_texel_bilinear(raycast.uv.u, 1.f - raycast.uv.v, hit_diffuse->desc.width, hit_diffuse->desc.height, channels, (u8*)hit_diffuse->pData);
+
+                    // Calculate light contributions
+                    Math::v3f hit_color = pixel_to_color(pixel);
+                    Math::v3f result_color = {};
+                    for(i32 l = 0; l < params->renderer->pass_lighting.light_count; l++)
+                    {
+                        Graphics::Light* light = &params->renderer->pass_lighting.point_lights[l];
+                        Math::v3f to_light = Math::normalize(light->position - raycast.position);
+                        f32 LdotN = Math::dot(raycast.normal, to_light);
+                        LdotN = CLAMP(LdotN, 0, 1);
+                        result_color = result_color + (hit_color * LdotN * light->power / Math::sqrlen(to_light));
+                    }
+
+                    // Add ambient occlusion
+                    f32 ao = 1.f - get_occlusion_at_point(*renderables, raycast.position, raycast.normal, params->renderer->pass_ssao.ssao_data.sample_amount, params->renderer->pass_ssao.ssao_data.sample_radius);
+                    ao = CLAMP(ao, 0, 1);
+                    result_color = result_color * ao;
+
+                    pixel = color_to_pixel(result_color);
+                    params->framebuffer[i * GAME_RENDER_WIDTH + j] = pixel;
+                }
+                else
+                {
+                    u32 pixel;
+                    u8 r = 0, g = 0, b = 0, a = 255;
+                    pixel = (pixel & 0xFFFFFF00) |  r;
+                    pixel = (pixel & 0xFFFF00FF) | ((uint32_t)g <<  8);
+                    pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
+                    pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
+                    params->framebuffer[i * GAME_RENDER_WIDTH + j] = pixel;
+                }
+            }
+            job_percent += 1.f / (f32)params->job_line_count;
+            printf("[JOB %d: %.2f\%] Finished pixels at row h:%d\n", params->job_line_start / params->job_line_count, job_percent * 100.f, i);
+            //stbi_write_png(RESOURCES_PATH"out/raytrace_out_diffuse_bilinear.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, framebuffer, GAME_RENDER_WIDTH * 4);
+        }
+
+        return 0;
     }
 
 #endif
@@ -448,64 +524,33 @@ namespace Ty
         f32 scale = tan(Math::to_rad((f32)DEFAULT_CAMERA_FOV * 0.5f));
         f32 aspect = (f32)GAME_RENDER_WIDTH / (f32) GAME_RENDER_HEIGHT;
         Math::m4f camera_to_world = Math::inverse(renderer.camera.get_view_matrix());
-        for(i32 i = 0; i < GAME_RENDER_HEIGHT; i++)
+
+        //      Spawn ray tracing jobs for image sections
+#define RTAO_JOB_COUNT 4
+        HANDLE rtao_job_handles[RTAO_JOB_COUNT];
+        rtao_job_params job_params[RTAO_JOB_COUNT];
+        i32 lines_per_job = GAME_RENDER_HEIGHT / RTAO_JOB_COUNT;
+        for(i32 i = 0; i < RTAO_JOB_COUNT; i++)
         {
-            for(i32 j = 0; j < GAME_RENDER_WIDTH; j++)
-            {
-                f32 x = (2 * (j + 0.5) / (f32)GAME_RENDER_WIDTH - 1) * aspect * scale;
-                f32 y = (1 - 2 * (i + 0.5) / (f32)GAME_RENDER_HEIGHT) * scale;
-                Math::v3f dir = { x, y, -1 };
-                dir = Math::transform(camera_to_world, dir, 0);
-                dir = Math::normalize(dir);
+            job_params[i].renderer = &renderer;
+            job_params[i].framebuffer = framebuffer;
+            job_params[i].job_renderables = &renderables;
+            job_params[i].scale = scale;
+            job_params[i].aspect = aspect;
+            job_params[i].camera_to_world = camera_to_world;
+            job_params[i].job_line_start = i * lines_per_job;
+            job_params[i].job_line_count = lines_per_job;
 
-                RaycastHitInfo raycast = get_ray_intersection(renderables, renderer.camera.position, dir);
-
-                // If there's any collision, render the final color based on distance
-                if(raycast.hit)
-                {
-                    // Sample renderable's texture
-                    Graphics::Material* hit_material = Graphics::material_resource_manager.get(raycast.renderable->material);
-                    Graphics::Texture* hit_diffuse = Graphics::texture_resource_manager.get(hit_material->textures[0]);
-
-                    u32 channels = hit_diffuse->desc.format == Graphics::TextureFormat::R8_G8_B8_A8_UNORM
-                        ? 4
-                        : 3;
-                    u32 pixel = get_texel_bilinear(raycast.uv.u, 1.f - raycast.uv.v, hit_diffuse->desc.width, hit_diffuse->desc.height, channels, (u8*)hit_diffuse->pData);
-
-                    // Calculate light contributions
-                    Math::v3f hit_color = pixel_to_color(pixel);
-                    Math::v3f result_color = {};
-                    for(i32 l = 0; l < renderer.pass_lighting.light_count; l++)
-                    {
-                        Graphics::Light* light = &renderer.pass_lighting.point_lights[l];
-                        Math::v3f to_light = Math::normalize(light->position - raycast.position);
-                        f32 LdotN = Math::dot(raycast.normal, to_light);
-                        LdotN = CLAMP(LdotN, 0, 1);
-                        result_color = result_color + (hit_color * LdotN * light->power / Math::sqrlen(to_light));
-                    }
-
-                    // Add ambient occlusion
-                    f32 ao = 1.f - get_occlusion_at_point(renderables, raycast.position, raycast.normal, renderer.pass_ssao.ssao_data.sample_amount, renderer.pass_ssao.ssao_data.sample_radius);
-                    ao = CLAMP(ao, 0, 1);
-                    result_color = result_color * ao;
-
-                    pixel = color_to_pixel(result_color);
-                    framebuffer[i * GAME_RENDER_WIDTH + j] = pixel;
-                }
-                else
-                {
-                    u32 pixel;
-                    u8 r = 0, g = 0, b = 0, a = 255;
-                    pixel = (pixel & 0xFFFFFF00) |  r;
-                    pixel = (pixel & 0xFFFF00FF) | ((uint32_t)g <<  8);
-                    pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
-                    pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
-                    framebuffer[i * GAME_RENDER_WIDTH + j] = pixel;
-                }
-            }
-            printf("Finished pixels at row h:%d\n", i);
-            stbi_write_png(RESOURCES_PATH"out/raytrace_out_diffuse_bilinear.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, framebuffer, GAME_RENDER_WIDTH * 4);
+            rtao_job_handles[i] = CreateThread(NULL, 0, rtao_job, (void*)(&job_params[i]), 0, NULL);
         }
+
+        Time::Timer rtao_timer;
+        rtao_timer.start();
+
+        WaitForMultipleObjects(RTAO_JOB_COUNT, rtao_job_handles, TRUE, INFINITE);
+
+        rtao_timer.end();
+        printf("Finished work in %.2f seconds, with %d threads.\n", rtao_timer.elapsed_secs(), RTAO_JOB_COUNT);
 
         stbi_write_png(RESOURCES_PATH"out/raytrace_out_diffuse_bilinear.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, framebuffer, GAME_RENDER_WIDTH * 4);
 #endif
