@@ -84,6 +84,10 @@ namespace Ty
 				std::vector<ResourceHandle<Texture>> gbuffer_textures = get_textures_from_names(gbuffer_texture_filenames, 5);
 
 				ResourceHandle<Material> material_handle = material_resource_manager.create_material(mat.name.c_str(), gbuffer_shader_pipeline, gbuffer_textures);
+                if(strcmp("", mat.alpha_texname.c_str()) != 0)
+                {
+                    material_resource_manager.get(material_handle)->has_alpha = true;
+                }
 				ASSERT(material_handle.is_valid(), "[ERROR:MODEL] Failed to initialize material.");
 			}
 

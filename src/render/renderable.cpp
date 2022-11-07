@@ -204,6 +204,8 @@ namespace Ty
 			set_material(material_handle);
 
             this->mesh = mesh;
+            Material* mat = material_resource_manager.get(material_handle);
+            has_alpha_mask = mat->has_alpha;
 		}
 	}
 }

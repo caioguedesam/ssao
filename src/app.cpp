@@ -212,6 +212,12 @@ namespace Ty
         pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
         pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
 
+        // TODO: Add this to get_texel_bilinear somehow
+        if(texture_channels == 1)
+        {
+            pixel = (u32)*(hit_addr);
+        }
+
         return pixel;
     }
 
@@ -314,6 +320,8 @@ namespace Ty
                     if (intersect_len > max_distance) continue;     // Also don't allow overshooting max distance on narrow collision tests
                     if (!result.hit || intersect_len < result.distance)
                     {
+                        RaycastHitInfo old_result = result;
+
                         result.hit = true;
                         result.distance = intersect_len;
                         result.renderable = renderable;
@@ -330,6 +338,36 @@ namespace Ty
                         result.uv.v    = barycentric.x * mesh->vertex_data[l].ty
                             + barycentric.y * mesh->vertex_data[l+1].ty
                             + barycentric.z * mesh->vertex_data[l+2].ty;
+
+                        // TODO: Check alpha mask here
+                        if(renderable->has_alpha_mask)
+                        {
+
+                            Graphics::Material* hit_material = Graphics::material_resource_manager.get(renderable->material);
+                            Graphics::Texture* hit_alpha = Graphics::texture_resource_manager.get(hit_material->textures[4]);
+
+                            u32 channels = 1;
+                            if(hit_alpha->desc.format == Graphics::TextureFormat::R8_G8_B8_A8_UNORM)
+                            {
+                                channels = 4;
+                            }
+                            else if(hit_alpha->desc.format == Graphics::TextureFormat::R8_G8_B8_UNORM)
+                            {
+                                channels = 3;
+                            }
+                            else if(hit_alpha->desc.format == Graphics::TextureFormat::R8_G8_UNORM)
+                            {
+                                channels = 2;
+                            }
+                            //u32 pixel = get_texel_bilinear(result.uv.u, 1.f - result.uv.v, hit_alpha->desc.width, hit_alpha->desc.height, channels, (u8*)hit_alpha->pData);   // Bilinear still has broken alpha, using nearest
+                            u32 pixel = get_texel_nearest(result.uv.u, 1.f - result.uv.v, hit_alpha->desc.width, hit_alpha->desc.height, channels, (u8*)hit_alpha->pData);
+
+                            // If the mask texture sample is 0, ignore this raycast (hit a transparent pixel)
+                            if(pixel == 0)
+                            {
+                                result = old_result;
+                            }
+                        }
                     }
                 }
             }
@@ -449,7 +487,7 @@ namespace Ty
             }
             job_percent += 1.f / (f32)params->job_line_count;
             printf("[JOB %d: %.2f\%] Finished pixels at row h:%d\n", params->job_line_start / params->job_line_count, job_percent * 100.f, i);
-            //stbi_write_png(RESOURCES_PATH"out/raytrace_out_diffuse_bilinear.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, framebuffer, GAME_RENDER_WIDTH * 4);
+            stbi_write_png(RESOURCES_PATH"out/raytrace_out_diffuse_bilinear.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, params->framebuffer, GAME_RENDER_WIDTH * 4);
         }
 
         return 0;
@@ -540,6 +578,10 @@ namespace Ty
             job_params[i].camera_to_world = camera_to_world;
             job_params[i].job_line_start = i * lines_per_job;
             job_params[i].job_line_count = lines_per_job;
+            if(i == RTAO_JOB_COUNT - 1)
+            {
+                job_params[i].job_line_count = GAME_RENDER_HEIGHT - i * lines_per_job;
+            }
 
             rtao_job_handles[i] = CreateThread(NULL, 0, rtao_job, (void*)(&job_params[i]), 0, NULL);
         }

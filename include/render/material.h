@@ -11,6 +11,7 @@ namespace Ty
 		struct Material
 		{
 			char name[128];
+            bool has_alpha = false;                 // RTAO only
 			ShaderPipeline shader_pipeline;
 			std::vector<ResourceHandle<Texture>> textures;
 
