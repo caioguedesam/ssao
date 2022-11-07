@@ -258,6 +258,127 @@ namespace Ty
 
         return pixel;
     }
+
+    struct RaycastHitInfo
+    {
+        bool hit = false;
+
+        f32 distance = 0.f;
+        Math::v3f position = {};
+        Math::v3f normal = {};
+        Math::v2f uv = {};
+        Graphics::MeshRenderable* renderable = nullptr;
+    };
+
+    RaycastHitInfo get_ray_intersection(const std::vector<Graphics::MeshRenderable*>& scene_renderables, const Math::v3f& ray_origin, const Math::v3f& ray_dir, f32 max_distance = FLT_MAX)
+    {
+        RaycastHitInfo result = {};
+
+        for(u64 k = 0; k < scene_renderables.size(); k++)
+        {
+            //  For every renderable, check if ray collides with any of its triangles, and keep the closer one.
+            Graphics::MeshRenderable* renderable = scene_renderables[k];
+            Graphics::Mesh* mesh = renderable->mesh;
+            Math::v3f aabb_hit_position = {};
+            if (!Math::raycast_box(ray_origin, ray_dir, mesh->aabb, &aabb_hit_position)) continue;   // AABB for simple acceleration
+            if (Math::len(aabb_hit_position - ray_origin) > max_distance) continue;                  // Don't allow overshooting distance in AABB
+                    
+            for(u64 l = 0; l < mesh->vertex_count; l+=3)
+            {
+                Math::v3f v0 =
+                {
+                    mesh->vertex_data[l].px,
+                    mesh->vertex_data[l].py,
+                    mesh->vertex_data[l].pz,
+                };
+                Math::v3f v1 =
+                {
+                    mesh->vertex_data[l+1].px,
+                    mesh->vertex_data[l+1].py,
+                    mesh->vertex_data[l+1].pz,
+                };
+                Math::v3f v2 =
+                {
+                    mesh->vertex_data[l+2].px,
+                    mesh->vertex_data[l+2].py,
+                    mesh->vertex_data[l+2].pz,
+                };
+                v0 = Math::transform(renderable->u_model, v0, 1);
+                v1 = Math::transform(renderable->u_model, v1, 1);
+                v2 = Math::transform(renderable->u_model, v2, 1);
+
+                Math::v3f intersect = {};
+                if(Math::raycast_triangle(ray_origin, ray_dir, v0, v1, v2, &intersect))
+                {
+                    f32 intersect_len = Math::len(intersect - ray_origin);
+                    if (intersect_len > max_distance) continue;     // Also don't allow overshooting max distance on narrow collision tests
+                    if (!result.hit || intersect_len < result.distance)
+                    {
+                        result.hit = true;
+                        result.distance = intersect_len;
+                        result.renderable = renderable;
+                        result.position = intersect;
+                                
+                        Math::v3f v0v1 = v1 - v0;
+                        Math::v3f v0v2 = v2 - v0;
+                        result.normal = Math::normalize(Math::cross(v0v1, v0v2));
+
+                        Math::v3f barycentric = Math::get_barycentric_coordinates(intersect, v0, v1, v2);
+                        result.uv.u    = barycentric.x * mesh->vertex_data[l].tx
+                            + barycentric.y * mesh->vertex_data[l+1].tx
+                            + barycentric.z * mesh->vertex_data[l+2].tx;
+                        result.uv.v    = barycentric.x * mesh->vertex_data[l].ty
+                            + barycentric.y * mesh->vertex_data[l+1].ty
+                            + barycentric.z * mesh->vertex_data[l+2].ty;
+                    }
+                }
+            }
+        }
+        
+        return result;
+    }
+
+    f32 get_occlusion_at_point(const std::vector<Graphics::MeshRenderable*>& scene_renderables, Math::v3f origin_position, Math::v3f origin_normal, i32 ao_samples, f32 ao_radius)
+    {
+        // TODO: Add RTAO (16 rays cast per pixel?)
+        // Algorithm should be similar to SSAO:
+        //      > Cast ray direction randomly from hemisphere centered in normal**
+        //      > Check if the ray hits, given occlusion radius**
+        //      > Shade based on proportion of rays hit by rays cast*
+
+        f32 ao = 0;
+
+        for(i32 i = 0; i < ao_samples; i++)
+        {
+            // Random direction for occlusion sample
+            Math::v3f ao_dir =
+            {
+                Random::dist_uniform(),
+                Random::dist_uniform(),
+                Random::dist_uniform(),
+            };
+            f32 d = Math::dot(ao_dir, origin_normal);
+            if (d < 0)
+            {
+                ao_dir =
+                {
+                    -ao_dir.x,
+                    -ao_dir.y,
+                    -ao_dir.z,
+                };
+            }
+
+            RaycastHitInfo raycast = get_ray_intersection(scene_renderables, origin_position, ao_dir, ao_radius);
+            if(raycast.hit)
+            {
+                ao += 1.f;
+            }
+        }
+
+        ao /= (f32)ao_samples;
+        return ao;
+    }
+
 #endif
 
 	void App::run()
@@ -271,40 +392,7 @@ namespace Ty
 		Graphics::ResourceHandle<Graphics::Model> model_sponza = Graphics::model_resource_manager.load_from_file(MODELS_PATH"sponza.obj");
 
 		auto sponza_parts = Graphics::model_resource_manager.get_parts(model_sponza);
-#if 0
-        i32 w, h, nC;
-        i32 upscale = 4;
-        u8* img_data = stbi_load(TEXTURES_PATH"/sponza_thorn_diff.png", &w, &h, &nC, 0);
-        u32* framebuffer = (u32*)malloc(sizeof(u32) * w * h * upscale * upscale);
-
-        for(i32 i = 0; i < h * upscale; i++)
-        {
-            for(i32 j = 0; j < w * upscale; j++)
-            {
-#if 0   // NEAREST
-                u8* hit_addr = (u8*)(img_data) + ((i/upscale) * w + (j/upscale)) * nC;
-                u8 r = *(hit_addr);
-                u8 g = *(hit_addr + 1);
-                u8 b = *(hit_addr + 2);
-                u8 a = *(hit_addr + 3);
-
-                u32 pixel = 0;
-                pixel = (pixel & 0xFFFFFF00) |  r;
-                pixel = (pixel & 0xFFFF00FF) | ((uint32_t)g <<  8);
-                pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
-                pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
-#else   // BILINEAR
-                f32 v = ((f32)i / (f32)(h * upscale));
-                f32 u = ((f32)j / (f32)(w * upscale));
-
-                u32 pixel = get_texel_bilinear(u, v, w, h, nC, img_data);
-#endif
-                framebuffer[i * w * upscale + j] = pixel;
-            }
-        }
-
-        stbi_write_png(RESOURCES_PATH"out/bilinear_test_LINEAR.png", w * upscale, h * upscale, 4, framebuffer, w * 4 * upscale);
-#elif !USE_RAYTRACING
+#if !USE_RAYTRACING
         // Realtime pipeline
 		for (int i = 0; i < sponza_parts.size(); i++)
 		{
@@ -370,81 +458,19 @@ namespace Ty
                 dir = Math::transform(camera_to_world, dir, 0);
                 dir = Math::normalize(dir);
 
-                Math::v3f intersect = {};
-                bool hit = false;
-                f32 hit_len = 0;
-                Math::v2f hit_uv;
-                Graphics::MeshRenderable* hit_renderable = nullptr;
-                Math::v3f hit_position;
-                Math::v3f hit_normal;
-                for(u64 k = 0; k < renderables.size(); k++)
-                {
-                    //      For every renderable, check if ray collides with any of its triangles, and keep the closer one.
-                    Graphics::MeshRenderable* renderable = renderables[k];
-                    Graphics::Mesh* mesh = renderable->mesh;
-                    if (!Math::raycast_box(renderer.camera.position, dir, mesh->aabb, nullptr)) continue;
-                    
-                    for(u64 l = 0; l < mesh->vertex_count; l+=3)
-                    {
-                        Math::v3f v0 =
-                        {
-                            mesh->vertex_data[l].px,
-                            mesh->vertex_data[l].py,
-                            mesh->vertex_data[l].pz,
-                        };
-                        Math::v3f v1 =
-                        {
-                            mesh->vertex_data[l+1].px,
-                            mesh->vertex_data[l+1].py,
-                            mesh->vertex_data[l+1].pz,
-                        };
-                        Math::v3f v2 =
-                        {
-                            mesh->vertex_data[l+2].px,
-                            mesh->vertex_data[l+2].py,
-                            mesh->vertex_data[l+2].pz,
-                        };
-                        v0 = Math::transform(renderable->u_model, v0, 1);
-                        v1 = Math::transform(renderable->u_model, v1, 1);
-                        v2 = Math::transform(renderable->u_model, v2, 1);
-
-                        if(Math::raycast_triangle(renderer.camera.position, dir, v0, v1, v2, &intersect))
-                        {
-                            f32 intersect_len = Math::len(intersect - renderer.camera.position);
-                            if (!hit || intersect_len < hit_len)
-                            {
-                                hit_len = intersect_len;
-                                hit_renderable = renderable;
-                                
-                                hit_position = intersect;
-                                Math::v3f v0v1 = v1 - v0;
-                                Math::v3f v0v2 = v2 - v0;
-                                hit_normal = Math::normalize(Math::cross(v0v1, v0v2));
-
-                                Math::v3f barycentric = Math::get_barycentric_coordinates(intersect, v0, v1, v2);
-                                hit_uv.u    = barycentric.x * mesh->vertex_data[l].tx
-                                    + barycentric.y * mesh->vertex_data[l+1].tx
-                                    + barycentric.z * mesh->vertex_data[l+2].tx;
-                                hit_uv.v    = barycentric.x * mesh->vertex_data[l].ty
-                                    + barycentric.y * mesh->vertex_data[l+1].ty
-                                    + barycentric.z * mesh->vertex_data[l+2].ty;
-                            }
-                            hit = true;
-                        }
-                    }
-                }
+                RaycastHitInfo raycast = get_ray_intersection(renderables, renderer.camera.position, dir);
 
                 // If there's any collision, render the final color based on distance
-                if(hit)
+                if(raycast.hit)
                 {
                     // Sample renderable's texture
-                    Graphics::Material* hit_material = Graphics::material_resource_manager.get(hit_renderable->material);
+                    Graphics::Material* hit_material = Graphics::material_resource_manager.get(raycast.renderable->material);
                     Graphics::Texture* hit_diffuse = Graphics::texture_resource_manager.get(hit_material->textures[0]);
 
                     u32 channels = hit_diffuse->desc.format == Graphics::TextureFormat::R8_G8_B8_A8_UNORM
                         ? 4
                         : 3;
-                    u32 pixel = get_texel_bilinear(hit_uv.u, 1.f - hit_uv.v, hit_diffuse->desc.width, hit_diffuse->desc.height, channels, (u8*)hit_diffuse->pData);
+                    u32 pixel = get_texel_bilinear(raycast.uv.u, 1.f - raycast.uv.v, hit_diffuse->desc.width, hit_diffuse->desc.height, channels, (u8*)hit_diffuse->pData);
 
                     // Calculate light contributions
                     Math::v3f hit_color = pixel_to_color(pixel);
@@ -452,12 +478,16 @@ namespace Ty
                     for(i32 l = 0; l < renderer.pass_lighting.light_count; l++)
                     {
                         Graphics::Light* light = &renderer.pass_lighting.point_lights[l];
-                        Math::v3f to_light = Math::normalize(light->position - hit_position);
-                        f32 LdotN = Math::dot(hit_normal, to_light);
+                        Math::v3f to_light = Math::normalize(light->position - raycast.position);
+                        f32 LdotN = Math::dot(raycast.normal, to_light);
                         LdotN = CLAMP(LdotN, 0, 1);
-                        //hit_color = hit_color * LdotN;
                         result_color = result_color + (hit_color * LdotN * light->power / Math::sqrlen(to_light));
                     }
+
+                    // Add ambient occlusion
+                    f32 ao = 1.f - get_occlusion_at_point(renderables, raycast.position, raycast.normal, renderer.pass_ssao.ssao_data.sample_amount, renderer.pass_ssao.ssao_data.sample_radius);
+                    ao = CLAMP(ao, 0, 1);
+                    result_color = result_color * ao;
 
                     pixel = color_to_pixel(result_color);
                     framebuffer[i * GAME_RENDER_WIDTH + j] = pixel;

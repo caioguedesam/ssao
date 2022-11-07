@@ -26,7 +26,8 @@ namespace Ty
 		struct SSAOData
 		{
 			Math::v3f sample_kernel[MAX_SSAO_KERNEL_SIZE];
-			int sample_amount = 64;
+			//int sample_amount = 64;
+			int sample_amount = 16; // For RTAO comparison
 			Math::v3f white_noise[MAX_SSAO_NOISE_DIMENSION * MAX_SSAO_NOISE_DIMENSION];
 			int white_noise_dimension = 4;
 			float sample_radius = 0.5f;
@@ -99,7 +100,6 @@ namespace Ty
 
 		struct RenderPass_Lighting : RenderPass
 		{
-
 			Light point_lights[MAX_LIGHTS];
 			int light_count;
 
