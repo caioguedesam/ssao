@@ -202,7 +202,6 @@ namespace Ty
         u8 r = *(hit_addr);
         u8 g = *(hit_addr + 1);
         u8 b = *(hit_addr + 2);
-        //u8 a = *(hit_addr + 3);
         
         u8 a = 255;    // TODO: Alpha support
 
@@ -309,12 +308,12 @@ namespace Ty
                     mesh->vertex_data[l+2].py,
                     mesh->vertex_data[l+2].pz,
                 };
-                v0 = Math::transform(renderable->u_model, v0, 1);
-                v1 = Math::transform(renderable->u_model, v1, 1);
-                v2 = Math::transform(renderable->u_model, v2, 1);
+                Math::v3f w_v0 = Math::transform(renderable->u_model, v0, 1);
+                Math::v3f w_v1 = Math::transform(renderable->u_model, v1, 1);
+                Math::v3f w_v2 = Math::transform(renderable->u_model, v2, 1);
 
                 Math::v3f intersect = {};
-                if(Math::raycast_triangle(ray_origin, ray_dir, v0, v1, v2, &intersect))
+                if(Math::raycast_triangle(ray_origin, ray_dir, w_v0, w_v1, w_v2, &intersect))
                 {
                     f32 intersect_len = Math::len(intersect - ray_origin);
                     if (intersect_len > max_distance) continue;     // Also don't allow overshooting max distance on narrow collision tests
@@ -326,20 +325,41 @@ namespace Ty
                         result.distance = intersect_len;
                         result.renderable = renderable;
                         result.position = intersect;
-                                
-                        Math::v3f v0v1 = v1 - v0;
-                        Math::v3f v0v2 = v2 - v0;
-                        result.normal = Math::normalize(Math::cross(v0v1, v0v2));
 
-                        Math::v3f barycentric = Math::get_barycentric_coordinates(intersect, v0, v1, v2);
+                        Math::m4f transpose_inverse_model = Math::transpose(Math::inverse(renderable->u_model));
+                        Math::v3f n0 = 
+                        {
+                            mesh->vertex_data[l].nx,
+                            mesh->vertex_data[l].ny,
+                            mesh->vertex_data[l].nz,
+                        };
+                        Math::v3f n1 = 
+                        {
+                            mesh->vertex_data[l+1].nx,
+                            mesh->vertex_data[l+1].ny,
+                            mesh->vertex_data[l+1].nz,
+                        };
+                        Math::v3f n2 = 
+                        {
+                            mesh->vertex_data[l+2].nx,
+                            mesh->vertex_data[l+2].ny,
+                            mesh->vertex_data[l+2].nz,
+                        };
+                        n0 = Math::transform(transpose_inverse_model, n0, 0.f);
+                        n1 = Math::transform(transpose_inverse_model, n1, 0.f);
+                        n2 = Math::transform(transpose_inverse_model, n2, 0.f);
+
+                        Math::v3f barycentric = Math::get_barycentric_coordinates(intersect, w_v0, w_v1, w_v2);
                         result.uv.u    = barycentric.x * mesh->vertex_data[l].tx
                             + barycentric.y * mesh->vertex_data[l+1].tx
                             + barycentric.z * mesh->vertex_data[l+2].tx;
                         result.uv.v    = barycentric.x * mesh->vertex_data[l].ty
                             + barycentric.y * mesh->vertex_data[l+1].ty
                             + barycentric.z * mesh->vertex_data[l+2].ty;
+                        
+                        result.normal = barycentric.x * n0 + barycentric.y * n1 + barycentric.z * n2;
+                        result.normal = Math::normalize(result.normal);
 
-                        // TODO: Check alpha mask here
                         if(renderable->has_alpha_mask)
                         {
 
@@ -376,38 +396,55 @@ namespace Ty
         return result;
     }
 
+    // TODO: Hardcoded to only use one light
     f32 get_occlusion_at_point(const std::vector<Graphics::MeshRenderable*>& scene_renderables, Math::v3f origin_position, Math::v3f origin_normal, i32 ao_samples, f32 ao_radius)
     {
         f32 ao = 0;
+        f32 pdf = 1 / (2 * PI);
 
         for(i32 i = 0; i < ao_samples; i++)
         {
-            // Random direction for occlusion sample
-            Math::v3f ao_dir =
+            // Get random theta/phi values and sample in canonical hemisphere
+            // cos(theta) = r1 = y
+            // cos^2(theta) + sin^2(theta) = 1 -> sin(theta) = srtf(1 - cos^2(theta))
+            f32 r1 = Random::dist_uniform();
+            f32 r2 = Random::dist_uniform();
+            f32 sinTheta = sqrtf(1 - r1 * r1); 
+            f32 phi = 2 * PI * r2; 
+            f32 x = sinTheta * cosf(phi); 
+            f32 z = sinTheta * sinf(phi); 
+            Math::v3f sample = {x, r1, z}; 
+            // Transform canonical hemisphere sample to world space using TBN
+            Math::v3f Nt, Nb;
+            if (ABS(origin_normal.x) > ABS(origin_normal.y))
             {
-                Random::dist_uniform(),
-                Random::dist_uniform(),
-                Random::dist_uniform(),
-            };
-            f32 d = Math::dot(ao_dir, origin_normal);
-            if (d < 0)
-            {
-                ao_dir =
-                {
-                    -ao_dir.x,
-                    -ao_dir.y,
-                    -ao_dir.z,
-                };
+                Math::v3f temp = { origin_normal.z, 0, -origin_normal.x };
+                Nt = temp / sqrtf(origin_normal.x * origin_normal.x + origin_normal.z * origin_normal.z);
             }
+            else
+            {
+                Math::v3f temp = { 0, -origin_normal.z, origin_normal.y };
+                Nt = temp / sqrtf(origin_normal.y * origin_normal.y + origin_normal.z * origin_normal.z);
+            }
+            Nb = Math::cross(origin_normal, Nt);
+            Math::v3f sample_world =
+            {
+                sample.x * Nb.x + sample.y * origin_normal.x + sample.z * Nt.x, 
+                sample.x * Nb.y + sample.y * origin_normal.y + sample.z * Nt.y, 
+                sample.x * Nb.z + sample.y * origin_normal.z + sample.z * Nt.z,
+            };
 
-            RaycastHitInfo raycast = get_ray_intersection(scene_renderables, origin_position, ao_dir, ao_radius);
+            // Raycast
+            RaycastHitInfo raycast = get_ray_intersection(scene_renderables, origin_position, sample_world, ao_radius);
+            //RaycastHitInfo raycast = get_ray_intersection(scene_renderables, origin_position, {0,1,0});
+
             if(raycast.hit)
             {
-                ao += 1.f;
+                ao += 1.f * CLAMP(Math::dot(sample_world, origin_normal), 0, 1);  // Weight based on closeness to surface normal
             }
         }
 
-        ao /= (f32)ao_samples;
+        ao /= (ao_samples);
         return ao;
     }
 
@@ -421,6 +458,8 @@ namespace Ty
         Math::m4f camera_to_world;
         Graphics::Renderer* renderer;
         u32* framebuffer;
+        u32* framebuffer_only_ao;
+        u32* framebuffer_no_ao;
     };
 
     DWORD WINAPI rtao_job(void* args)
@@ -457,6 +496,7 @@ namespace Ty
                     // Calculate light contributions
                     Math::v3f hit_color = pixel_to_color(pixel);
                     Math::v3f result_color = {};
+                    Math::v3f result_color_no_ao = {};
                     for(i32 l = 0; l < params->renderer->pass_lighting.light_count; l++)
                     {
                         Graphics::Light* light = &params->renderer->pass_lighting.point_lights[l];
@@ -464,15 +504,23 @@ namespace Ty
                         f32 LdotN = Math::dot(raycast.normal, to_light);
                         LdotN = CLAMP(LdotN, 0, 1);
                         result_color = result_color + (hit_color * LdotN * light->power / Math::sqrlen(to_light));
+                        result_color_no_ao = result_color;
                     }
 
                     // Add ambient occlusion
+                    // TODO: Hardcoded, RTAO only works properly with first point light
                     f32 ao = 1.f - get_occlusion_at_point(*renderables, raycast.position, raycast.normal, params->renderer->pass_ssao.ssao_data.sample_amount, params->renderer->pass_ssao.ssao_data.sample_radius);
                     ao = CLAMP(ao, 0, 1);
-                    result_color = result_color * ao;
+                    
+                    pixel = color_to_pixel(result_color_no_ao);
+                    params->framebuffer_no_ao[i * GAME_RENDER_WIDTH + j] = pixel;
 
+                    result_color = result_color * ao;
                     pixel = color_to_pixel(result_color);
                     params->framebuffer[i * GAME_RENDER_WIDTH + j] = pixel;
+
+                    u32 pixel_only_ao = color_to_pixel({ ao, ao, ao });
+                    params->framebuffer_only_ao[i * GAME_RENDER_WIDTH + j]  = pixel_only_ao;
                 }
                 else
                 {
@@ -482,12 +530,16 @@ namespace Ty
                     pixel = (pixel & 0xFFFF00FF) | ((uint32_t)g <<  8);
                     pixel = (pixel & 0xFF00FFFF) | ((uint32_t)b << 16);
                     pixel = (pixel & 0x00FFFFFF) | ((uint32_t)a << 24);
-                    params->framebuffer[i * GAME_RENDER_WIDTH + j] = pixel;
+                    params->framebuffer[i * GAME_RENDER_WIDTH + j]          = pixel;
+                    params->framebuffer_no_ao[i * GAME_RENDER_WIDTH + j]    = pixel;
+                    params->framebuffer_only_ao[i * GAME_RENDER_WIDTH + j]  = pixel;
                 }
             }
             job_percent += 1.f / (f32)params->job_line_count;
             printf("[JOB %d: %.2f\%] Finished pixels at row h:%d\n", params->job_line_start / params->job_line_count, job_percent * 100.f, i);
-            stbi_write_png(RESOURCES_PATH"out/raytrace_out_diffuse_bilinear.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, params->framebuffer, GAME_RENDER_WIDTH * 4);
+            stbi_write_png(RESOURCES_PATH"out/RTAO_default.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, params->framebuffer, GAME_RENDER_WIDTH * 4);
+            stbi_write_png(RESOURCES_PATH"out/RTAO_only_AO.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, params->framebuffer_only_ao, GAME_RENDER_WIDTH * 4);
+            stbi_write_png(RESOURCES_PATH"out/RTAO_no_AO.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, params->framebuffer_no_ao, GAME_RENDER_WIDTH * 4);
         }
 
         return 0;
@@ -506,6 +558,7 @@ namespace Ty
 		Graphics::ResourceHandle<Graphics::Model> model_sponza = Graphics::model_resource_manager.load_from_file(MODELS_PATH"sponza.obj");
 
 		auto sponza_parts = Graphics::model_resource_manager.get_parts(model_sponza);
+
 #if !USE_RAYTRACING
         // Realtime pipeline
 		for (int i = 0; i < sponza_parts.size(); i++)
@@ -543,6 +596,8 @@ namespace Ty
 #else
         // Raytracing pipeline:
         u32* framebuffer = (u32*)malloc(sizeof(u32) * GAME_RENDER_WIDTH * GAME_RENDER_HEIGHT);
+        u32* framebuffer_only_ao = (u32*)malloc(sizeof(u32) * GAME_RENDER_WIDTH * GAME_RENDER_HEIGHT);
+        u32* framebuffer_no_ao = (u32*)malloc(sizeof(u32) * GAME_RENDER_WIDTH * GAME_RENDER_HEIGHT);
 
         //      Populate MeshRenderables
         std::vector<Graphics::MeshRenderable*> renderables;
@@ -572,6 +627,8 @@ namespace Ty
         {
             job_params[i].renderer = &renderer;
             job_params[i].framebuffer = framebuffer;
+            job_params[i].framebuffer_only_ao = framebuffer_only_ao;
+            job_params[i].framebuffer_no_ao = framebuffer_no_ao;
             job_params[i].job_renderables = &renderables;
             job_params[i].scale = scale;
             job_params[i].aspect = aspect;
@@ -594,7 +651,9 @@ namespace Ty
         rtao_timer.end();
         printf("Finished work in %.2f seconds, with %d threads.\n", rtao_timer.elapsed_secs(), RTAO_JOB_COUNT);
 
-        stbi_write_png(RESOURCES_PATH"out/raytrace_out_diffuse_bilinear.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, framebuffer, GAME_RENDER_WIDTH * 4);
+        stbi_write_png(RESOURCES_PATH"out/RTAO_default.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, framebuffer, GAME_RENDER_WIDTH * 4);
+        stbi_write_png(RESOURCES_PATH"out/RTAO_only_AO.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, framebuffer_only_ao, GAME_RENDER_WIDTH * 4);
+        stbi_write_png(RESOURCES_PATH"out/RTAO_no_AO.png", GAME_RENDER_WIDTH, GAME_RENDER_HEIGHT, 4, framebuffer_no_ao, GAME_RENDER_WIDTH * 4);
 #endif
 	}
 
